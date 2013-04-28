@@ -697,17 +697,14 @@ the session regardless of whether it's been modified."
            (unless (wg-session-p session)
              (error "%S is not a Workgroups session file." filename))
            (setf (wg-session-file-name session) filename)
-           (wg-reset-internal (wg-unpickel-session-parameters session))
-           ;;(message (wg-session-parameter     nil wg-key-current-workgroup))
-           ;;(message "session")
-           ;;(sleep-for 3)
-           )
+           (wg-reset-internal (wg-unpickel-session-parameters session)))
          (wg-awhen (and wg-switch-to-first-workgroup-on-find-session-file
                         (wg-workgroup-list))
            (wg-switch-to-workgroup (car it)))
          (wg-fontified-message
            (:cmd "Loaded: ")
-           (:file filename)))
+           (:file filename))
+         (keyboard-quit))
         (t
          (wg-query-and-save-if-modified)
          (wg-reset-internal (wg-make-session :file-name filename))
