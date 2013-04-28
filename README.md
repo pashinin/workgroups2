@@ -52,33 +52,19 @@ See [github repo](http://github.com/tlh/workgroups.el).
         (global-set-key (kbd "s-/")  'wg-switch-to-previous-workgroup)
         ;; s-z == super + z == Win + z
 
-# Configuration
-
-- Set your prefix key (or not).  The prefix key for Workgroups' commands
-  defaults to `C-z`.  You could set it to `C-c w` like this:
-
-        (setq wg-prefix-key (kbd "C-c w"))
-
-  Workgroups saves the prefix key's current definition when it's enabled, and
-  restores it when it's disabled, so you don't have to worry about stomping
-  keydefs if you want to try out different prefixes.
-
-  Most commands are bound to both `<prefix> <key>` and `<prefix> C-<key>` for
-  convenience.  See the definition of `wg-map` in the source for a complete list
-  of bindings.
-
-- There are many other customization options.  See the customization section in
-  the source for details, or use:
-
-        M-x customize-group RET workgroups RET
-
-
 ## Tutorial
+
+Most commands are bound to both `<prefix> <key>` and `<prefix> C-<key>`.
 
 ### Help
 
 To bring up a help buffer listing all the commands and their bindings, hit
 `<prefix> ?` (`wg-help`).
+
+- There are many other customization options.  See the customization section in
+  the source for details, or use:
+
+        M-x customize-group RET workgroups RET
 
 ### Workgroup Creation
 
