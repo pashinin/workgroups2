@@ -1,0 +1,200 @@
+;;; special buffer serdes functions ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; TODO: Possibly add restore-special-data customization option
+;; TODO: These could be a little more thorough
+;;
+
+(require 'dflet)
+
+;; Info buffer serdes
+
+(defun wg-deserialize-Info-buffer (buf)
+  "Deserialize an Info buffer."
+  (require 'info)
+  (wg-aif (cdr (wg-buf-special-data buf))
+      (apply #'Info-find-node it)
+    (info))
+  (current-buffer))
+
+(defun wg-serialize-Info-buffer (buffer)
+  "Serialize an Info buffer."
+  (with-current-buffer buffer
+    (when (eq major-mode 'Info-mode)
+      (wg-when-boundp (Info-current-file Info-current-node)
+        (list 'wg-deserialize-Info-buffer
+              Info-current-file
+              Info-current-node)))))
+
+
+;; help buffer serdes
+
+(defun wg-deserialize-help-buffer (buf)
+  "Deserialize a help buffer.
+See `wg-serialize-help-buffer'."
+  (require 'help-mode)
+  (wg-dbind (this-function item stack forward-stack) (wg-buf-special-data buf)
+    (condition-case err
+        (apply (car item) (cdr item))
+      (error (message "%s" err)))
+    (wg-awhen (get-buffer "*Help*")
+      (set-buffer it)
+      (wg-when-boundp (help-xref-stack help-xref-forward-stack)
+        (setq help-xref-stack stack
+              help-xref-forward-stack forward-stack))
+      (current-buffer))))
+
+(defun wg-serialize-help-buffer (buffer)
+  "Serialize a help buffer.
+Since `help-mode' is used by many buffers that aren't actually
+*Help* buffers (e.g. *Process List*), we also check that
+`help-xref-stack-item' has a local binding."
+  (with-current-buffer buffer
+    (when (and (eq major-mode 'help-mode)
+               (local-variable-p 'help-xref-stack-item)
+               (boundp 'help-xref-stack-item)
+               (boundp 'help-xref-stack)
+               (boundp 'help-xref-forward-stack))
+      (list 'wg-deserialize-help-buffer
+            (wg-take-until-unreadable help-xref-stack-item)
+            (mapcar 'wg-take-until-unreadable help-xref-stack)
+            (mapcar 'wg-take-until-unreadable help-xref-forward-stack)))))
+
+
+;; ielm buffer serdes
+
+(defun wg-deserialize-ielm-buffer (buf)
+  "Deserialize an `inferior-emacs-lisp-mode' buffer."
+  (ielm)
+  (current-buffer))
+
+(defun wg-serialize-ielm-buffer (buffer)
+  "Serialize an `inferior-emacs-lisp-mode' buffer."
+  (with-current-buffer buffer
+    (when (eq major-mode 'inferior-emacs-lisp-mode)
+      (list 'wg-deserialize-ielm-buffer))))
+
+
+;; shell buffer serdes
+
+(defun wg-deserialize-shell-buffer (buf)
+  "Deserialize a `shell-mode' buffer."
+  (shell (wg-buf-name buf)))
+
+(defun wg-serialize-shell-buffer (buffer)
+  "Serialize a `shell-mode' buffer."
+  (with-current-buffer buffer
+    (when (eq major-mode 'shell-mode)
+      (list 'wg-deserialize-shell-buffer))))
+
+
+;; org-agenda buffer serdes
+
+(defun wg-get-org-agenda-view-commands ()
+  "Get commands by which the current state of Agenda buffer can
+be restored using \"(eval commands)\"."
+  (interactive)
+  (if (get-buffer org-agenda-buffer-name)
+      (with-current-buffer org-agenda-buffer-name
+        (let* ((p (or (and (looking-at "\\'") (1- (point))) (point)))
+               (series-redo-cmd (get-text-property p 'org-series-redo-cmd)))
+          (if series-redo-cmd
+              (get-text-property p 'org-series-redo-cmd)
+            (get-text-property p 'org-redo-cmd))))))
+
+(defun wg-run-agenda-cmd (f)
+  "Run commands \"f\" in Agenda buffer. You can get these
+commands using \"wg-get-org-agenda-view-commands\"."
+  (if (get-buffer org-agenda-buffer-name)
+      (save-window-excursion
+        (with-current-buffer org-agenda-buffer-name
+          (let* ((line (org-current-line))
+                 (series-redo-cmd (xdev/get-org-agenda-view-commands)))
+            (if f (eval f))
+            (org-goto-line line))))))
+
+(defun wg-deserialize-org-agenda-buffer (buf)
+  "Deserialize a `org-agenda-mode' buffer."
+  (org-agenda-list)
+  (wg-dbind (this-function item) (wg-buf-special-data buf)
+    (wg-awhen (get-buffer org-agenda-buffer-name)
+      (set-buffer it)
+      (wg-run-agenda-cmd item)
+      (current-buffer))))
+
+(defun wg-serialize-org-agenda-buffer (buffer)
+  "Serialize a `org-agenda-mode' buffer."
+  (with-current-buffer buffer
+    (when (eq major-mode 'org-agenda-mode)
+      (list 'wg-deserialize-org-agenda-buffer
+            (wg-take-until-unreadable (wg-get-org-agenda-view-commands))
+            ))))
+
+
+;; eshell buffer serdes
+
+(defun wg-deserialize-eshell-buffer (buf)
+  "Deserialize an `eshell-mode' buffer."
+  (prog1 (eshell t)
+    (rename-buffer (wg-buf-name buf) t)))
+
+(defun wg-serialize-eshell-buffer (buffer)
+  "Serialize an `eshell-mode' buffer."
+  (with-current-buffer buffer
+    (when (eq major-mode 'eshell-mode)
+      (list 'wg-deserialize-eshell-buffer))))
+
+
+;; term and ansi-term buffer serdes
+
+(defun wg-deserialize-term-buffer (buf)
+  "Deserialize a `term-mode' buffer."
+  (require 'term)
+  ;; flet'ing these prevents scrunched up wrapping when restoring during morph
+  (dflet ((term-window-width () 80)
+         (window-height () 24))
+    (prog1 (term (nth 1 (wg-buf-special-data buf)))
+      (rename-buffer (wg-buf-name buf) t))))
+
+(defun wg-serialize-term-buffer (buffer)
+  "Serialize a `term-mode' buffer.
+This should work for `ansi-term's, too, as there doesn't seem to
+be any difference between the two except how the name of the
+buffer is generated."
+  (with-current-buffer buffer
+    (when (eq major-mode 'term-mode)
+      (wg-when-let ((process (get-buffer-process buffer)))
+        (list 'wg-deserialize-term-buffer
+              (wg-last1 (process-command process)))))))
+
+
+
+
+
+
+;;; buffer-local variable serdes
+
+(defun wg-serialize-buffer-mark-ring ()
+  "Return a new list of the positions of the marks in `mark-ring'."
+  (mapcar 'marker-position mark-ring))
+
+(defun wg-deserialize-buffer-mark-ring (positions)
+  "Set `mark-ring' to a new list of markers created from POSITIONS."
+  (setq mark-ring
+        (mapcar (lambda (pos) (set-marker (make-marker) pos))
+                positions)))
+
+(defun wg-deserialize-buffer-major-mode (major-mode-symbol)
+  "Conditionally retore MAJOR-MODE-SYMBOL in `current-buffer'."
+  (and (fboundp major-mode-symbol)
+       (not (eq major-mode-symbol major-mode))
+       (funcall major-mode-symbol)))
+
+(defun wg-deserialize-buffer-local-variables (buf)
+  "Restore BUF's buffer local variables in `current-buffer'."
+  (loop for ((var . val) . rest) on (wg-buf-local-vars buf)
+        do (wg-awhen (assq var wg-buffer-local-variables-alist)
+             (wg-dbind (var ser des) it
+               (if des (funcall des val)
+                 (set var val))))))
+
+(provide 'workgroups-specialbufs)
