@@ -39,7 +39,7 @@ See [github repo](http://github.com/tlh/workgroups.el).
               wg-use-faces nil
               wg-morph-on nil                ; animation off
               wg-switch-on-load t)           ; load first on start
-        (workgroups-mode 1)
+        (workgroups-mode 1)                  ; Activate workgroups
 
         ;; Keyboard shortcuts
         ;; Load workgroups:
@@ -164,4 +164,4 @@ than 2 years and experimental branch was not released.
 
 ## License
 
-Workgroups for Windows (for Emacs) is released under the GPL.
+Workgroups for Emacs is released under the GPL.
