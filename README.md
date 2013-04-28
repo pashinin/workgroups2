@@ -15,7 +15,7 @@ See [github repo](http://github.com/tlh/workgroups.el).
 - Put `workgroups` somewhere on your Emacs load path
 
         cd ~/.emacs.d/extensions
-        git clone git://github.com/pashinin/workgroups2
+        git clone git://github.com/pashinin/workgroups2.git
         git pull
 
 ### Installing
@@ -73,23 +73,12 @@ See [github repo](http://github.com/tlh/workgroups.el).
         M-x customize-group RET workgroups RET
 
 
-## Usage
-
-- Turn on `workgroups-mode` either by issuing the command:
-
-        M-x workgroups-mode RET
-
-  or by evaluating this form, which can be added to your `.emacs` file:
-
-        (workgroups-mode 1)
-
-  You should see "wg" in the minor mode list on the mode-line.
-
-- To get started right away, hit `<prefix> ?` for a list of commands and their
-  bindings.
-
-
 ## Tutorial
+
+### Help
+
+To bring up a help buffer listing all the commands and their bindings, hit
+`<prefix> ?` (`wg-help`).
 
 ### Workgroup Creation
 
@@ -162,10 +151,6 @@ will wrap around to the other side.
 `<prefix> x` (`wg-swap-workgroups`) will swap the position in the workgroups
 list of the previously selected workgroup with that of the current workgroup.
 
-### Help
-
-To bring up a help buffer listing all the commands and their bindings, hit
-`<prefix> ?` (`wg-help`).
 
 ## Original Workgroups
 
