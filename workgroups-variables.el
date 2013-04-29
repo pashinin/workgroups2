@@ -206,6 +206,7 @@ it to `major-mode'."
     wg-serialize-shell-buffer
     wg-serialize-eshell-buffer
     wg-serialize-term-buffer
+    wg-serialize-magit-buffer
     )
   "List of functions providing special buffer serialization/deserialization.
 An entry should be either a function symbol or a lambda, and should

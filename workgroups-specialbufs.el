@@ -74,6 +74,28 @@ Since `help-mode' is used by many buffers that aren't actually
       (list 'wg-deserialize-ielm-buffer))))
 
 
+;; Magit buffers
+
+(defun wg-deserialize-magit-buffer (buf)
+  ""
+  (require 'magit)
+  (if (boundp 'magit-status-mode-map)
+      (wg-dbind (this-function dir) (wg-buf-special-data buf)
+        (let ((default-directory (car dir)))
+          (magit-status default-directory)
+          (current-buffer)
+          ))))
+
+(defun wg-serialize-magit-buffer (buffer)
+  ""
+  (if (boundp 'magit-status-mode-map)
+      (with-current-buffer buffer
+        (when (eq major-mode 'magit-status-mode)
+          (list 'wg-deserialize-magit-buffer
+                (wg-take-until-unreadable (list (or (buffer-file-name) default-directory)))
+                )))))
+
+
 ;; shell buffer serdes
 
 (defun wg-deserialize-shell-buffer (buf)
@@ -92,7 +114,6 @@ Save shell directory"
     (when (eq major-mode 'shell-mode)
       (list 'wg-deserialize-shell-buffer
             (wg-take-until-unreadable (list (or (buffer-file-name) default-directory)))
-            ;;(mapcar 'wg-take-until-unreadable (or (buffer-file-name) default-directory))
             ))))
 
 
