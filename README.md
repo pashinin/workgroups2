@@ -33,6 +33,7 @@ See [github repo](http://github.com/tlh/workgroups.el).
 - and set some parameters:
 
         ;; Settings:
+        (desktop-save-mode t)                ; save opened files
         (setq wg-prefix-key (kbd "C-c z")
               wg-no-confirm t
               wg-file "~/.emacs_files/workgroups"
