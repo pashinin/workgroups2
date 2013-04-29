@@ -77,14 +77,23 @@ Since `help-mode' is used by many buffers that aren't actually
 ;; shell buffer serdes
 
 (defun wg-deserialize-shell-buffer (buf)
-  "Deserialize a `shell-mode' buffer."
-  (shell (wg-buf-name buf)))
+  "Deserialize a `shell-mode' buffer.
+Run shell with last working dir"
+  (wg-dbind (this-function dir) (wg-buf-special-data buf)
+    (let ((default-directory (car dir)))
+      (shell (wg-buf-name buf))
+      (current-buffer)
+      )))
 
 (defun wg-serialize-shell-buffer (buffer)
-  "Serialize a `shell-mode' buffer."
+  "Serialize a `shell-mode' buffer.
+Save shell directory"
   (with-current-buffer buffer
     (when (eq major-mode 'shell-mode)
-      (list 'wg-deserialize-shell-buffer))))
+      (list 'wg-deserialize-shell-buffer
+            (wg-take-until-unreadable (list (or (buffer-file-name) default-directory)))
+            ;;(mapcar 'wg-take-until-unreadable (or (buffer-file-name) default-directory))
+            ))))
 
 
 ;; org-agenda buffer serdes
