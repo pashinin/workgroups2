@@ -1,4 +1,4 @@
-;;; workgroups2 - Workspaces for Emacs
+;;; workgroups2 --- Workspaces for Emacs
 ;;
 ;; Copyright (C) 2013 Sergey Pashinin
 ;; Copyright (C) 2010, 2011 tlh
@@ -195,4 +195,4 @@ If ARG is anything else, turn on `workgroups-mode'."
   workgroups-mode)
 
 (provide 'workgroups2)
-;;; workgroups.el ends here
+;;; workgroups2.el ends here
