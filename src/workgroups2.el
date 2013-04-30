@@ -57,9 +57,11 @@
 ;; All commands start with prefix `wg-prefix-key' (see above).
 ;; <prefix>-<key>
 ;;
-;; <prefix>-c   - create workgroup
-;; <prefix>-k   - kill workgroup
-;; <prefix>-v   - switch workgroup
+;; <prefix>-c    - create workgroup
+;; <prefix>-k    - kill workgroup
+;; <prefix>-v    - switch to workgroup
+;; <prefix>-C-z  - save session
+;; <prefix>-C-f  - load session
 ;;
 ;; Help
 ;; ----------------------
