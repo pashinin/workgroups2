@@ -6,7 +6,7 @@
 ;;; customization
 
 (defgroup workgroups nil
-  "Workgroup for Windows -- Emacs session manager"
+  "Workgroups for Emacs -- Emacs session manager"
   :group 'convenience
   :version wg-version)
 
@@ -80,8 +80,8 @@ FIXME: docstring this"
   :group 'workgroups)
 
 (defcustom wg-default-session-file
-  (concat user-emacs-directory "default-workgroups-session")
-  "FIXME: nix or docstring this"
+  (concat user-emacs-directory ".emacs-wg-session")
+  "Default filename to be used to save workgroups."
   :type 'file
   :group 'workgroups)
 

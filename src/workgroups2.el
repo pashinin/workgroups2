@@ -24,28 +24,46 @@
 
 ;;; Commentary:
 ;;
-;; Workgroups is an Emacs session manager providing window-configuration
-;; persistence, switching, undo/redo, killing/yanking, animated
-;; morphing, per-workgroup buffer-lists, and more.
+;; Workgroups2 is an Emacs session manager. It is based on the
+;; experimental branch of the original "workgroups" extension.
 ;;
 ;;
-;; Installation and Usage
+;; Install
 ;; ----------------------
-;; See the file README.md in this directory, or at
+;; See the README.md file at: https://github.com/pashinin/workgroups2
+;; Add this lines to your .emacs configuration:
 ;;
-;;   https://github.com/pashinin/workgroups2
+;; (require 'workgroups2)
+;;
+;; ;; Some settings:
+;; (desktop-save-mode t)                ; save opened files
+;; (setq wg-prefix-key (kbd "C-c z")
+;;       wg-use-default-session-file nil ; turn off for "emacs --daemon"
+;;       wg-default-session-file "~/.emacs_files/workgroups"
+;;       wg-use-faces nil
+;;       wg-morph-on nil)               ; animation off
+;;
+;; ;; Keyboard shortcuts - load, save, switch
+;; (global-set-key (kbd "<pause>")     'wg-reload-session)
+;; (global-set-key (kbd "C-S-<pause>") 'wg-save-session)
+;; (global-set-key (kbd "s-z")         'wg-switch-to-workgroup)
+;; (global-set-key (kbd "s-/")         'wg-switch-to-previous-workgroup)
+;;
+;; (workgroups-mode 1)    ; Activate workgroups
 ;;
 ;;
-;; Symbol naming conventions
-;; -------------------------
-;; * bufobj always refers to a Workgroups buffer (wg-buf) or an Emacs buffer
-;; * W always refers to a Workgroups window (wg-win) or window tree (wg-wtree).
-;; * SW always refers to a sub-window or sub-window-tree of a wtree.
-;; * WL always refers to the window list of a wtree.
-;; * LN, TN, RN and BN always refer to the LEFT, TOP, RIGHT and BOTTOM
-;;   edges of an edge list, where N is a differentiating integer.
-;; * LS, HS, LB and HB always refer to the LOW-SIDE, HIGH-SIDE, LOW-BOUND
-;;   and HIGH-BOUND of a bounds list.  See `wg-with-bounds'.
+;; Usage
+;; ----------------------
+;; All commands start with prefix `wg-prefix-key' (see above).
+;; <prefix>-<key>
+;;
+;; <prefix>-c   - create workgroup
+;; <prefix>-k   - kill workgroup
+;; <prefix>-v   - switch workgroup
+;;
+;; Help
+;; ----------------------
+;; Type "<prefix>-?" for more help
 ;;
 ;;
 ;;; Code:
@@ -111,8 +129,20 @@
 
 ;;; workgroups-mode
 
+(defun wg-reload-session ()
+  "Reload current workgroups session."
+  (interactive)
+  (let ((file (wg-determine-session-save-file-name)))
+    (when (file-exists-p file)
+      (condition-case err
+          (wg-find-session-file wg-default-session-file)
+        (error (message "Error finding session-file: %s" err))))
+    ))
+
 (defun wg-find-session-file-on-workgroups-mode-entry ()
-  "FIXME: docstring this"
+  "This function is called when activating workgroups mode. It
+loads a session file set in `wg-default-session-file' variable if
+`wg-use-default-session-file' is t."
   (when (and wg-use-default-session-file
              (file-exists-p wg-default-session-file))
     (condition-case err

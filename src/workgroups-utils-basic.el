@@ -31,7 +31,7 @@
 
 (eval-and-compile
   (require 'cl))
-
+(require 'dflet)
 
 ;;; utils used in macros
 
@@ -224,7 +224,7 @@ Cribbed from `org-id-b36-to-int-one-digit'."
 (defun wg-int-to-b36 (i &optional length)
   "Return a base 36 string from I."
   (let ((base 36) b36)
-    (flet ((add-digit () (push (wg-int-to-b36-one-digit (mod i base)) b36)
+    (dflet ((add-digit () (push (wg-int-to-b36-one-digit (mod i base)) b36)
                       (setq i (/ i base))))
       (add-digit)
       (while (> i 0) (add-digit))
@@ -515,7 +515,7 @@ options."
   (declare (indent 2))
   (let* ((name (if (consp name-form) (car name-form) name-form))
          (prefixed-name (wg-symcat prefix "-" name)))
-    (flet ((rebind (opstr)
+    (dflet ((rebind (opstr)
                    (let ((oldfnsym (wg-symcat opstr "-" prefix "-" name)))
                      `((fset ',(wg-symcat prefix "-" opstr "-" name)
                              (symbol-function ',oldfnsym))
