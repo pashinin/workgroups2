@@ -132,7 +132,8 @@
 (defun wg-reload-session ()
   "Reload current workgroups session."
   (interactive)
-  (let ((file (wg-determine-session-save-file-name)))
+  (let ((file (or (wg-determine-session-save-file-name)
+                  wg-default-session-file)))
     (when (file-exists-p file)
       (condition-case err
           (wg-find-session-file wg-default-session-file)
