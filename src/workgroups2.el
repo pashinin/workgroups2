@@ -1,4 +1,4 @@
-;;; workgroups2 --- Workspaces for Emacs
+;;; workgroups2.el --- New workspaces for Emacs
 ;;
 ;; Copyright (C) 2013 Sergey Pashinin
 ;; Copyright (C) 2010, 2011 tlh
