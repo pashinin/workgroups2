@@ -10,11 +10,11 @@ Isn't it enough?
 
 ## Install
 
-1. Just install "workgroups2" from Melpa.
+- Just install "workgroups2" from Melpa.
 
 OR
 
-2. use git and put `workgroups2` somewhere on your Emacs load path
+- use git and put `workgroups2` somewhere on your Emacs load path
 
         cd ~/.emacs.d/extensions
         git clone git://github.com/pashinin/workgroups2.git
@@ -61,7 +61,6 @@ Most commands are bound to both `<prefix> <key>` and `<prefix> C-<key>`.
     <prefix> C-f  - load session
 
 ## Help
-----------------------
 
 Type `<prefix> ?` (Eval `(wg-help)`) for more help.
 
