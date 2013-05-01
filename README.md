@@ -57,7 +57,7 @@ Most commands are bound to both `<prefix> <key>` and `<prefix> C-<key>`.
     <prefix> c    - create workgroup
     <prefix> k    - kill workgroup
     <prefix> v    - switch to workgroup
-    <prefix> C-z  - save session
+    <prefix> C-s  - save session
     <prefix> C-f  - load session
 
 ## Help
