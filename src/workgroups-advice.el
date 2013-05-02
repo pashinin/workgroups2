@@ -125,16 +125,14 @@ before selecting a new frame."
   (ad-activate 'save-buffers-kill-emacs)
 
   ;; select-frame
-  (ad-enable-advice 'select-frame 'before
-                    'wg-update-current-workgroup-working-wconfig)
-  (ad-activate 'select-frame)
-
-
+  ;;(ad-enable-advice 'select-frame 'before
+  ;;                  'wg-update-current-workgroup-working-wconfig)
+  ;;(ad-activate 'select-frame)
   )
 
 
 ;; disable all advice
-
+;; (wg-disable-all-advice)
 (defun wg-disable-all-advice ()
   "Disable and deactivate all of Workgroups' advice."
 
@@ -180,9 +178,9 @@ before selecting a new frame."
   (ad-deactivate 'save-buffers-kill-emacs)
 
   ;; select-frame
-  (ad-disable-advice 'select-frame 'before
-                     'wg-update-current-workgroup-working-wconfig)
-  (ad-deactivate 'select-frame)
+  ;;(ad-disable-advice 'select-frame 'before
+  ;;                   'wg-update-current-workgroup-working-wconfig)
+  ;;(ad-deactivate 'select-frame)
 
   )
 
