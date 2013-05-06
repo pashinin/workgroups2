@@ -331,8 +331,8 @@ This is only here for completeness."
 If BUFFER already has a buffer local value of `wg-buffer-uid',
 and it's not equal to UID, error."
   (if wg-buffer-uid
-      (if (string= wg-buffer-uid uid) uid
-        (error "uids don't match %S and %S" uid wg-buffer-uid))
+      ;;(if (string= wg-buffer-uid uid) uid
+      ;;  (error "uids don't match %S and %S" uid wg-buffer-uid))
     (setq wg-buffer-uid uid)))
 
 
