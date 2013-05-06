@@ -78,14 +78,13 @@ Since `help-mode' is used by many buffers that aren't actually
 
 (defun wg-deserialize-magit-buffer (buf)
   ""
-  (require 'magit)
-  (if (boundp 'magit-status-mode-map)
-      (wg-dbind (this-function dir) (wg-buf-special-data buf)
-        (let ((default-directory (car dir)))
-          (if (file-exists-p default-directory)
-              (magit-status default-directory))
-          (current-buffer)
-          ))))
+  (if (require 'magit nil 'noerror)
+      (if (fboundp 'magit-status)
+          (wg-dbind (this-function dir) (wg-buf-special-data buf)
+            (let ((default-directory (car dir)))
+              (if (file-exists-p default-directory)
+                  (magit-status default-directory))
+              (current-buffer))))))
 
 (defun wg-serialize-magit-buffer (buffer)
   ""
