@@ -1,7 +1,8 @@
 ;; flet (Temporary redifinition) command caused a lot of warnings and is
 ;; obsolete
-;; 
-;; So we need to define something new:
+;;
+;; So we need to define something new.
+;; I picked up dflet.el module
 
 
 (defun wg--call-with-temporary-redefinitions (function

@@ -1,6 +1,6 @@
 ;;; workgroups utils
 (require 'dflet)
-(require 'cl-macs)
+;;(require 'cl-macs)
 (require 'workgroups-compat)
 
 (defun wg-read-object (prompt test warning &optional initial-contents keymap
