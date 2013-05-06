@@ -88,7 +88,7 @@ Since `help-mode' is used by many buffers that aren't actually
 
 (defun wg-serialize-magit-buffer (buffer)
   ""
-  (if (boundp 'magit-status-mode-map)
+  (if (fboundp 'magit-status-mode)
       (with-current-buffer buffer
         (when (eq major-mode 'magit-status-mode)
           (list 'wg-deserialize-magit-buffer
