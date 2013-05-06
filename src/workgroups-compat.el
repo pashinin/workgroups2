@@ -16,8 +16,8 @@
     ;; saving all definitions before overriding anything ensures FDEFINITION
     ;; errors don't cause accidental permanent redefinitions.
     ;;
-    ;;(labels ((set-fdefinitions (names functions)
-    (cl-labels ((set-fdefinitions (names functions)
+    (labels ((set-fdefinitions (names functions)
+    ;;(cl-labels ((set-fdefinitions (names functions)  ; for Emacs 24.3
                                (loop for name in names
                                      for fn in functions
                                      do (fset name fn))))
