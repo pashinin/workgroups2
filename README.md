@@ -3,10 +3,12 @@
 
 Workgroups is a session manager for Emacs.
 
-- It saves all your opened buffers, their location and sizes on disk to restore later.
-- You also can create several workspaces.
+- It saves all your opened buffers, their location and sizes on disk to restore later
+- You can create several workspaces
 
-Isn't it enough?
+You can also restore such buffers as: org-agenda, shell, magit-status, help.
+
+Fork it and [add more special buffers support](https://github.com/pashinin/workgroups2/wiki/For-developers). Or even better - fix bugs.
 
 ## Install
 
@@ -34,12 +36,13 @@ OR
 - and set some parameters:
 
         ;; Settings:
-        (desktop-save-mode t)                ; save opened files
+        (desktop-save-mode t)     ; save all opened files (or disable it)
         (setq wg-prefix-key (kbd "C-c z")
-              wg-use-default-session-file nil ; turn off for "emacs --daemon"
+              wg-restore-associated-buffers nil ; restore all buffers opened in this WG?
+              wg-use-default-session-file nil   ; turn off for "emacs --daemon"
               wg-default-session-file "~/.emacs_files/workgroups"
               wg-use-faces nil
-              wg-morph-on nil)               ; animation off
+              wg-morph-on nil)                  ; animation off
 
         ;; Keyboard shortcuts - load, save, switch
         (global-set-key (kbd "<pause>")     'wg-reload-session)
