@@ -82,7 +82,8 @@ Since `help-mode' is used by many buffers that aren't actually
   (if (boundp 'magit-status-mode-map)
       (wg-dbind (this-function dir) (wg-buf-special-data buf)
         (let ((default-directory (car dir)))
-          (magit-status default-directory)
+          (if (file-exists-p default-directory)
+              (magit-status default-directory))
           (current-buffer)
           ))))
 
