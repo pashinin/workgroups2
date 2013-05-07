@@ -70,7 +70,7 @@
 ;;; Code:
 
 
-(require 'cl)
+(require 'dflet)
 (require 'workgroups-compat)
 (require 'workgroups-utils-basic)
 (require 'workgroups-pickel)
