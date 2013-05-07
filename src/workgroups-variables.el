@@ -200,6 +200,7 @@ it to `major-mode'."
 
 (defcustom wg-special-buffer-serdes-functions
   '(wg-serialize-Info-buffer
+    wg-serialize-dired-buffer
     wg-serialize-org-agenda-buffer
     wg-serialize-help-buffer
     wg-serialize-ielm-buffer

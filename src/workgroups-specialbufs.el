@@ -5,6 +5,25 @@
 ;;
 
 (require 'dflet)
+(require 'workgroups-misc)
+
+;; Dired
+
+(defun wg-deserialize-dired-buffer (buf)
+  "Deserialize Dired buffer."
+  (wg-dbind (this-function params) (wg-buf-special-data buf)
+    (let ((dir (car params)))
+      (if (file-exists-p dir)
+          (dired dir))
+      (current-buffer))))
+
+(defun wg-serialize-dired-buffer (buffer)
+  "Serialize Dired buffer."
+  (with-current-buffer buffer
+    (when (eq major-mode 'dired-mode)
+      (list 'wg-deserialize-dired-buffer
+            (wg-take-until-unreadable (list (or (buffer-file-name) default-directory)))
+            ))))
 
 ;; Info buffer serdes
 
