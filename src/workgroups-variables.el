@@ -240,6 +240,14 @@ can't be restored.  Also used when a blank workgroup is created."
   :type 'string
   :group 'workgroups)
 
+;; What to restore:
+
+(defcustom wg-restore-remote-buffers t
+  "nil means do not restore buffers that get \"t\" with
+`wg-is-file-remote'"
+  :type 'boolean
+  :group 'workgroups)
+
 (defcustom wg-restore-associated-buffers t
   "Non-nil means restore all buffers associated with the
 workgroup on workgroup restore."

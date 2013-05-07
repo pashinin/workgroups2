@@ -13,8 +13,9 @@
   "Deserialize Dired buffer."
   (wg-dbind (this-function params) (wg-buf-special-data buf)
     (let ((dir (car params)))
-      (if (file-exists-p dir)
-          (dired dir))
+      (if (or wg-restore-remote-buffers (not (wg-is-file-remote dir)))
+          (if (file-exists-p dir)
+              (dired dir)))
       (current-buffer))))
 
 (defun wg-serialize-dired-buffer (buffer)
