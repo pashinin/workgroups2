@@ -83,7 +83,7 @@ structures of WT1 and WT2 looking for discrepancies."
      :edges (wg-morph-step-edges wt1 wt2)
      :wlist (if (not (eq (wg-wtree-dir wt1) (wg-wtree-dir wt2)))
                 (list (wg-minified-copy-of-last-win wt2) wt1)
-              (mapcar* #'wg-morph-dispatch
+              (wg-mapcar* #'wg-morph-dispatch
                        (wg-morph-match-wlist wt1 wt2)
                        (wg-wtree-wlist wt2))))))
 

@@ -137,8 +137,7 @@
     (when (file-exists-p file)
       (condition-case err
           (wg-find-session-file wg-default-session-file)
-        (error (message "Error finding session-file: %s" err))))
-    ))
+        (error (message "Error finding session-file: %s" err))))))
 
 (defun wg-find-session-file-on-workgroups-mode-entry ()
   "This function is called when activating workgroups mode. It
