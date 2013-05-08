@@ -29,13 +29,14 @@
 ;;; Code:
 
 (require 'dflet)
+(require 'workgroups-compat)
 
 ;;; utils used in macros
 
 (defmacro wg-with-gensyms (syms &rest body)
   "Bind all symbols in SYMS to `gensym's, and eval BODY."
   (declare (indent 1))
-  `(let (,@(mapcar (lambda (sym) `(,sym (gensym))) syms)) ,@body))
+  `(let (,@(mapcar (lambda (sym) `(,sym (wg-gensym))) syms)) ,@body))
 
 (defmacro wg-dbind (args expr &rest body)
   "Bind the variables in ARGS to the result of EXPR and execute BODY.
@@ -175,15 +176,15 @@ into a var, like so: (a (b c) . rest)
 
 (defmacro wg-eager-or (&rest conditions)
   "Evaluate all CONDITIONS.  Return the first non-nil return value."
-  (let ((syms (mapcar (lambda (x) (gensym)) conditions)))
-    `(let ,(mapcar* 'list syms conditions)
+  (let ((syms (mapcar (lambda (x) (wg-gensym)) conditions)))
+    `(let ,(wg-mapcar* 'list syms conditions)
        (or ,@syms))))
 
 (defmacro wg-eager-and (&rest conditions)
   "Evaluate all conditions.  If any return nil, return nil.
 Otherwise return the return value of the last condition."
-  (let ((syms (mapcar (lambda (x) (gensym)) conditions)))
-    `(let ,(mapcar* 'list syms conditions)
+  (let ((syms (mapcar (lambda (x) (wg-gensym)) conditions)))
+    `(let ,(wg-mapcar* 'list syms conditions)
        (and ,@syms))))
 
 
@@ -299,7 +300,7 @@ length is even, the first elt is left nearer the front."
 
 (defun wg-insert-after (elt list index)
   "Insert ELT into LIST after INDEX."
-  (let ((new-list (copy-list list)))
+  (let ((new-list (wg-copy-list list)))
     (push elt (cdr (nthcdr index new-list)))
     new-list))
 
@@ -319,21 +320,21 @@ KEYS is passed to `remove*'."
 
 (defun wg-cyclic-offset-elt (elt list n)
   "Cyclically offset ELT's position in LIST by N."
-  (wg-when-let ((pos (position elt list)))
+  (wg-when-let ((pos (wg-position elt list)))
     (wg-move-elt elt list (mod (+ n pos) (length list)))))
 
 (defun wg-cyclic-nth-from-elt (elt list n &rest keys)
   "Return the elt in LIST N places cyclically from ELT.
 If ELT is not present is LIST, return nil.
 KEYS is passed to `position'."
-  (wg-when-let ((pos (apply 'position elt list keys)))
+  (wg-when-let ((pos (apply 'wg-position elt list keys)))
     (wg-cyclic-nth list (+ pos n))))
 
 (defun wg-util-swap (elt1 elt2 list)
   "Return a copy of LIST with ELT1 and ELT2 swapped.
 Return nil when ELT1 and ELT2 aren't both present."
-  (wg-when-let ((p1 (position elt1 list))
-                (p2 (position elt2 list)))
+  (wg-when-let ((p1 (wg-position elt1 list))
+                (p2 (wg-position elt2 list)))
     (wg-move-elt elt1 (wg-move-elt elt2 list p1) p2)))
 
 (defun wg-dups-p (list &rest keys)
@@ -346,12 +347,12 @@ Keywords supported: :test :key
         (key (or (plist-get keys :key) 'identity)))
     (loop for (elt . rest) on list
           for elt = (funcall key elt)
-          when (find elt rest :test test :key key) return elt)))
+          when (wg-find elt rest :test test :key key) return elt)))
 
 (defun wg-string-list-union (&optional list1 list2)
   "Return the `union' of LIST1 and LIST2, using `string=' as the test.
 This only exists to get rid of duplicate lambdas in a few reductions."
-  (union list1 list2 :test 'string=))
+  (wg-union list1 list2 :test 'string=))
 
 
 
@@ -460,13 +461,13 @@ Note that this won't make VAR buffer-local if it isn't already."
 
 (defun wg-interesting-buffers ()
   "Return a list of only the interesting buffers in `buffer-list'."
-  (remove-if (lambda (bname) (string-match "^ " bname))
+  (wg-remove-if (lambda (bname) (string-match "^ " bname))
              (buffer-list) :key 'buffer-name))
 
 (defun wg-get-first-buffer-matching-regexp (regexp &optional buffer-list)
   "Return the first buffer in BUFFER-LIST with a name matching REGEXP.
 BUFFER-LIST should contain buffer objects and/or buffer names."
-  (find regexp (or buffer-list (buffer-list))
+  (wg-find regexp (or buffer-list (buffer-list))
         :test 'string-match :key 'wg-buffer-name))
 
 
