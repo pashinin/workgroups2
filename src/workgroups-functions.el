@@ -3,14 +3,13 @@
 ;;; Code:
 
 (require 'dflet)
-;;(require 'cl-macs)
 (require 'workgroups-compat)
 
 (defun wg-read-object (prompt test warning &optional initial-contents keymap
                               read hist default-value inherit-input-method)
   "PROMPT for an object that satisfies TEST, WARNING if necessary.
 ARGS are `read-from-minibuffer's args, after PROMPT."
-  (wg--with-temporary-redefinitions ((read () (read-from-minibuffer
+  (dflet ((read () (read-from-minibuffer
                    prompt initial-contents keymap read hist
                    default-value inherit-input-method)))
     (let ((obj (read)))
@@ -242,7 +241,7 @@ Return value."
 SESSION nil defaults to the current session.  If VARIABLE does
 not have a session-local binding in SESSION, the value is
 resolved by Emacs."
-  (let* ((undefined (gensym))
+  (let* ((undefined (wg-gensym))
          (value (wg-session-parameter session variable undefined)))
     (if (not (eq value undefined)) value
       (symbol-value variable))))
@@ -868,7 +867,7 @@ current workgroup, or if VARIABLE does not have a workgroup-local
 binding in WORKGROUP, resolve VARIABLE with `wg-session-local-value'."
   (let ((workgroup (wg-get-workgroup workgroup t)))
     (if (not workgroup) (wg-session-local-value variable)
-      (let* ((undefined (gensym))
+      (let* ((undefined (wg-gensym))
              (value (wg-workgroup-parameter workgroup variable undefined)))
         (if (not (eq value undefined)) value
           (wg-session-local-value variable))))))
@@ -1462,7 +1461,7 @@ Also delete all references to it by `wg-workgroup-state-table',
   "Add WORKGROUP to `wg-workgroup-list' at INDEX or the end.
 If a workgroup with the same name exists, overwrite it."
   (wg-awhen (wg-find-workgroup-by :name (wg-workgroup-name workgroup) t)
-    (unless index (setq index (position it (wg-workgroup-list-or-error))))
+    (unless index (setq index (wg-position it (wg-workgroup-list-or-error))))
     (wg-delete-workgroup it))
   (wg-asetf (wg-workgroup-list)
             (wg-insert-before workgroup it (or index (length it))))
@@ -1605,7 +1604,7 @@ for display by `other-buffer' in the current workgroup."
   "Add Workgroups' mode-line format to `mode-line-format'."
   (unless (assq 'wg-mode-line-display-on mode-line-format)
     (let ((format '(wg-mode-line-display-on (:eval (wg-mode-line-string))))
-          (pos (position 'mode-line-position mode-line-format)))
+          (pos (wg-position 'mode-line-position mode-line-format)))
       (set-default 'mode-line-format
                    (wg-insert-after format mode-line-format pos))
       (force-mode-line-update))))

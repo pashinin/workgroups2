@@ -69,7 +69,6 @@
 ;;
 ;;; Code:
 
-
 (require 'dflet)
 (require 'workgroups-compat)
 (require 'workgroups-utils-basic)
