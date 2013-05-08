@@ -381,3 +381,4 @@ parameters and the parameters of all its workgroups."
 
 
 (provide 'workgroups-pickel)
+;;; workgroups-pickel.el ends here

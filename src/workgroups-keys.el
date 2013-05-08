@@ -1,4 +1,6 @@
-;;; keymaps
+;;; workgroups.keys.el --- Set default workgroups keys
+;;; Commentary:
+;;; Code:
 
 (defvar wg-prefixed-map
   (wg-fill-keymap
@@ -207,3 +209,4 @@ as Workgroups' command remappings."
 
 
 (provide 'workgroups-keys)
+;;; workgroups-keys.el ends here

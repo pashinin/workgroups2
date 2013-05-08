@@ -1,4 +1,6 @@
-;;; consts
+;;; workgroups-variables --- Workgroups vars and consts
+;;; Commentary:
+;;; Code:
 
 (defconst wg-version "1.0.0"
   "Current version of workgroups.")
@@ -913,3 +915,4 @@ new workgroup during a switch.")
 
 
 (provide 'workgroups-variables)
+;;; workgroups-variables.el ends here

@@ -1,4 +1,6 @@
-;;; advice
+;;; workgroups-advice --- change some functions behaviour
+;;; Commentary:
+;;; Code:
 
 ;; buffer auto-association advice
 
@@ -185,3 +187,4 @@ before selecting a new frame."
   )
 
 (provide 'workgroups-advice)
+;;; workgroups-advice.el ends here

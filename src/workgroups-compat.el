@@ -1,9 +1,12 @@
+;;; workgroups-compat --- some functions for different versions of Emacs
+;;; Commentary:
 ;; flet (Temporary redifinition) command caused a lot of warnings and is
 ;; obsolete
 ;;
 ;; So we need to define something new.
 ;; I picked up dflet.el module
 
+;;; Code:
 
 (defun wg--call-with-temporary-redefinitions (function
                                                &rest function-names-and-overriding-functions)
@@ -44,3 +47,4 @@
 
 
 (provide 'workgroups-compat)
+;;; workgroups-compat.el ends here

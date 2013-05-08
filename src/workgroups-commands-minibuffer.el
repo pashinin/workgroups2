@@ -1,4 +1,6 @@
-;;; wg-minibuffer-mode commands
+;;; wg-commands-minibuffer --- minibuffer commands
+;;; Commentary:
+;;; Code:
 
 (defun wg-next-buffer-list-filter ()
   "Trigger a switch to the next buffer-list-filter."
@@ -56,3 +58,4 @@ in which case call `wg-previous-buffer-list-filter'."
                     (wg-current-matches)))))
 
 (provide 'workgroups-commands-minibuffer)
+;;; workgroups-commands-minibuffer.el ends here

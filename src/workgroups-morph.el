@@ -1,8 +1,11 @@
-;;; morph
+;;; workgroups-morph --- animation effects
+;;; Commentary:
 ;;
 ;; TODO: Add upward and left morphing.  And once it's been added, add selection
 ;;       of a random morph direction.
 ;;
+
+;;; Code:
 
 (defun wg-morph-p ()
   "Return t when it's ok to morph, nil otherwise."
@@ -127,7 +130,4 @@ Assumes both FROM and TO fit in `selected-frame'."
 
 
 (provide 'workgroups-morph)
-
-
-
-
+;;; workgroups-morph.el ends here

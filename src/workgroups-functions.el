@@ -1,4 +1,7 @@
-;;; workgroups utils
+;;; workgroups-functions --- some functions here
+;;; Commentary:
+;;; Code:
+
 (require 'dflet)
 ;;(require 'cl-macs)
 (require 'workgroups-compat)
@@ -1851,4 +1854,6 @@ blank session object."
 ;; Local Variables:
 ;; byte-compile-warnings: (not cl-functions)
 ;; End:
+
 (provide 'workgroups-functions)
+;;; workgroups-functions.el ends here

@@ -1,4 +1,6 @@
-;;; ido and iswitchb compatibility
+;;; workgroups-ido --- ido and iswitchb compatibility
+;;; Commentary:
+;;; Code:
 
 (defun wg-read-buffer-mode ()
   "Return the buffer switching package (ido or iswitchb) to use, or nil."
@@ -152,5 +154,5 @@ Added to `ido-make-buffer-list-hook'."
 Added to `iswitchb-make-buflist-hook'."
   (wg-set-buffer-list-symbol 'iswitchb-temp-buflist))
 
-
 (provide 'workgroups-ido)
+;;; workgroups-ido.el ends here

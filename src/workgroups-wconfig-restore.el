@@ -1,4 +1,8 @@
-;;; wconfig restoration
+;;; workgroups-wconfig --- wconfig restoration
+;;; Commentary:
+;;; Code:
+
+(require 'workgroups-variables)
 
 (defun wg-restore-default-buffer ()
   "Switch to `wg-default-buffer'."
@@ -29,7 +33,7 @@ If BUF's file doesn't exist, call `wg-restore-default-buffer'"
            nil))))
 
 (defun wg-restore-special-buffer (buf)
-  "Restore a buffer with DESERIALIZER-FN."
+  "Restore a buffer BUF with DESERIALIZER-FN."
   (wg-when-let
       ((special-data (wg-buf-special-data buf))
        (buffer (save-window-excursion
@@ -68,10 +72,10 @@ If BUF's file doesn't exist, call `wg-restore-default-buffer'"
 
 ;; FIXME: nix these or move them to the vars section
 (defvar wg-incorrectly-restored-bufs nil
-  "FIXME: docstring this")
+  "FIXME: docstring this.")
 
 (defvar wg-record-incorrectly-restored-bufs nil
-  "FIXME: docstring this")
+  "FIXME: docstring this.")
 
 (defun wg-restore-window (win)
   "Restore WIN in `selected-window'."
@@ -147,3 +151,4 @@ If you want, restore them manually and try again."
 
 
 (provide 'workgroups-wconfig-restore)
+;;; workgroups-wconfig-restore.el ends here

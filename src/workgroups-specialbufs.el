@@ -1,8 +1,10 @@
-;;; special buffer serdes functions ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; workgroups-specialbufs --- special buffers serialization
+;;; Commentary:
 ;;
 ;; TODO: Possibly add restore-special-data customization option
 ;; TODO: These could be a little more thorough
 ;;
+;;; Code:
 
 (require 'dflet)
 (require 'workgroups-misc)
@@ -49,7 +51,7 @@
 ;; help buffer serdes
 
 (defun wg-deserialize-help-buffer (buf)
-  "Deserialize a help buffer.
+  "Deserialize a help buffer BUF.
 See `wg-serialize-help-buffer'."
   (require 'help-mode)
   (wg-dbind (this-function item stack forward-stack) (wg-buf-special-data buf)
@@ -64,7 +66,7 @@ See `wg-serialize-help-buffer'."
       (current-buffer))))
 
 (defun wg-serialize-help-buffer (buffer)
-  "Serialize a help buffer.
+  "Serialize a help buffer BUFFER.
 Since `help-mode' is used by many buffers that aren't actually
 *Help* buffers (e.g. *Process List*), we also check that
 `help-xref-stack-item' has a local binding."
@@ -83,12 +85,12 @@ Since `help-mode' is used by many buffers that aren't actually
 ;; ielm buffer serdes
 
 (defun wg-deserialize-ielm-buffer (buf)
-  "Deserialize an `inferior-emacs-lisp-mode' buffer."
+  "Deserialize an `inferior-emacs-lisp-mode' buffer BUF."
   (ielm)
   (current-buffer))
 
 (defun wg-serialize-ielm-buffer (buffer)
-  "Serialize an `inferior-emacs-lisp-mode' buffer."
+  "Serialize an `inferior-emacs-lisp-mode' buffer BUFFER."
   (with-current-buffer buffer
     (when (eq major-mode 'inferior-emacs-lisp-mode)
       (list 'wg-deserialize-ielm-buffer))))
@@ -97,7 +99,7 @@ Since `help-mode' is used by many buffers that aren't actually
 ;; Magit buffers
 
 (defun wg-deserialize-magit-buffer (buf)
-  ""
+  "Deserialize a Magit-status buffer BUF."
   (if (require 'magit nil 'noerror)
       (if (fboundp 'magit-status)
           (wg-dbind (this-function dir) (wg-buf-special-data buf)
@@ -106,10 +108,10 @@ Since `help-mode' is used by many buffers that aren't actually
                   (magit-status default-directory))
               (current-buffer))))))
 
-(defun wg-serialize-magit-buffer (buffer)
-  ""
+(defun wg-serialize-magit-buffer (buf)
+  "Serialize a Magit-status buffer BUF."
   (if (fboundp 'magit-status-mode)
-      (with-current-buffer buffer
+      (with-current-buffer buf
         (when (eq major-mode 'magit-status-mode)
           (list 'wg-deserialize-magit-buffer
                 (wg-take-until-unreadable (list (or (buffer-file-name) default-directory)))
@@ -119,7 +121,7 @@ Since `help-mode' is used by many buffers that aren't actually
 ;; shell buffer serdes
 
 (defun wg-deserialize-shell-buffer (buf)
-  "Deserialize a `shell-mode' buffer.
+  "Deserialize a `shell-mode' buffer BUF.
 Run shell with last working dir"
   (wg-dbind (this-function dir) (wg-buf-special-data buf)
     (let ((default-directory (car dir)))
@@ -128,7 +130,7 @@ Run shell with last working dir"
       )))
 
 (defun wg-serialize-shell-buffer (buffer)
-  "Serialize a `shell-mode' buffer.
+  "Serialize a `shell-mode' buffer BUFFER.
 Save shell directory"
   (with-current-buffer buffer
     (when (eq major-mode 'shell-mode)
@@ -137,11 +139,11 @@ Save shell directory"
             ))))
 
 
-;; org-agenda buffer serdes
+;; org-agenda buffer
 
 (defun wg-get-org-agenda-view-commands ()
-  "Get commands by which the current state of Agenda buffer can
-be restored using \"(eval commands)\"."
+  "Return commands to restore the state of Agenda buffer.
+Can be restored using \"(eval commands)\"."
   (interactive)
   (if (get-buffer org-agenda-buffer-name)
       (with-current-buffer org-agenda-buffer-name
@@ -152,8 +154,9 @@ be restored using \"(eval commands)\"."
             (get-text-property p 'org-redo-cmd))))))
 
 (defun wg-run-agenda-cmd (f)
-  "Run commands \"f\" in Agenda buffer. You can get these
-commands using \"wg-get-org-agenda-view-commands\"."
+  "Run commands \"F\" in Agenda buffer.
+You can get these commands using
+\"wg-get-org-agenda-view-commands\"."
   (if (get-buffer org-agenda-buffer-name)
       (save-window-excursion
         (with-current-buffer org-agenda-buffer-name
@@ -163,7 +166,7 @@ commands using \"wg-get-org-agenda-view-commands\"."
             (org-goto-line line))))))
 
 (defun wg-deserialize-org-agenda-buffer (buf)
-  "Deserialize a `org-agenda-mode' buffer."
+  "Deserialize an `org-agenda-mode' buffer BUF."
   (org-agenda-list)
   (wg-dbind (this-function item) (wg-buf-special-data buf)
     (wg-awhen (get-buffer org-agenda-buffer-name)
@@ -172,7 +175,7 @@ commands using \"wg-get-org-agenda-view-commands\"."
       (current-buffer))))
 
 (defun wg-serialize-org-agenda-buffer (buffer)
-  "Serialize a `org-agenda-mode' buffer."
+  "Serialize an `org-agenda-mode' buffer BUFFER."
   (with-current-buffer buffer
     (when (eq major-mode 'org-agenda-mode)
       (list 'wg-deserialize-org-agenda-buffer
@@ -180,15 +183,15 @@ commands using \"wg-get-org-agenda-view-commands\"."
             ))))
 
 
-;; eshell buffer serdes
+;; eshell
 
 (defun wg-deserialize-eshell-buffer (buf)
-  "Deserialize an `eshell-mode' buffer."
+  "Deserialize an `eshell-mode' buffer BUF."
   (prog1 (eshell t)
     (rename-buffer (wg-buf-name buf) t)))
 
 (defun wg-serialize-eshell-buffer (buffer)
-  "Serialize an `eshell-mode' buffer."
+  "Serialize an `eshell-mode' buffer BUFFER."
   (with-current-buffer buffer
     (when (eq major-mode 'eshell-mode)
       (list 'wg-deserialize-eshell-buffer))))
@@ -197,7 +200,7 @@ commands using \"wg-get-org-agenda-view-commands\"."
 ;; term and ansi-term buffer serdes
 
 (defun wg-deserialize-term-buffer (buf)
-  "Deserialize a `term-mode' buffer."
+  "Deserialize a `term-mode' buffer BUF."
   (require 'term)
   ;; flet'ing these prevents scrunched up wrapping when restoring during morph
   (dflet ((term-window-width () 80)
@@ -206,7 +209,7 @@ commands using \"wg-get-org-agenda-view-commands\"."
       (rename-buffer (wg-buf-name buf) t))))
 
 (defun wg-serialize-term-buffer (buffer)
-  "Serialize a `term-mode' buffer.
+  "Serialize a `term-mode' buffer BUFFER.
 This should work for `ansi-term's, too, as there doesn't seem to
 be any difference between the two except how the name of the
 buffer is generated."
@@ -248,3 +251,4 @@ buffer is generated."
                  (set var val))))))
 
 (provide 'workgroups-specialbufs)
+;;; workgroups-specialbufs.el ends here

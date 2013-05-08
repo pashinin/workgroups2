@@ -28,9 +28,6 @@
 ;;
 ;;; Code:
 
-
-(eval-and-compile
-  (require 'cl))
 (require 'dflet)
 
 ;;; utils used in macros
@@ -41,7 +38,8 @@
   `(let (,@(mapcar (lambda (sym) `(,sym (gensym))) syms)) ,@body))
 
 (defmacro wg-dbind (args expr &rest body)
-  "Abbreviation of `destructuring-bind'."
+  "Bind the variables in ARGS to the result of EXPR and execute BODY.
+Abbreviation of `destructuring-bind'."
   (declare (indent 2))
   `(destructuring-bind ,args ,expr ,@body))
 
@@ -79,7 +77,7 @@ Else do ELSE...
               `(wg-when-let ,binds ,@body)))))))
 
 (defmacro wg-when-boundp (symbols &rest body)
-  "When all SYMBOLS are bound, `eval' body."
+  "When all SYMBOLS are bound, `eval' BODY."
   (declare (indent 1))
   `(when (and ,@(mapcar (lambda (sym) `(boundp ',sym)) symbols))
      ,@body))
@@ -571,3 +569,4 @@ the cadr as the accessor function."
 
 
 (provide 'workgroups-utils-basic)
+;;; workgroups-utils-basic.el ends here
