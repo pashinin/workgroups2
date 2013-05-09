@@ -2,6 +2,8 @@
 ;;; Commentary:
 ;;; Code:
 
+(require 'workgroups-variables)
+
 (defvar wg-prefixed-map
   (wg-fill-keymap
    (make-sparse-keymap)

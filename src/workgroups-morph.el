@@ -1,8 +1,8 @@
 ;;; workgroups-morph --- animation effects
 ;;; Commentary:
 ;;
-;; TODO: Add upward and left morphing.  And once it's been added, add selection
-;;       of a random morph direction.
+;; TODO: Add upward and left morphing.  And once it's been added, add
+;;       selection of a random morph direction.
 ;;
 
 ;;; Code:

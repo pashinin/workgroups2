@@ -26,7 +26,6 @@
 ;;
 ;;; Code:
 
-;;(require 'cl)
 (require 'dflet)
 (require 'workgroups-compat)
 (require 'workgroups-utils-basic)
@@ -138,7 +137,6 @@
   "Return a table binding unique subobjects of OBJ to ids."
   (let ((binds (make-hash-table :test 'eq))
         (id -1))
-    ;;(flet
     (dflet
      ((inner (obj)
            (unless (gethash obj binds)
@@ -372,8 +370,6 @@ parameters and the parameters of all its workgroups."
 parameters and the parameters of all its workgroups."
   (let ((copy (wg-copy-session session)))
     (when (wg-session-parameters copy)
-      ;;(message "session")
-      ;;(sleep-for 3)
       (wg-asetf (wg-session-parameters copy) (wg-unpickel it)))
     (wg-asetf (wg-session-workgroup-list copy)
               (mapcar 'wg-unpickel-workgroup-parameters it))
