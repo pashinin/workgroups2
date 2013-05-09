@@ -160,8 +160,7 @@ You can get these commands using
   (if (get-buffer org-agenda-buffer-name)
       (save-window-excursion
         (with-current-buffer org-agenda-buffer-name
-          (let* ((line (org-current-line))
-                 (series-redo-cmd (xdev/get-org-agenda-view-commands)))
+          (let* ((line (org-current-line)))
             (if f (eval f))
             (org-goto-line line))))))
 
