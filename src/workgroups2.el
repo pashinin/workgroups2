@@ -27,6 +27,9 @@
 ;; Workgroups2 is an Emacs session manager. It is based on the
 ;; experimental branch of the original "workgroups" extension.
 ;;
+;; If you find a bug - please post it here:
+;; https://github.com/pashinin/workgroups2/issues
+;;
 ;;
 ;; Install
 ;; ----------------------
@@ -66,6 +69,7 @@
 ;; ----------------------
 ;; Type "<prefix> ?" for more help
 ;;
+;; See also: https://github.com/pashinin/workgroups2/wiki
 ;;
 ;;; Code:
 
