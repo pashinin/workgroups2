@@ -1581,19 +1581,21 @@ for display by `other-buffer' in the current workgroup."
     (cond (wg (wg-fontify " "
                 (:div wg-mode-line-decor-left-brace)
                 (:mode (wg-workgroup-name wg))
-                (:div wg-mode-line-decor-divider)
-                (:mode (wg-mode-line-buffer-association-indicator wg))
-                (:div wg-mode-line-decor-divider)
-                (:mode (if (window-dedicated-p)
-                           wg-mode-line-decor-window-dedicated
-                         wg-mode-line-decor-window-undedicated))
-                (:div wg-mode-line-decor-divider)
-                (:mode (if (wg-session-modified (wg-current-session))
-                           wg-mode-line-decor-session-modified
-                         wg-mode-line-decor-session-unmodified))
-                (:mode (if (wg-workgroup-modified wg)
-                           wg-mode-line-decor-workgroup-modified
-                         wg-mode-line-decor-workgroup-unmodified))
+                (if (not wg-mode-line-only-name)
+                    (progn
+                      (:div wg-mode-line-decor-divider)
+                      (:mode (wg-mode-line-buffer-association-indicator wg))
+                      (:div wg-mode-line-decor-divider)
+                      (:mode (if (window-dedicated-p)
+                                 wg-mode-line-decor-window-dedicated
+                               wg-mode-line-decor-window-undedicated))
+                      (:div wg-mode-line-decor-divider)
+                      (:mode (if (wg-session-modified (wg-current-session))
+                                 wg-mode-line-decor-session-modified
+                               wg-mode-line-decor-session-unmodified))
+                      (:mode (if (wg-workgroup-modified wg)
+                                 wg-mode-line-decor-workgroup-modified
+                               wg-mode-line-decor-workgroup-unmodified))))
                 (:div wg-mode-line-decor-right-brace)))
           (t  (wg-fontify " "
                 (:div wg-mode-line-decor-left-brace)

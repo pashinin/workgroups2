@@ -579,6 +579,11 @@ and inactive mode-lines, so this feature defaults to off."
   :type 'boolean
   :group 'workgroups)
 
+(defcustom wg-mode-line-only-name nil
+  "Display only workgroup name in modeline without any flags."
+  :type 'boolean
+  :group 'workgroups)
+
 (defcustom wg-mode-line-decor-left-brace "("
   "String displayed at the left of the mode-line display."
   :type 'string
