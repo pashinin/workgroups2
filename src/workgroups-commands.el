@@ -2,6 +2,9 @@
 ;;; Commentary:
 ;;; Code:
 
+(require 'ring)
+(require 'workgroups-utils-basic)
+
 ;;; workgroup switching commands
 
 (defun wg-switch-to-workgroup (workgroup &optional noerror)
