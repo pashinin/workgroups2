@@ -2,6 +2,8 @@
 ;;; Commentary:
 ;;; Code:
 
+(require 'workgroups-utils-basic)
+
 ;; buffer auto-association advice
 
 (defun wg-auto-associate-buffer-helper (workgroup buffer assoc)
@@ -67,8 +69,8 @@ its correct state, prior to any window-config changes caused by
 ;; `select-frame' advice
 
 (defadvice select-frame (before wg-update-current-workgroup-working-wconfig)
-  "Update `selected-frame's current workgroup's working-wconfig
-before selecting a new frame."
+  "Update `selected-frame's current workgroup's working-wconfig.
+Before selecting a new frame."
   (when wg-update-current-workgroup-working-wconfig-on-select-frame
     (wg-update-current-workgroup-working-wconfig)))
 

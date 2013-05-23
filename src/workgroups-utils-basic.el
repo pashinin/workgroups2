@@ -68,7 +68,7 @@ Else do ELSE...
      (if ,(car cond-form) ,then ,@else)))
 
 (defmacro wg-when-let (binds &rest body)
-  "Like `let*', but only eval BODY when all BINDS are non-nil."
+  "Like `let*' but when all BINDS are non-nil - eval BODY."
   (declare (indent 1))
   (wg-dbind (bind . binds) binds
     (when (consp bind)
