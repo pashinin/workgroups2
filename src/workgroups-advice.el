@@ -3,6 +3,7 @@
 ;;; Code:
 
 (require 'workgroups-utils-basic)
+(require 'workgroups-functions)
 
 ;; buffer auto-association advice
 
