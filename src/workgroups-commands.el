@@ -3,8 +3,10 @@
 ;;; Code:
 
 (require 'ring)
+(require 'workgroups-variables)
 (require 'workgroups-utils-basic)
 (require 'workgroups-pickel)
+(require 'workgroups-functions)
 
 ;;; workgroup switching commands
 
