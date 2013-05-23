@@ -4,6 +4,7 @@
 
 (require 'dflet)
 (require 'workgroups-compat)
+(require 'workgroups-utils-basic)
 
 (defun wg-read-object (prompt test warning &optional initial-contents keymap
                               read hist default-value inherit-input-method)
