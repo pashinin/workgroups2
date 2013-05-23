@@ -4,6 +4,7 @@
 
 (require 'ring)
 (require 'workgroups-utils-basic)
+(require 'workgroups-pickel)
 
 ;;; workgroup switching commands
 
