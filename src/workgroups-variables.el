@@ -210,6 +210,10 @@ it to `major-mode'."
     wg-serialize-eshell-buffer
     wg-serialize-term-buffer
     wg-serialize-magit-buffer
+
+    wg-serialize-wl-folders-buffer
+    ;;wg-serialize-wl-summary-buffer
+    ;;wg-serialize-mime-view-buffer
     )
   "List of functions providing special buffer serialization/deserialization.
 An entry should be either a function symbol or a lambda, and should
@@ -251,8 +255,9 @@ can't be restored.  Also used when a blank workgroup is created."
   :group 'workgroups)
 
 (defcustom wg-restore-associated-buffers t
-  "Non-nil means restore all buffers associated with the
-workgroup on workgroup restore."
+  "Non-nil means restore ALL buffers associated (opened in) with
+the workgroup on workgroup restore.  \"nil\" means to restore
+only needed buffers to show them to you."
   :type 'boolean
   :group 'workgroups)
 

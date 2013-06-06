@@ -96,6 +96,72 @@ Since `help-mode' is used by many buffers that aren't actually
       (list 'wg-deserialize-ielm-buffer))))
 
 
+;; Wanderlust modes:
+;; WL - folders
+(defun wg-deserialize-wl-folders-buffer (buf)
+  ""
+  (if (fboundp 'wl)
+      (wg-dbind (this-function) (wg-buf-special-data buf)
+        ;;(when (not (eq major-mode 'wl-folder-mode))
+        (wl)
+        (goto-char (point-max))
+        (current-buffer)
+        )))
+
+(defun wg-serialize-wl-folders-buffer (buffer)
+  ""
+  (if (fboundp 'wl)
+      (with-current-buffer buffer
+        (when (eq major-mode 'wl-folder-mode)
+          (list 'wg-deserialize-wl-folders-buffer
+                )))))
+
+;; WL - summary mode (list of mails)
+;;(defun wg-deserialize-wl-summary-buffer (buf)
+;;  ""
+;;  (interactive)
+;;  (if (fboundp 'wl)
+;;      (wg-dbind (this-function param-list) (wg-buf-special-data buf)
+;;        (when (not (eq major-mode 'wl-summary-mode))
+;;          (let ((fld-name (car param-list)))
+;;            ;;(switch-to-buffer "*scratch*")
+;;            ;;(wl)
+;;            ;;(wl-folder-jump-folder fld-name)
+;;            ;;(message fld-name)
+;;            ;;(goto-char (point-max))
+;;            ;;(insert fld-name)
+;;            (current-buffer)
+;;          )))))
+;;
+;;(defun wg-serialize-wl-summary-buffer (buffer)
+;;  ""
+;;  (if (fboundp 'wl)
+;;      (with-current-buffer buffer
+;;        (when (eq major-mode 'wl-summary-mode)
+;;          (list 'wg-deserialize-wl-summary-buffer
+;;                (wg-take-until-unreadable (list wl-summary-buffer-folder-name))
+;;                )))))
+;;
+;;
+;;;; mime-view-mode
+;;
+;;(defun wg-deserialize-mime-view-buffer (buf)
+;;  ""
+;;  (wg-dbind (this-function) (wg-buf-special-data buf)
+;;    (when (not (eq major-mode 'mime-view-mode))
+;;      ;;(wl-summary-enter-handler 3570)     ; only in wl-summary-mode
+;;      ;;(wl-summary-enter-handler)     ; only in wl-summary-mode
+;;      (current-buffer)
+;;      )))
+;;
+;;(defun wg-serialize-mime-view-buffer (buffer)
+;;  ""
+;;  (with-current-buffer buffer
+;;    (when (eq major-mode 'mime-view-mode)
+;;      (list 'wg-deserialize-mime-view-buffer
+;;            ))))
+
+
 ;; Magit buffers
 
 (defun wg-deserialize-magit-buffer (buf)
