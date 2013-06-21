@@ -20,6 +20,7 @@
   :type 'boolean)
 
 
+
 (defcustom wg-load-last-workgroup nil
   "Load last active, not first, workgroup from all your workgroups."
   :group 'workgroups
@@ -244,6 +245,17 @@ how to write your own."
   "Buffer made visible a window when the window's actual buffer
 can't be restored.  Also used when a blank workgroup is created."
   :type 'string
+  :group 'workgroups)
+
+(defcustom wg-nowg-string "No workgroups"
+  "Display this string if there are no workgroups and
+`wg-display-nowg' is t."
+  :type 'string
+  :group 'workgroups)
+
+(defcustom wg-display-nowg nil
+  "Display something if there are no workgroups."
+  :type 'boolean
   :group 'workgroups)
 
 ;; What to restore:

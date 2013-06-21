@@ -1599,10 +1599,13 @@ for display by `other-buffer' in the current workgroup."
                                  wg-mode-line-decor-workgroup-modified
                                wg-mode-line-decor-workgroup-unmodified))))
                 (:div wg-mode-line-decor-right-brace)))
-          (t  (wg-fontify " "
-                (:div wg-mode-line-decor-left-brace)
-                (:mode "no workgroups")
-                (:div wg-mode-line-decor-right-brace))))))
+          (t (if wg-display-nowg
+                 (progn
+                   (wg-fontify " "
+                     (:div wg-mode-line-decor-left-brace)
+                     (:mode wg-nowg-string)
+                     (:div wg-mode-line-decor-right-brace)))
+               "")))))
 
 (defun wg-add-mode-line-display ()
   "Add Workgroups' mode-line format to `mode-line-format'."
@@ -1654,7 +1657,7 @@ Also save the msg to `wg-last-message'."
 
 (defun wg-workgroup-display (workgroup index)
   "Return display string for WORKGROUP at INDEX."
-  (if (not workgroup) "No workgroups"
+  (if (not workgroup) wg-nowg-string
     (wg-element-display
      workgroup
      (format "%d: %s" index (wg-workgroup-name workgroup))
