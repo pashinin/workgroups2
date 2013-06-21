@@ -337,7 +337,7 @@
 
 ;;; parameter pickeling
 
-(eval-when-compile
+;;(eval-when-compile
   (defun wg-pickel-workgroup-parameters (workgroup)
     "If WORKGROUP's parameters are non-nil, return a copy of
 WORKGROUP after pickeling its parameters. Otherwise return
@@ -375,7 +375,7 @@ parameters and the parameters of all its workgroups."
       (wg-asetf (wg-session-workgroup-list copy)
                 (mapcar 'wg-unpickel-workgroup-parameters it))
       copy))
-)
+;;)
 
 (provide 'workgroups-pickel)
 ;;; workgroups-pickel.el ends here
