@@ -211,33 +211,38 @@ Save shell directory"
   "Return commands to restore the state of Agenda buffer.
 Can be restored using \"(eval commands)\"."
   (interactive)
-  (if (get-buffer org-agenda-buffer-name)
-      (with-current-buffer org-agenda-buffer-name
-        (let* ((p (or (and (looking-at "\\'") (1- (point))) (point)))
-               (series-redo-cmd (get-text-property p 'org-series-redo-cmd)))
-          (if series-redo-cmd
-              (get-text-property p 'org-series-redo-cmd)
-            (get-text-property p 'org-redo-cmd))))))
+  (when (boundp 'org-agenda-buffer-name)
+    (if (get-buffer org-agenda-buffer-name)
+        (with-current-buffer org-agenda-buffer-name
+          (let* ((p (or (and (looking-at "\\'") (1- (point))) (point)))
+                 (series-redo-cmd (get-text-property p 'org-series-redo-cmd)))
+            (if series-redo-cmd
+                (get-text-property p 'org-series-redo-cmd)
+              (get-text-property p 'org-redo-cmd)))))))
 
 (defun wg-run-agenda-cmd (f)
   "Run commands \"F\" in Agenda buffer.
 You can get these commands using
 \"wg-get-org-agenda-view-commands\"."
-  (if (get-buffer org-agenda-buffer-name)
-      (save-window-excursion
-        (with-current-buffer org-agenda-buffer-name
-          (let* ((line (org-current-line)))
-            (if f (eval f))
-            (org-goto-line line))))))
+  (when (and (boundp 'org-agenda-buffer-name)
+             (fboundp 'org-current-line)
+             (fboundp 'org-goto-line))
+    (if (get-buffer org-agenda-buffer-name)
+        (save-window-excursion
+          (with-current-buffer org-agenda-buffer-name
+            (let* ((line (org-current-line)))
+              (if f (eval f))
+              (org-goto-line line)))))))
 
 (defun wg-deserialize-org-agenda-buffer (buf)
   "Deserialize an `org-agenda-mode' buffer BUF."
   (org-agenda-list)
-  (wg-dbind (this-function item) (wg-buf-special-data buf)
-    (wg-awhen (get-buffer org-agenda-buffer-name)
-      (set-buffer it)
-      (wg-run-agenda-cmd item)
-      (current-buffer))))
+  (when (boundp 'org-agenda-buffer-name)
+    (wg-dbind (this-function item) (wg-buf-special-data buf)
+      (wg-awhen (get-buffer org-agenda-buffer-name)
+        (set-buffer it)
+        (wg-run-agenda-cmd item)
+        (current-buffer)))))
 
 (defun wg-serialize-org-agenda-buffer (buffer)
   "Serialize an `org-agenda-mode' buffer BUFFER."
