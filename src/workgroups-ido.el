@@ -2,6 +2,8 @@
 ;;; Commentary:
 ;;; Code:
 
+(require 'workgroups-variables)
+
 (defun wg-read-buffer-mode ()
   "Return the buffer switching package (ido or iswitchb) to use, or nil."
   (if (eq wg-current-buffer-list-filter-id 'fallback) 'fallback
