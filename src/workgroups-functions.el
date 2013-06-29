@@ -49,13 +49,18 @@ FACEKEY must be a key in `wg-face-abbrevs'."
 The results of all SPECS are `concat'd together.
 If a spec is a cons with a keyword car, apply `wg-add-face' to it.
 Other conses get evaluated, and should produce a strings.
-It a spec is a string it is used unmodified.
+If a spec is a string it is used unmodified.
 Anything else is formatted with %s to produce a string."
   (declare (indent defun))
   `(concat
     ,@(wg-docar (spec specs)
-        (cond ((and (consp spec) (keywordp (car spec)))
+        (cond ((and (consp spec)
+                    (keywordp (car spec)))
                `(wg-add-face ,@spec))
+              ;;((listp spec) (cdr (eval spec)))
+              ;;((listp spec)
+              ;; ;;(prin1-to-string (nth 1 (eval spec)))
+              ;; )
               ((consp spec) spec)
               ((stringp spec) spec)
               (t `(format "%s" ,spec))))))
@@ -1581,30 +1586,33 @@ for display by `other-buffer' in the current workgroup."
   (let ((wg (wg-current-workgroup t))
         (wg-use-faces wg-mode-line-use-faces))
     (cond (wg (wg-fontify " "
-                (:div wg-mode-line-decor-left-brace)
-                (:mode (wg-workgroup-name wg))
+                ;;(consp (cons :div wg-mode-line-decor-left-brace))
+                ;;(keywordp (car (cons :div wg-mode-line-decor-left-brace)))
+                ;;(:div wg-mode-line-decor-left-brace)
+                wg-mode-line-decor-left-brace
+                (wg-workgroup-name wg)
                 (if (not wg-mode-line-only-name)
                     (progn
-                      (:div wg-mode-line-decor-divider)
-                      (:mode (wg-mode-line-buffer-association-indicator wg))
-                      (:div wg-mode-line-decor-divider)
-                      (:mode (if (window-dedicated-p)
+                      wg-mode-line-decor-divider
+                      (wg-mode-line-buffer-association-indicator wg)
+                      wg-mode-line-decor-divider
+                      (if (window-dedicated-p)
                                  wg-mode-line-decor-window-dedicated
-                               wg-mode-line-decor-window-undedicated))
-                      (:div wg-mode-line-decor-divider)
-                      (:mode (if (wg-session-modified (wg-current-session))
+                               wg-mode-line-decor-window-undedicated)
+                      wg-mode-line-decor-divider
+                      (if (wg-session-modified (wg-current-session))
                                  wg-mode-line-decor-session-modified
-                               wg-mode-line-decor-session-unmodified))
-                      (:mode (if (wg-workgroup-modified wg)
-                                 wg-mode-line-decor-workgroup-modified
-                               wg-mode-line-decor-workgroup-unmodified))))
-                (:div wg-mode-line-decor-right-brace)))
+                               wg-mode-line-decor-session-unmodified)
+                      (if (wg-workgroup-modified wg)
+                          wg-mode-line-decor-workgroup-modified
+                        wg-mode-line-decor-workgroup-unmodified)))
+                wg-mode-line-decor-right-brace))
           (t (if wg-display-nowg
                  (progn
                    (wg-fontify " "
-                     (:div wg-mode-line-decor-left-brace)
-                     (:mode wg-nowg-string)
-                     (:div wg-mode-line-decor-right-brace)))
+                     wg-mode-line-decor-left-brace
+                     wg-nowg-string
+                     wg-mode-line-decor-right-brace))
                "")))))
 
 (defun wg-add-mode-line-display ()
@@ -1725,18 +1733,18 @@ current and previous workgroups."
 (defun wg-buffer-list-filter-display (&optional workgroup blf-id)
   "Return a buffer-list-filter display string from WORKGROUP and BLF-ID."
   (wg-fontify
-    (:div "(")
-    (:msg (wg-workgroup-name (wg-get-workgroup workgroup)))
-    (:div ":")
-    (:msg (wg-get-buffer-list-filter-val blf-id 'indicator))
-    (:div ")")))
+    "("
+    (wg-workgroup-name (wg-get-workgroup workgroup))
+    ":"
+    (wg-get-buffer-list-filter-val blf-id 'indicator)
+    ")"))
 
 (defun wg-buffer-list-filter-prompt (prompt &optional workgroup blf-id)
   "Return a prompt string from PROMPT indicating WORKGROUP and BLF-ID."
   (wg-fontify
-    (:cmd prompt) " "
+    prompt " "
     (wg-buffer-list-filter-display workgroup blf-id)
-    (:msg ": ")))
+    ": "))
 
 (defun wg-buffer-command-display (&optional buffer-list)
   "Return the buffer command display string."
@@ -1747,11 +1755,12 @@ current and previous workgroups."
 (defun wg-timeline-display (position length)
   "Return a timeline visualization string from POSITION and LENGTH."
   (wg-fontify
-    (:div "-<{")
-    (:other (wg-make-string (- length position) "-" "="))
-    (:cur "O")
-    (:other (wg-make-string (1+ position) "-" "="))
-    (:div "}>-")))
+    ;;(cons :div "-<{")
+    "-<{"
+    (wg-make-string (- length position) "-" "=")
+    "O"
+    (wg-make-string (1+ position) "-" "=")
+    "}>-"))
 
 (defun wg-undo-timeline-display (workgroup)
   "Return WORKGROUP's undo timeline string."
