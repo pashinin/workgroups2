@@ -898,7 +898,7 @@ binding in WORKGROUP, resolve VARIABLE with `wg-session-local-value'."
 (defun wg-workgroup-associated-buffers (workgroup &optional initial names)
   "Return a list of WORKGROUP's live associated buffers."
   (let ((assoc-bufs (wg-workgroup-associated-bufs workgroup)))
-    (remove-if-not
+    (wg-remove-if-not
      (lambda (buffer) (wg-find-buffer-in-buf-list buffer assoc-bufs))
      (or initial (buffer-list)))))
 
@@ -1037,24 +1037,24 @@ INITIAL non-nil should be an initial buffer-list to filter.  It defaults to
 (defun wg-buffer-list-filter-unassociated (workgroup initial)
   "Return only those buffer unassociated with WORKGROUP."
   (let ((buffers (wg-workgroup-associated-buffers workgroup initial)))
-    (remove-if (lambda (buffer) (member buffer buffers)) initial)))
+    (wg-remove-if (lambda (buffer) (member buffer buffers)) initial)))
 
 
 ;; buffer-list filtration utils
 
 (defun wg-filter-buffer-list-by-regexp (regexp buffer-list)
   "Return only those buffers in BUFFER-LIST with names matching REGEXP."
-  (remove-if-not (lambda (bname) (string-match regexp bname))
+  (wg-remove-if-not (lambda (bname) (string-match regexp bname))
                  buffer-list :key 'buffer-name))
 
 (defun wg-filter-buffer-list-by-root-dir (root-dir buffer-list)
   "Return only those buffers in BUFFER-LIST visiting files undo ROOT-DIR."
-  (remove-if-not (lambda (f) (when f (wg-file-under-root-path-p root-dir f)))
+  (wg-remove-if-not (lambda (f) (when f (wg-file-under-root-path-p root-dir f)))
                  buffer-list :key 'buffer-file-name))
 
 (defun wg-filter-buffer-list-by-major-mode (major-mode buffer-list)
   "Return only those buffers in BUFFER-LIST in major-mode MAJOR-MODE."
-  (remove-if-not (lambda (mm) (eq mm major-mode))
+  (wg-remove-if-not (lambda (mm) (eq mm major-mode))
                  buffer-list :key 'wg-buffer-major-mode))
 
 
@@ -1329,9 +1329,9 @@ BUFFER nil defaults to `current-buffer'."
 (defun wg-workgroup-gc-buf-uids (workgroup)
   "Remove buf uids from WORKGROUP that have no referent in `wg-buf-list'."
   (wg-asetf (wg-workgroup-strong-buf-uids workgroup)
-            (remove-if-not 'wg-find-buf-by-uid it)
+            (wg-remove-if-not 'wg-find-buf-by-uid it)
             (wg-workgroup-weak-buf-uids workgroup)
-            (remove-if-not 'wg-find-buf-by-uid it)))
+            (wg-remove-if-not 'wg-find-buf-by-uid it)))
 
 (defun wg-gc-buf-uids ()
   "Remove from all workgroups those buf uids that have no referent in `wg-buf-list'."
@@ -1398,7 +1398,7 @@ BUFFER-LIST nil defaults to `buffer-list'."
   "gc bufs from `wg-buf-list' that are no longer needed."
   (let ((all-buf-uids (wg-all-buf-uids)))
     (wg-asetf (wg-buf-list)
-              (remove-if-not (lambda (uid) (member uid all-buf-uids)) it
+              (wg-remove-if-not (lambda (uid) (member uid all-buf-uids)) it
                              :key 'wg-buf-uid))))
 
 
