@@ -1373,7 +1373,9 @@ BUFFER nil defaults to `current-buffer'."
   (reduce 'wg-string-list-union
           (list (wg-workgroup-base-wconfig-buf-uids workgroup)
                 (wg-workgroup-saved-wconfigs-buf-uids workgroup)
-                (wg-workgroup-associated-buf-uids workgroup))))
+                (if wg-restore-associated-buffers
+                    (wg-workgroup-associated-buf-uids workgroup))
+                )))
 
 (defun wg-session-all-buf-uids (&optional session)
   "Return a new list of all unique buf uids in SESSION.
