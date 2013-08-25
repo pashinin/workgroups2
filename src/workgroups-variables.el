@@ -474,48 +474,48 @@ killed with `kill-buffer'."
   :type 'boolean
   :group 'workgroups)
 
-(defcustom wg-remap-switch-to-buffer t
+(defcustom wg-remap-switch-to-buffer nil
   "Non-nil means remap `switch-to-buffer' to `wg-switch-to-buffer'."
   :type 'boolean
   :group 'workgroups)
 
-(defcustom wg-remap-switch-to-buffer-other-window t
+(defcustom wg-remap-switch-to-buffer-other-window nil
   "Non-nil means remap `switch-to-buffer-other-window' to
 `wg-switch-to-buffer-other-window'.  Otherwise, don't remap."
   :type 'boolean
   :group 'workgroups)
 
-(defcustom wg-remap-switch-to-buffer-other-frame t
+(defcustom wg-remap-switch-to-buffer-other-frame nil
   "Non-nil means remap `switch-to-buffer-other-frame' to
 `wg-switch-to-buffer-other-frame'.  Otherwise, don't remap."
   :type 'boolean
   :group 'workgroups)
 
-(defcustom wg-remap-kill-buffer t
+(defcustom wg-remap-kill-buffer nil
   "Non-nil means remap `kill-buffer' to `wg-kill-buffer'.
 Otherwise, don't remap."
   :type 'boolean
   :group 'workgroups)
 
-(defcustom wg-remap-display-buffer t
+(defcustom wg-remap-display-buffer nil
   "Non-nil means remap `display-buffer' to `wg-display-buffer'.
 Otherwise, don't remap."
   :type 'boolean
   :group 'workgroups)
 
-(defcustom wg-remap-insert-buffer t
+(defcustom wg-remap-insert-buffer nil
   "Non-nil means remap `insert-buffer' to `wg-insert-buffer'.
 Otherwise, don't remap."
   :type 'boolean
   :group 'workgroups)
 
-(defcustom wg-remap-next-buffer t
+(defcustom wg-remap-next-buffer nil
   "Non-nil means remap `next-buffer' to `wg-next-buffer'.
 Otherwise, don't remap."
   :type 'boolean
   :group 'workgroups)
 
-(defcustom wg-remap-previous-buffer t
+(defcustom wg-remap-previous-buffer nil
   "Non-nil means remap `previous-buffer' to `wg-previous-buffer'.
 Otherwise, don't remap."
   :type 'boolean
