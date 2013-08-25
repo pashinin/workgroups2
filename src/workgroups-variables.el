@@ -266,7 +266,7 @@ can't be restored.  Also used when a blank workgroup is created."
   :type 'boolean
   :group 'workgroups)
 
-(defcustom wg-restore-associated-buffers t
+(defcustom wg-restore-associated-buffers nil
   "Non-nil means restore ALL buffers associated (opened in) with
 the workgroup on workgroup restore.  \"nil\" means to restore
 only needed buffers to show them to you."
