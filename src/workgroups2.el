@@ -39,11 +39,9 @@
 ;;
 ;; (require 'workgroups2)
 ;;
-;; (desktop-save-mode t)       ; save all opened files (or disable it)
 ;; (setq wg-prefix-key (kbd "C-c z")
-;;       wg-restore-associated-buffers nil ; all buffers opened in current WG
 ;;       wg-use-default-session-file nil   ; turn off for "emacs --daemon"
-;;       wg-default-session-file "~/.emacs_files/workgroups"
+;;       wg-default-session-file "~/.emacs_workgroups"
 ;;       wg-use-faces nil
 ;;       wg-morph-on nil)    ; animation off
 ;; (workgroups-mode 1)       ; Activate workgroups

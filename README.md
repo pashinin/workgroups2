@@ -38,11 +38,9 @@ OR
 - and set some parameters:
 
         ;; Settings:
-        (desktop-save-mode t)     ; save all opened files (or disable it)
-        (setq wg-prefix-key (kbd "C-c z")
-              wg-restore-associated-buffers nil ; restore all buffers opened in this WG?
+        (setq wg-prefix-key (kbd "C-c z")       ; all commands start with this keys
               wg-use-default-session-file nil   ; turn off for "emacs --daemon"
-              wg-default-session-file "~/.emacs_files/workgroups"
+              wg-default-session-file "~/.emacs_workgroups"
               wg-use-faces nil
               wg-morph-on nil)                  ; animation off
 
@@ -57,6 +55,8 @@ OR
 ## Use
 
 Most commands are bound to both `<prefix> <key>` and `<prefix> C-<key>`.
+
+(To set a prefix key - see settings above)
 
     <prefix> <key>
     <prefix> c    - create workgroup
