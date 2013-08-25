@@ -34,7 +34,8 @@
   "Deserialize an Info buffer."
   (require 'info)
   (wg-aif (cdr (wg-buf-special-data buf))
-      (apply #'Info-find-node it)
+      (if (fboundp 'Info-find-node)
+          (apply #'Info-find-node it))
     (info))
   (current-buffer))
 

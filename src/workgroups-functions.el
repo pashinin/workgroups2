@@ -93,7 +93,8 @@ This needs to be a macro to allow specification of a setf'able place."
 (defun wg-b36-to-time (b36)
   "Parse the time from UID."
   (loop for i from 0 to 8 by 4
-        collect (wg-b36-to-int (subseq b36 i (+ i 4)))))
+        collect (wg-b36-to-int (wg-subsec b36 i (+ i 4)))))
+
 
 (defalias 'wg-uid-to-time 'wg-b36-to-time)
 
@@ -205,7 +206,7 @@ This needs to be a macro to allow specification of a setf'able place."
 (defun wg-modified-p ()
   "Return t when the current session or any of its workgroups are modified."
   (or (wg-session-modified (wg-current-session))
-      (some 'wg-workgroup-modified (wg-workgroup-list))))
+      (wg-some 'wg-workgroup-modified (wg-workgroup-list))))
 
 (defun wg-mark-everything-unmodified ()
   "Mark the session and all workgroups as unmodified."
@@ -305,20 +306,20 @@ It's stored in BUF's local-vars list, since it's a local variable."
 
 (defun wg-find-bufobj (bufobj bufobj-list)
   "Find BUFOBJ in BUFOBJ-LIST, testing with `wg-equal-bufobjs'."
-  (find bufobj bufobj-list :test 'wg-equal-bufobjs))
+  (wg-find bufobj bufobj-list :test 'wg-equal-bufobjs))
 
 (defun wg-find-bufobj-by-uid (uid bufobj-list)
   "Find the bufobj in BUFOBJ-LIST with uid UID."
-  (find uid bufobj-list :test 'string= :key 'wg-bufobj-uid))
+  (wg-find uid bufobj-list :test 'string= :key 'wg-bufobj-uid))
 
 (defun wg-find-buf-in-buf-list (buf buf-list)
   "Find BUF in BUF-LIST.
 This is only here for completeness."
-  (find buf buf-list))
+  (wg-find buf buf-list))
 
 (defun wg-find-buffer-in-buffer-list (buffer-or-name buffer-list)
   "Find BUFFER-OR-NAME in BUFFER-LIST."
-  (find (wg-get-buffer buffer-or-name) buffer-list :key 'wg-get-buffer))
+  (wg-find (wg-get-buffer buffer-or-name) buffer-list :key 'wg-get-buffer))
 
 (defun wg-find-buffer-in-buf-list (buffer-or-name buf-list)
   "Find BUFFER-OR-NAME in BUF-LIST."
@@ -351,7 +352,7 @@ and it's not equal to UID, error."
 
 (defun wg-buffer-special-data (buffer)
   "Return BUFFER's auxiliary serialization, or nil."
-  (some (lambda (fn) (funcall fn buffer)) wg-special-buffer-serdes-functions))
+  (wg-some (lambda (fn) (funcall fn buffer)) wg-special-buffer-serdes-functions))
 
 (defun wg-window-point (ewin)
   "Return `point' or :max.  See `wg-restore-point-max'.
@@ -564,7 +565,7 @@ BUFFER or `wg-default-buffer' is visible in the only window."
 
 (defun wg-w-edge-operation (w edges op)
   "Return a copy of W with its edges mapped against EDGES through OP."
-  (wg-set-edges w (mapcar* op (wg-w-edges w) edges)))
+  (wg-set-edges w (wg-mapcar* op (wg-w-edges w) edges)))
 
 (defun wg-first-win (w)
   "Return the first actual window in W."
@@ -628,7 +629,7 @@ BUFFER or `wg-default-buffer' is visible in the only window."
         ((and (wg-wtree-p w1) (wg-wtree-p w2))
          (and (eq (wg-wtree-dir w1) (wg-wtree-dir w2))
               (equal (wg-wtree-edges w1) (wg-wtree-edges w2))
-              (every #'wg-equal-wtrees
+              (wg-every #'wg-equal-wtrees
                      (wg-wtree-wlist w1)
                      (wg-wtree-wlist w2))))))
 
@@ -723,7 +724,7 @@ Otherwise, reverse WTREE vertically."
                       (wg-make-wtree
                        :dir (wg-wtree-dir w)
                        :edges (wg-wtree-edges w)
-                       :wlist (wg-aif (find t wlist :key 'wg-win-selected)
+                       :wlist (wg-aif (wg-find t wlist :key 'wg-win-selected)
                                   (wg-cyclic-offset-elt it wlist offset)
                                 (mapcar #'inner wlist)))))))
     (wg-normalize-wtree (inner wtree))))
@@ -745,7 +746,7 @@ KEY non-nil returns a list of the results of calling KEY on each win."
   ;;(wg--with-temporary-redefinitions
   (dflet
       ((inner (w) (if (wg-win-p w) (list (if key (funcall key w) w))
-                    (mapcan 'inner (wg-wtree-wlist w)))))
+                    (wg-mapcan 'inner (wg-wtree-wlist w)))))
     (inner wtree)))
 
 (defun wg-win-list (wtree)
@@ -771,7 +772,7 @@ KEY non-nil returns a list of the results of calling KEY on each win."
   (let ((accessor (ecase slotkey
                     (:name 'wg-workgroup-name)
                     (:uid  'wg-workgroup-uid))))
-    (or (find value (wg-workgroup-list-or-error noerror) :test 'equal :key accessor)
+    (or (wg-find value (wg-workgroup-list-or-error noerror) :test 'equal :key accessor)
         (unless noerror
           (error "No are no workgroups with a %S of %S"
                  accessor value)))))
@@ -1278,7 +1279,7 @@ Otherwise return nil."
   (let ((wconfigs (wg-workgroup-saved-wconfigs workgroup)))
     (etypecase wconfig-or-name
       (wg-wconfig (car (memq wconfig-or-name wconfigs)))
-      (string (find wconfig-or-name wconfigs
+      (string (wg-find wconfig-or-name wconfigs
                     :key 'wg-wconfig-name
                     :test 'string=)))))
 
@@ -1290,7 +1291,7 @@ WORKGROUP's saved wconfigs, replace it."
     (unless name (error "Attempt to save a nameless wconfig"))
     (setf (wg-workgroup-modified workgroup) t)
     (wg-asetf (wg-workgroup-saved-wconfigs workgroup)
-              (cons wconfig (remove* name it
+              (cons wconfig (wg-remove* name it
                                      :key 'wg-wconfig-name
                                      :test 'string=)))))
 
@@ -1346,7 +1347,7 @@ BUFFER nil defaults to `current-buffer'."
 
 (defun wg-wtree-unique-buf-uids (wtree)
   "Return a list of the unique buf uids of all wins in wtree."
-  (remove-duplicates (wg-wtree-buf-uids wtree) :test 'string=))
+  (wg-remove-duplicates (wg-wtree-buf-uids wtree) :test 'string=))
 
 (defun wg-wconfig-buf-uids (wconfig)
   "Return WCONFIG's wtree's `wg-wtree-buf-uids'."
@@ -1358,19 +1359,19 @@ BUFFER nil defaults to `current-buffer'."
 
 (defun wg-workgroup-saved-wconfigs-buf-uids (workgroup)
   "Return a new list of all unique buf uids in WORKGROUP's base wconfig."
-  (reduce 'wg-string-list-union
+  (wg-reduce 'wg-string-list-union
           (wg-workgroup-saved-wconfigs workgroup)
           :key 'wg-wconfig-buf-uids))
 
 (defun wg-workgroup-all-wconfig-buf-uids (workgroup)
   "Return a new list of all unique buf uids in WORKGROUP's wconfigs."
-  (union (wg-workgroup-base-wconfig-buf-uids workgroup)
+  (wg-union (wg-workgroup-base-wconfig-buf-uids workgroup)
          (wg-workgroup-saved-wconfigs-buf-uids workgroup)
          :test 'string=))
 
 (defun wg-workgroup-all-buf-uids (workgroup)
   "Return a new list of all unique buf uids in WORKGROUP."
-  (reduce 'wg-string-list-union
+  (wg-reduce 'wg-string-list-union
           (list (wg-workgroup-base-wconfig-buf-uids workgroup)
                 (wg-workgroup-saved-wconfigs-buf-uids workgroup)
                 (if wg-restore-associated-buffers
@@ -1380,7 +1381,7 @@ BUFFER nil defaults to `current-buffer'."
 (defun wg-session-all-buf-uids (&optional session)
   "Return a new list of all unique buf uids in SESSION.
 SESSION nil defaults to `wg-current-session'."
-  (reduce 'wg-string-list-union
+  (wg-reduce 'wg-string-list-union
           (wg-session-workgroup-list (or session (wg-current-session)))
           :key 'wg-workgroup-all-buf-uids))
 
@@ -1392,7 +1393,7 @@ BUFFER-LIST nil defaults to `buffer-list'."
 
 (defun wg-all-buf-uids (&optional session buffer-list)
   "Return the union of `wg-session-all-buf-uids' and `wg-buffer-list-all-uids'."
-  (union (wg-session-all-buf-uids session)
+  (wg-union (wg-session-all-buf-uids session)
          (wg-buffer-list-all-uids buffer-list)
          :test 'string=))
 
@@ -1423,7 +1424,7 @@ BUFFER-LIST nil defaults to `buffer-list'."
 (defun wg-session-uids-consistent-p ()
   "Return t if there are no duplicate bufs or buf uids in the wrong places,
 nil otherwise."
-  (and (every (lambda (wg)
+  (and (wg-every (lambda (wg)
                 (not (wg-dups-p (wg-workgroup-associated-buf-uids wg)
                                 :test 'string=)))
               (wg-workgroup-list))
@@ -1805,7 +1806,7 @@ current and previous workgroups."
 
 (defun wg-unique-workgroup-name-p (new-name)
   "Return t if NEW-NAME is unique in `wg-workgroup-list', nil otherwise."
-  (every (lambda (existing-name) (not (equal new-name existing-name)))
+  (wg-every (lambda (existing-name) (not (equal new-name existing-name)))
          (wg-workgroup-names t)))
 
 (defun wg-read-new-workgroup-name (&optional prompt)

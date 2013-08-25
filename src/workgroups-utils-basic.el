@@ -384,7 +384,7 @@ If PARAM is not found, return DEFAULT which defaults to nil."
     (if found new (cons (cons key value) new))))
 
 (defun wg-aremove (alist key)
-  "`remove' KEY's key-value-pair from alist."
+  "`remove' KEY's key-value-pair from ALIST."
   (remove (assoc key alist) alist))
 
 (defmacro wg-abind (alist binds &rest body)

@@ -3,6 +3,8 @@
 ;;; Code:
 
 (require 'workgroups-variables)
+(require 'iswitchb)
+(require 'ido)
 
 (defun wg-read-buffer-mode ()
   "Return the buffer switching package (ido or iswitchb) to use, or nil."
