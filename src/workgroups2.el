@@ -236,9 +236,10 @@ If ARG is anything else, turn on `workgroups-mode'."
   (wg-fontified-message
     (:cmd "Workgroups Mode: ")
     (:msg (if workgroups-mode "on" "off")))
-  ;;(if (and workgroups-mode
-  ;;         (= (length (wg-workgroup-list)) 0))
-  ;;    (wg-create-workgroup "First workgroup"))
+  (if (and workgroups-mode
+           wg-use-default-session-file
+           (= (length (wg-workgroup-list)) 0))
+      (wg-create-workgroup "First workgroup"))
   workgroups-mode)
 
 (provide 'workgroups2)
