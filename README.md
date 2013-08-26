@@ -19,8 +19,7 @@ Just install "workgroups2" from Melpa and activate it with `(workgroups-mode 1)`
 ## Configure
 
     (require 'workgroups2)
-    ;; if you start Emacs as "emacs --daemon"
-    ;; turn of autoloading of workgroups:
+    ;; if you start Emacs as "emacs --daemon" - turn off autoloading of workgroups:
     ;;(setq wg-use-default-session-file nil)
 
     (workgroups-mode 1)   ; put this one at the bottom of .emacs

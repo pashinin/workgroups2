@@ -38,8 +38,7 @@
 ;;
 ;; (require 'workgroups2)
 ;;
-;; ;; if you start Emacs as "emacs --daemon" - turn of autoloading of
-;; ;; workgroups:
+;; ;; if you start as "emacs --daemon" - turn off autoloading of workgroups:
 ;; ;;(setq wg-use-default-session-file nil)
 ;;
 ;; (workgroups-mode 1)  ; put this one at the bottom of .emacs
