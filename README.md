@@ -18,26 +18,26 @@ Just install "workgroups2" from Melpa and activate it with `(workgroups-mode 1)`
 
 ## Configure
 
-        (require 'workgroups2)
-        ;; if you start Emacs as "emacs --daemon"
-        ;; turn of autoloading of workgroups:
-        ;;(setq wg-use-default-session-file nil)
+    (require 'workgroups2)
+    ;; if you start Emacs as "emacs --daemon"
+    ;; turn of autoloading of workgroups:
+    ;;(setq wg-use-default-session-file nil)
 
-        (workgroups-mode 1)   ; put this one at the bottom of .emacs
+    (workgroups-mode 1)   ; put this one at the bottom of .emacs
 
 You may want to configure it more:
 
-        ;; Change prefix key (before activating WG)
-        (setq wg-prefix-key (kbd "C-c z"))
+    ;; Change prefix key (before activating WG)
+    (setq wg-prefix-key (kbd "C-c z"))
 
-        ;; Change workgroups session file
-        (setq wg-default-session-file "~/.emacs.d/.emacs_workgroups"
+    ;; Change workgroups session file
+    (setq wg-default-session-file "~/.emacs.d/.emacs_workgroups"
 
-        ;; Set your own keyboard shortcuts to reload/save/switch WG:
-        (global-set-key (kbd "<pause>")     'wg-reload-session)
-        (global-set-key (kbd "C-S-<pause>") 'wg-save-session)
-        (global-set-key (kbd "s-z")         'wg-switch-to-workgroup)
-        (global-set-key (kbd "s-/")         'wg-switch-to-previous-workgroup)
+    ;; Set your own keyboard shortcuts to reload/save/switch WG:
+    (global-set-key (kbd "<pause>")     'wg-reload-session)
+    (global-set-key (kbd "C-S-<pause>") 'wg-save-session)
+    (global-set-key (kbd "s-z")         'wg-switch-to-workgroup)
+    (global-set-key (kbd "s-/")         'wg-switch-to-previous-workgroup)
 
 ## Use
 
