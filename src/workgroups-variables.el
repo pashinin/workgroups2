@@ -31,7 +31,7 @@
 
 ;; keybinding customization
 
-(defcustom wg-prefix-key (kbd "C-z")
+(defcustom wg-prefix-key (kbd "C-c z")
   "Workgroups' prefix key.
 Setting this variable requires that `workgroups-mode' be turned
 off and then on again to take effect."
@@ -83,7 +83,7 @@ FIXME: docstring this"
   :group 'workgroups)
 
 (defcustom wg-default-session-file
-  (concat user-emacs-directory ".emacs-wg-session")
+  "~/.emacs_workgroups"
   "Default filename to be used to save workgroups."
   :type 'file
   :group 'workgroups)
@@ -541,7 +541,7 @@ probably don't want to change this.  See
 
 ;; morph customization
 
-(defcustom wg-morph-on t
+(defcustom wg-morph-on nil
   "Non-nil means use `wg-morph' when restoring wconfigs."
   :type 'boolean
   :group 'workgroups)

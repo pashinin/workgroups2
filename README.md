@@ -14,52 +14,40 @@ Fork it and [add more special buffers support](https://github.com/pashinin/workg
 
 ## Install
 
-- Just install "workgroups2" from Melpa.
-
-OR
-
-- use git and put `workgroups2` somewhere on your Emacs load path
-
-        cd ~/.emacs.d/extensions
-        git clone git://github.com/pashinin/workgroups2.git
-
-- Byte-compile it if you want. This isn't required, but it'll speed some
-  things up:
-
-        C-u 0 M-x byte-recompile-directory <RET> ~/.emacs.d/extensions/workgroups2/
+Just install "workgroups2" from Melpa and activate it with `(workgroups-mode 1)` after everything else.
 
 ## Configure
 
-- Load a module (if you installed it not from Melpa):
-
-        (add-to-list 'load-path "~/.emacs.d/extensions/workgroups2")
         (require 'workgroups2)
+        ;; if you start Emacs as "emacs --daemon"
+        ;; turn of autoloading of workgroups:
+        ;;(setq wg-use-default-session-file nil)
 
-- and set some parameters:
+        (workgroups-mode 1)   ; put this one at the bottom of .emacs
 
-        ;; Settings:
-        (setq wg-prefix-key (kbd "C-c z")       ; all commands start with this keys
-              wg-use-default-session-file nil   ; turn off for "emacs --daemon"
-              wg-default-session-file "~/.emacs_workgroups"
-              wg-use-faces nil
-              wg-morph-on nil)                  ; animation off
+You may want to configure it more:
 
-        ;; Keyboard shortcuts - load, save, switch
+        ;; Change prefix key (before activating WG)
+        (setq wg-prefix-key (kbd "C-c z"))
+
+        ;; Change workgroups session file
+        (setq wg-default-session-file "~/.emacs.d/.emacs_workgroups"
+
+        ;; Set your own keyboard shortcuts to reload/save/switch WG:
         (global-set-key (kbd "<pause>")     'wg-reload-session)
         (global-set-key (kbd "C-S-<pause>") 'wg-save-session)
         (global-set-key (kbd "s-z")         'wg-switch-to-workgroup)
         (global-set-key (kbd "s-/")         'wg-switch-to-previous-workgroup)
 
-        (workgroups-mode 1)     ; Activate workgroups
-
 ## Use
 
 Most commands are bound to both `<prefix> <key>` and `<prefix> C-<key>`.
 
-(To set a prefix key - see settings above)
+By default prefix is: "C-c z" (To change it - see settings above)
 
     <prefix> <key>
     <prefix> c    - create workgroup
+    <prefix> A    - rename workgroup
     <prefix> k    - kill workgroup
     <prefix> v    - switch to workgroup
     <prefix> C-s  - save session

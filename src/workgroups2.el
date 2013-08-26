@@ -35,33 +35,46 @@
 ;; ----------------------
 ;; See the README.md file at: https://github.com/pashinin/workgroups2
 ;; Add the lines below to your .emacs configuration.
-;; You can also set some keyboard shortcuts.
 ;;
 ;; (require 'workgroups2)
 ;;
-;; (setq wg-prefix-key (kbd "C-c z")
-;;       wg-use-default-session-file nil   ; turn off for "emacs --daemon"
-;;       wg-default-session-file "~/.emacs_workgroups"
-;;       wg-use-faces nil
-;;       wg-morph-on nil)    ; animation off
-;; (workgroups-mode 1)       ; Activate workgroups
+;; ;; if you start Emacs as "emacs --daemon" - turn of autoloading of
+;; ;; workgroups:
+;; ;;(setq wg-use-default-session-file nil)
 ;;
+;; (workgroups-mode 1)  ; put this one at the bottom of .emacs
+;;
+;;
+;; Configure
+;; ----------------------
+;; ;; Change prefix key (before activating WG)
+;; (setq wg-prefix-key (kbd "C-c z"))
+;;
+;; ;; Change workgroups session file
+;; (setq wg-default-session-file "~/.emacs.d/.emacs_workgroups"
+;;
+;; ;; Set your own keyboard shortcuts to reload/save/switch WG:
 ;; (global-set-key (kbd "<pause>")     'wg-reload-session)
 ;; (global-set-key (kbd "C-S-<pause>") 'wg-save-session)
 ;; (global-set-key (kbd "s-z")         'wg-switch-to-workgroup)
 ;; (global-set-key (kbd "s-/")         'wg-switch-to-previous-workgroup)
 ;;
 ;;
-;; Usage
+;; Use
 ;; ----------------------
-;; Most commands start with prefix `wg-prefix-key' (see above).
+;; Most commands start with prefix `wg-prefix-key'.
+;; You can change it before activating workgroups.
+;; By default prefix is: "C-c z"
+;;
 ;; <prefix> <key>
 ;;
 ;; <prefix> c    - create workgroup
+;; <prefix> A    - rename workgroup
 ;; <prefix> k    - kill workgroup
 ;; <prefix> v    - switch to workgroup
 ;; <prefix> C-s  - save session
 ;; <prefix> C-f  - load session
+;;
 ;;
 ;; Help
 ;; ----------------------
@@ -224,6 +237,9 @@ If ARG is anything else, turn on `workgroups-mode'."
   (wg-fontified-message
     (:cmd "Workgroups Mode: ")
     (:msg (if workgroups-mode "on" "off")))
+  (if (and workgroups-mode
+           (= (length (wg-workgroup-list)) 0))
+      (wg-create-workgroup "First workgroup"))
   workgroups-mode)
 
 (provide 'workgroups2)
