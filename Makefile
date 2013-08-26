@@ -12,3 +12,6 @@ test:
 	${EMACS} -L src $(BATCHFLAGS) -f batch-byte-compile $(TEST_DIR)/*.el
 # wg-mode-line-string
 	${EMACS} -L src -batch -l cl.el -l workgroups-functions.el --eval '(message (wg-mode-line-string))'
+
+test-ido:
+	emacs -Q -L src -l cl.el -l ido.el -l workgroups2.el --eval "(ido-mode t)" --eval "(workgroups-mode 1)"
