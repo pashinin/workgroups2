@@ -3,6 +3,7 @@
 ;;; Code:
 
 (require 'workgroups-variables)
+(require 'workgroups-misc)
 
 (defun wg-restore-default-buffer ()
   "Switch to `wg-default-buffer'."
@@ -29,8 +30,17 @@ If BUF's file doesn't exist, call `wg-restore-default-buffer'"
            (wg-deserialize-buffer-local-variables buf)
            (current-buffer))
           (t
-           (message "Attempt to restore nonexistent file: %S" file-name)
-           nil))))
+           ;; try directory
+           (if (not (wg-is-file-remote file-name))
+               (if (file-directory-p (file-name-directory file-name))
+                   (progn
+                     (dired (file-name-directory file-name))
+                     (current-buffer))
+                 (progn
+                   (message "Attempt to restore nonexistent file: %S" file-name)
+                   nil))
+             nil)
+           ))))
 
 (defun wg-restore-special-buffer (buf)
   "Restore a buffer BUF with DESERIALIZER-FN."
