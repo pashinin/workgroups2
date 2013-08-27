@@ -17,7 +17,8 @@
   (wg-dbind (this-function params) (wg-buf-special-data buf)
     (let ((dir (car params)))
       (if (or wg-restore-remote-buffers (not (wg-is-file-remote dir)))
-          (if (file-exists-p dir)
+          ;; TODO: try to restore parent dir if not exist
+          (if (file-directory-p dir)
               (dired dir)))
       (current-buffer))))
 
@@ -319,6 +320,33 @@ Saves shell current directory, python command and arguments."
                                             python-shell-interpreter-args))
             ))))
 
+
+;; inferior-ess-mode   (ess-inf.el)
+
+(defun wg-deserialize-ess-shell-buffer (buf)
+  "Deserialize ess-shell buffer BUF.
+Run shell with a last working directory."
+  (when (require 'ess nil 'noerror)
+    (if (fboundp 'inferior-ess-mode)
+        (wg-dbind (this-function args) (wg-buf-special-data buf)
+          (let ((default-directory (car args))
+                (cmdname (nth 1 args))
+                (ess-ask-about-transfile nil)
+                (ess-ask-for-ess-directory nil)
+                (ess-history-file nil))
+            (R)
+            (current-buffer)
+            )))))
+
+(defun wg-serialize-ess-shell-buffer (buffer)
+  "Serialize a ess-shell buffer BUFFER."
+  (with-current-buffer buffer
+    (if (fboundp 'inferior-ess-mode)
+        (when (eq major-mode 'inferior-ess-mode)
+          (list 'wg-deserialize-ess-shell-buffer
+                (wg-take-until-unreadable (list default-directory
+                                                inferior-ess-program))
+                )))))
 
 
 ;;; buffer-local variable serdes

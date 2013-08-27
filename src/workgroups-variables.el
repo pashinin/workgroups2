@@ -211,6 +211,7 @@ it to `major-mode'."
     wg-serialize-eshell-buffer
     wg-serialize-term-buffer
     wg-serialize-magit-buffer
+    wg-serialize-ess-shell-buffer
     wg-serialize-python-shell-buffer
 
     wg-serialize-wl-folders-buffer
