@@ -1,8 +1,9 @@
 ;;; workgroups-specialbufs --- special buffers serialization
 ;;; Commentary:
 ;;
-;; TODO: Possibly add restore-special-data customization option
-;; TODO: These could be a little more thorough
+;; TODO:
+;;  1. Add more special buffers support (that you use)
+;;  2. Improve existing
 ;;
 ;;; Code:
 
@@ -291,7 +292,32 @@ buffer is generated."
               (wg-last1 (process-command process)))))))
 
 
+;; inferior-python-mode   (python.el)
 
+(defun wg-deserialize-python-shell-buffer (buf)
+  "Deserialize a python-shell buffer BUF.
+Run shell with a last working directory."
+  (wg-dbind (this-function args) (wg-buf-special-data buf)
+    (let ((default-directory (car args))
+          (pythoncmd (nth 1 args))
+          (pythonargs (nth 2 args)))
+      ;;(python-shell-send-string "")
+      ;;(python-shell-get-or-create-process)
+      (run-python (concat pythoncmd " " pythonargs))
+      (python-shell-switch-to-shell)
+      (current-buffer)
+      )))
+
+(defun wg-serialize-python-shell-buffer (buffer)
+  "Serialize a python-shell buffer BUFFER.
+Saves shell current directory, python command and arguments."
+  (with-current-buffer buffer
+    (when (eq major-mode 'inferior-python-mode)
+      (list 'wg-deserialize-python-shell-buffer
+            (wg-take-until-unreadable (list default-directory
+                                            python-shell-interpreter
+                                            python-shell-interpreter-args))
+            ))))
 
 
 
