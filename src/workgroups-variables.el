@@ -213,6 +213,7 @@ it to `major-mode'."
     wg-serialize-magit-buffer
     wg-serialize-ess-shell-buffer
     wg-serialize-python-shell-buffer
+    wg-serialize-prolog-shell-buffer
 
     wg-serialize-wl-folders-buffer
     ;;wg-serialize-wl-summary-buffer

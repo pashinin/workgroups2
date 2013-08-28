@@ -173,8 +173,8 @@ Since `help-mode' is used by many buffers that aren't actually
       (if (fboundp 'magit-status)
           (wg-dbind (this-function dir) (wg-buf-special-data buf)
             (let ((default-directory (car dir)))
-              (if (file-exists-p default-directory)
-                  (magit-status default-directory))
+              (when (file-directory-p default-directory)
+                (magit-status default-directory))
               (current-buffer))))))
 
 (defun wg-serialize-magit-buffer (buf)
@@ -302,10 +302,12 @@ Run shell with a last working directory."
     (let ((default-directory (car args))
           (pythoncmd (nth 1 args))
           (pythonargs (nth 2 args)))
-      ;;(python-shell-send-string "")
-      ;;(python-shell-get-or-create-process)
-      (run-python (concat pythoncmd " " pythonargs))
-      (python-shell-switch-to-shell)
+      (save-window-excursion
+        (run-python (concat pythoncmd " " pythonargs)))
+      (wg-awhen (get-buffer (process-buffer (python-shell-get-or-create-process)))
+        (set-buffer it)
+        (switch-to-buffer (process-buffer (python-shell-get-or-create-process)))
+        (goto-char (point-max)))
       (current-buffer)
       )))
 
@@ -346,6 +348,31 @@ Run shell with a last working directory."
           (list 'wg-deserialize-ess-shell-buffer
                 (wg-take-until-unreadable (list default-directory
                                                 inferior-ess-program))
+                )))))
+
+
+;; prolog-inferior-mode
+
+(defun wg-deserialize-prolog-shell-buffer (buf)
+  "Deserialize prolog shell buffer BUF."
+  (when (require 'prolog nil 'noerror)
+    (if (fboundp 'prolog-inferior-mode)
+        (wg-dbind (this-function args) (wg-buf-special-data buf)
+          (let ((default-directory (car args)))
+            (save-window-excursion
+              (run-prolog nil))
+            (switch-to-buffer "*prolog*")
+            (goto-char (point-max))  ; Don't know why it's not working for me
+            (current-buffer)
+            )))))
+
+(defun wg-serialize-prolog-shell-buffer (buffer)
+  "Serialize a prolog shell buffer BUFFER."
+  (with-current-buffer buffer
+    (if (fboundp 'prolog-inferior-mode)
+        (when (eq major-mode 'prolog-inferior-mode)
+          (list 'wg-deserialize-prolog-shell-buffer
+                (wg-take-until-unreadable (list default-directory))
                 )))))
 
 
