@@ -11,6 +11,7 @@
 ;; Emacs 24.3+, use "cl-labels" instead of "labels"
 (if (version< emacs-version "24.3")
     (progn
+      (require 'cl)
       (defalias 'wg-every 'every)
       (defalias 'wg-mapcan 'mapcan)
       (defalias 'wg-mapcar* 'mapcar*)
@@ -28,6 +29,7 @@
       (defalias 'wg-subsec 'subseq)
       (defalias 'wg-union 'union))
   (progn
+    (require 'cl-lib)
     (defalias 'wg-every 'cl-every)
     (defalias 'wg-mapcan 'cl-mapcan)
     (defalias 'wg-mapcar* 'cl-mapcar)
