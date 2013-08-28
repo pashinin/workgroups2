@@ -249,7 +249,7 @@ Cribbed from `org-id-b36-to-int'."
   "If ITEM is a `member*' of SEQ-PLACE, remove it from SEQ-PLACE and return t.
 Otherwise return nil.  KEYS can be any keywords accepted by `remove*'."
   `(> (length ,seq-place)
-      (length (setf ,seq-place (remove* ,item ,seq-place ,@keys)))))
+      (length (setf ,seq-place (wg-remove* ,item ,seq-place ,@keys)))))
 
 (defmacro wg-pushnew-p (item seq-place &rest keys)
   "If ITEM is not a `member' of SEQ-PLACE, push it to SEQ-PLACE and return t.
@@ -312,7 +312,7 @@ length is even, the first elt is left nearer the front."
 (defun wg-move-elt (elt list index &rest keys)
   "Move ELT before INDEX in LIST.
 KEYS is passed to `remove*'."
-  (wg-insert-before elt (apply 'remove* elt list keys) index))
+  (wg-insert-before elt (apply 'wg-remove* elt list keys) index))
 
 (defun wg-cyclic-nth (list n)
   "Return the Nth element of LIST, modded by the length of list."
