@@ -315,7 +315,9 @@ Run shell with a last working directory."
   "Serialize a python-shell buffer BUFFER.
 Saves shell current directory, python command and arguments."
   (with-current-buffer buffer
-    (when (eq major-mode 'inferior-python-mode)
+    (when (and (eq major-mode 'inferior-python-mode)
+               (boundp 'python-shell-interpreter)
+               (boundp 'python-shell-interpreter-args))
       (list 'wg-deserialize-python-shell-buffer
             (wg-take-until-unreadable (list default-directory
                                             python-shell-interpreter
@@ -344,7 +346,8 @@ Run shell with a last working directory."
   "Serialize a ess-shell buffer BUFFER."
   (with-current-buffer buffer
     (if (fboundp 'inferior-ess-mode)
-        (when (eq major-mode 'inferior-ess-mode)
+        (when (and (eq major-mode 'inferior-ess-mode)
+                   (boundp 'inferior-ess-program))
           (list 'wg-deserialize-ess-shell-buffer
                 (wg-take-until-unreadable (list default-directory
                                                 inferior-ess-program))
@@ -419,8 +422,7 @@ Run shell with a last working directory."
 ;; grep-mode
 ;; see grep.el - `compilation-start' - it is just a compilation buffer
 ;; local variables:
-;; `compilation-arguments'
-;; compilation-arguments == (cmd mode nil nil)
+;; `compilation-arguments' == (cmd mode nil nil)
 (defun wg-deserialize-grep-buffer (buf)
   "Deserialize grep-buffer BUF."
   (when (require 'grep nil 'noerror)
@@ -435,7 +437,8 @@ Run shell with a last working directory."
   "Serialize grep BUFFER."
   (with-current-buffer buffer
     (if (fboundp 'grep-mode)
-        (when (eq major-mode 'grep-mode)
+        (when (and (eq major-mode 'grep-mode)
+                   (boundp 'compilation-arguments))
           (list 'wg-deserialize-grep-buffer
                 (wg-take-until-unreadable (list default-directory
                                                 compilation-arguments))
