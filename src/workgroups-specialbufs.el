@@ -376,6 +376,72 @@ Run shell with a last working directory."
                 )))))
 
 
+;; emms-playlist-mode
+;;
+;; Help me on this one:
+;; 1. How to start emms without any user interaction?
+;;
+;;(defun wg-deserialize-emms-buffer (buf)
+;;  "Deserialize emms-playlist buffer BUF."
+;;  (when (require 'emms-setup nil 'noerror)
+;;    (require 'emms-player-mplayer)
+;;    (emms-standard)
+;;    (emms-default-players)
+;;    (if (fboundp 'emms-playlist-mode)
+;;        (wg-dbind (this-function args) (wg-buf-special-data buf)
+;;          (let ((default-directory (car args)))
+;;            (save-window-excursion
+;;              ;;(emms)
+;;              (if (or (null emms-playlist-buffer)
+;;                      (not (buffer-live-p emms-playlist-buffer)))
+;;                  ;;(call-interactively 'emms-add-file)
+;;                  (emms-source-directory "/usr/data/disk_3/Music/SORT/")
+;;                ))
+;;            ;; (emms)
+;;            ;;(with-current-buffer emms-playlist-buffer-name
+;;            ;;(emms-source-playlist-directory-tree "/usr/data/disk_3/Music/SORT/")
+;;            ;;(emms-source-directory "/usr/data/disk_3/Music/SORT")
+;;            ;;(switch-to-buffer emms-playlist-buffer-name)
+;;            (emms-playlist-mode-go)
+;;            (current-buffer)
+;;            )))))
+;;
+;;(defun wg-serialize-emms-buffer (buffer)
+;;  "Serialize emms BUFFER."
+;;  (with-current-buffer buffer
+;;    (if (fboundp 'emms-playlist-mode)
+;;        (when (eq major-mode 'emms-playlist-mode)
+;;          (list 'wg-deserialize-emms-buffer
+;;                (wg-take-until-unreadable (list default-directory))
+;;                )))))
+
+
+;; grep-mode
+;; see grep.el - `compilation-start' - it is just a compilation buffer
+;; local variables:
+;; `compilation-arguments'
+;; compilation-arguments == (cmd mode nil nil)
+(defun wg-deserialize-grep-buffer (buf)
+  "Deserialize grep-buffer BUF."
+  (when (require 'grep nil 'noerror)
+    (wg-dbind (this-function args) (wg-buf-special-data buf)
+      (let ((default-directory (car args))
+            (arguments (nth 1 args)))
+        ;; (compilation-start "cmd" 'grep-mode)
+        (compilation-start (car arguments) (nth 1 arguments))
+        ))))
+
+(defun wg-serialize-grep-buffer (buffer)
+  "Serialize grep BUFFER."
+  (with-current-buffer buffer
+    (if (fboundp 'grep-mode)
+        (when (eq major-mode 'grep-mode)
+          (list 'wg-deserialize-grep-buffer
+                (wg-take-until-unreadable (list default-directory
+                                                compilation-arguments))
+                )))))
+
+
 ;;; buffer-local variable serdes
 
 (defun wg-serialize-buffer-mark-ring ()
