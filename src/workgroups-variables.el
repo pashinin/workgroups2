@@ -73,8 +73,7 @@ it should be made here."
 
 
 ;; save and load customization
-
-(defcustom wg-use-default-session-file t
+(defcustom wg-use-default-session-file (not (daemonp))
   "Generally, non-nil means take care of saving and loading automatically,
 and nil means leave it up to the user.
 

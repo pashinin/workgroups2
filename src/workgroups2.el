@@ -143,6 +143,14 @@
 
 ;;; workgroups-mode
 
+(defun wg-create-first-wg ()
+  "Create a first workgroup if needed."
+  (interactive)
+  (if (and workgroups-mode
+           wg-use-default-session-file
+           (= (length (wg-workgroup-list)) 0))
+      (wg-create-workgroup "First workgroup")))
+
 (defun wg-reload-session ()
   "Reload current workgroups session."
   (interactive)
@@ -150,8 +158,17 @@
                   wg-default-session-file)))
     (when (file-exists-p file)
       (condition-case err
-          (wg-find-session-file wg-default-session-file)
+          (progn
+            (wg-find-session-file wg-default-session-file)
+            (wg-create-first-wg))
         (error (message "Error finding session-file: %s" err))))))
+
+(defun wg-delayed-reload (&optional delay)
+  "Try to reload workgroups after some time DELAY."
+  (interactive)
+  (let ((time 0.5))
+    (if delay (setq time delay))
+    (run-with-timer time nil 'wg-reload-session)))
 
 (defun wg-find-session-file-on-workgroups-mode-entry ()
   "This function is called when activating workgroups mode. It
@@ -216,8 +233,11 @@ If ARG is anything else, turn on `workgroups-mode'."
         (cond ((not arg) (not workgroups-mode))
               ((integerp arg) (if (> arg 0) t nil))
               (t)))
+  (let (delayed)
   (cond
    (workgroups-mode
+    (if (boundp desktop-restore-frames)
+        (setq desktop-restore-frames nil))
     (wg-reset-internal)
     (wg-add-workgroups-mode-minor-mode-entries)
     (wg-enable-all-advice)
@@ -225,7 +245,14 @@ If ARG is anything else, turn on `workgroups-mode'."
     ;;(mapcar 'wg-after-make-frame (frame-list))
     (mapc 'wg-after-make-frame (frame-list))
     (wg-add-mode-line-display)
-    (wg-find-session-file-on-workgroups-mode-entry)
+    (if (boundp desktop-save-mode)
+        (if (and desktop-save-mode
+                 wg-use-default-session-file)
+            (progn
+              (setq delayed t)
+              (wg-delayed-reload))
+          (wg-find-session-file-on-workgroups-mode-entry))
+      (wg-find-session-file-on-workgroups-mode-entry))
     (run-hooks 'workgroups-mode-hook))
    (t
     (wg-save-session-on-workgroups-mode-exit)
@@ -236,11 +263,8 @@ If ARG is anything else, turn on `workgroups-mode'."
   (wg-fontified-message
     (:cmd "Workgroups Mode: ")
     (:msg (if workgroups-mode "on" "off")))
-  (if (and workgroups-mode
-           wg-use-default-session-file
-           (= (length (wg-workgroup-list)) 0))
-      (wg-create-workgroup "First workgroup"))
-  workgroups-mode)
+  (if (not delayed) (wg-create-first-wg))
+  workgroups-mode))
 
 (provide 'workgroups2)
 ;;; workgroups2.el ends here
