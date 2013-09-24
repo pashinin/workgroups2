@@ -158,10 +158,12 @@
                   wg-default-session-file)))
     (when (file-exists-p file)
       (condition-case err
-          (progn
-            (wg-find-session-file wg-default-session-file)
-            (wg-create-first-wg))
-        (error (message "Error finding session-file: %s" err))))))
+          (wg-find-session-file wg-default-session-file)
+        (progn
+          (wg-create-first-wg)
+          (error (message "Error finding session-file: %s" err))
+          )))
+    (wg-create-first-wg)))
 
 (defun wg-delayed-reload (&optional delay)
   "Try to reload workgroups after some time DELAY."
