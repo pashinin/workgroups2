@@ -599,6 +599,11 @@ and inactive mode-lines, so this feature defaults to off."
   :type 'boolean
   :group 'workgroups)
 
+(defcustom wg-mode-line-disable (featurep 'powerline)
+  "Do not do any modeline modifications."
+  :type 'boolean
+  :group 'workgroups)
+
 (defcustom wg-mode-line-only-name t
   "Display only workgroup name in modeline without any flags."
   :type 'boolean

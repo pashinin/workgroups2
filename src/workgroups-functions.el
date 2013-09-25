@@ -1620,9 +1620,10 @@ for display by `other-buffer' in the current workgroup."
 
 (defun wg-add-mode-line-display ()
   "Add Workgroups' mode-line format to `mode-line-format'."
-  (unless (assq 'wg-mode-line-display-on mode-line-format)
+  (unless (or (assq 'wg-mode-line-display-on mode-line-format)
+              wg-mode-line-disable)
     (let ((format '(wg-mode-line-display-on (:eval (wg-mode-line-string))))
-          (pos (wg-position 'mode-line-position mode-line-format)))
+          (pos (or (wg-position 'mode-line-position mode-line-format) 10)))
       (set-default 'mode-line-format
                    (wg-insert-after format mode-line-format pos))
       (force-mode-line-update))))
