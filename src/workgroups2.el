@@ -238,7 +238,7 @@ If ARG is anything else, turn on `workgroups-mode'."
   (let (delayed)
   (cond
    (workgroups-mode
-    (if (boundp desktop-restore-frames)
+    (if (boundp 'desktop-restore-frames)
         (setq desktop-restore-frames nil))
     (wg-reset-internal)
     (wg-add-workgroups-mode-minor-mode-entries)
