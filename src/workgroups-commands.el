@@ -700,10 +700,7 @@ the session regardless of whether it's been modified."
          (wg-awhen (and wg-switch-to-first-workgroup-on-find-session-file
                         (wg-workgroup-list))
            (wg-switch-to-workgroup (car it)))
-         (wg-fontified-message
-           (:cmd "Loaded: ")
-           (:file filename))
-         (keyboard-quit))
+         (wg-fontified-message (:cmd "Loaded: ") (:file filename)))
         (t
          (wg-query-and-save-if-modified)
          (wg-reset-internal (wg-make-session :file-name filename))

@@ -247,14 +247,7 @@ If ARG is anything else, turn on `workgroups-mode'."
     ;;(mapcar 'wg-after-make-frame (frame-list))
     (mapc 'wg-after-make-frame (frame-list))
     (wg-add-mode-line-display)
-    (if (boundp desktop-save-mode)
-        (if (and desktop-save-mode
-                 wg-use-default-session-file)
-            (progn
-              (setq delayed t)
-              (wg-delayed-reload))
-          (wg-find-session-file-on-workgroups-mode-entry))
-      (wg-find-session-file-on-workgroups-mode-entry))
+    (wg-find-session-file wg-default-session-file)
     (run-hooks 'workgroups-mode-hook))
    (t
     (wg-save-session-on-workgroups-mode-exit)

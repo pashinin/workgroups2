@@ -185,18 +185,22 @@ ignored.
   (interactive)
   (let* ((params (wg-wconfig-parameters wconfig))
          fullscreen)
-    ;;(wg-workgroup-working-wconfig workgroup)
-
     ;; Frame maximized / fullscreen / none
     (unless wg-remember-frame-for-each-wg
       (setq params (wg-wconfig-parameters (wg-workgroup-working-wconfig (wg-first-workgroup)))))
     (setq fullscreen (if (assoc 'fullscreen params)
                          (cdr (assoc 'fullscreen params))
                        nil))
-    (if (and fullscreen
+    (when (and fullscreen
              (or wg-remember-frame-for-each-wg
                  (null (wg-current-workgroup t))))
-        (set-frame-parameter nil 'fullscreen fullscreen))
+      (set-frame-parameter nil 'fullscreen fullscreen)
+      ;; I had bugs restoring maximized frame:
+      ;; Frame could be maximized but buffers are not scaled to fit it.
+      ;;
+      ;; Maybe because of `set-frame-parameter' takes some time to finish and is async.
+      ;; So I tried this and it helped
+      (sleep-for 0 100))
 
     ;; Position
     (when (and wg-restore-frame-position
