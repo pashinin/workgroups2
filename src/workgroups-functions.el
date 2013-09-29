@@ -1,4 +1,4 @@
-;;; workgroups-functions --- some functions here
+;;; workgroups-functions --- Functions you might find useful
 ;;; Commentary:
 ;;; Code:
 
@@ -299,21 +299,13 @@ FRAME nil defaults to `selected-frame'."
      :scroll-bar-width      (frame-parameter frame 'scroll-bar-width)
      :wtree                 (wg-window-tree-to-wtree (window-tree frame))
      )))
-;; (frame-parameter nil 'fullscreen)
-;; (window-tree (selected-frame))
-;; (wg-frame-to-wconfig)
-;; (cdr (assoc 'fullscreen (wg-wconfig-parameters (wg-current-wconfig))))
-
 
 (defun wg-current-wconfig ()
   "Return the current wconfig.
 If `wg-current-wconfig' is non-nil, return it.  Otherwise return
 `wg-frame-to-wconfig'."
   (or (frame-parameter nil 'wg-current-wconfig)
-      (wg-frame-to-wconfig))
-  ;;(wg-frame-to-wconfig)
-  )
-;; (wg-current-wconfig)
+      (wg-frame-to-wconfig)))
 
 (defmacro wg-with-current-wconfig (frame wconfig &rest body)
   "Eval BODY with WCONFIG current in FRAME.
@@ -336,9 +328,6 @@ BUFFER or `wg-default-buffer' is visible in the only window."
     (delete-other-windows)
     (switch-to-buffer (or buffer wg-default-buffer))
     (wg-frame-to-wconfig)))
-
-
-
 
 
 ;;; win/wtree/wconfig utils
@@ -433,15 +422,6 @@ BUFFER or `wg-default-buffer' is visible in the only window."
   (wg-with-edges w (l1 t1 r1 b1)
     (if height (- b1 t1) (- r1 l1))))
 
-;; (defun wg-adjust-w-size (w width-fn height-fn &optional new-left new-top)
-;;   "Adjust W's width and height with WIDTH-FN and HEIGHT-FN."
-;;   (wg-with-edges w (left top right bottom)
-;;     (let ((left (or new-left left)) (top (or new-top top)))
-;;       (wg-set-edges w (list left
-;;                             top
-;;                             (+ left (funcall width-fn  (- right  left)))
-;;                             (+ top  (funcall height-fn (- bottom top))))))))
-
 (defun wg-adjust-w-size (w width-fn height-fn &optional new-left new-top)
   "Adjust W's width and height with WIDTH-FN and HEIGHT-FN."
   (wg-with-edges w (left top right bottom)
@@ -454,7 +434,6 @@ BUFFER or `wg-default-buffer' is visible in the only window."
 
 (defun wg-scale-w-size (w width-scale height-scale)
   "Scale W's size by WIDTH-SCALE and HEIGHT-SCALE."
-  ;;(wg--with-temporary-redefinitions
   (dflet
       ((wscale (width)  (truncate (* width  width-scale)))
        (hscale (height) (truncate (* height height-scale))))
@@ -541,7 +520,6 @@ with `wg-scale-wconfigs-wtree' to fit the frame as it exists."
 If DIR is nil, reverse WTREE horizontally.
 If DIR is 'both, reverse WTREE both horizontally and vertically.
 Otherwise, reverse WTREE vertically."
-  ;;(wg--with-temporary-redefinitions
   (dflet
       ((inner (w) (if (wg-win-p w) w
                     (wg-with-slots w ((d1 wg-wtree-dir))
@@ -556,7 +534,6 @@ Otherwise, reverse WTREE vertically."
 
 (defun wg-wtree-move-window (wtree offset)
   "Offset `selected-window' OFFSET places in WTREE."
-  ;;(wg--with-temporary-redefinitions
   (dflet
       ((inner (w) (if (wg-win-p w) w
                     (wg-with-slots w ((wlist wg-wtree-wlist))
@@ -582,7 +559,6 @@ Otherwise, reverse WTREE vertically."
   "Return a new list by flattening WTREE.
 KEY non returns returns a list of WTREE's wins.
 KEY non-nil returns a list of the results of calling KEY on each win."
-  ;;(wg--with-temporary-redefinitions
   (dflet
       ((inner (w) (if (wg-win-p w) (list (if key (funcall key w) w))
                     (wg-mapcan 'inner (wg-wtree-wlist w)))))
@@ -701,17 +677,6 @@ Return VALUE."
     (wg-flag-workgroup-modified workgroup)
     (wg-asetf (wg-workgroup-parameters workgroup) (wg-aremove it parameter))))
 
-;; (defun wg-workgroup-local-value (variable &optional workgroup)
-;;   "Return the value of VARIABLE in WORKGROUP.
-;; WORKGROUP nil defaults to the current workgroup.  If there is no
-;; current workgroup, or if VARIABLE does not have a workgroup-local
-;; binding in WORKGROUP, resolve VARIABLE with `wg-session-local-value'."
-;;   (let ((workgroup (wg-get-workgroup workgroup t)))
-;;     (if (not workgroup) (wg-session-local-value variable)
-;;       (let ((value (wg-workgroup-parameter workgroup variable 'default)))
-;;         (if (not (eq value 'default)) value
-;;           (wg-session-local-value variable))))))
-
 (defun wg-workgroup-local-value (variable &optional workgroup)
   "Return the value of VARIABLE in WORKGROUP.
 WORKGROUP nil defaults to the current workgroup.  If there is no
@@ -725,7 +690,6 @@ binding in WORKGROUP, resolve VARIABLE with `wg-session-local-value'."
           (wg-session-local-value variable))))))
 
 (defalias 'wg-local-value 'wg-workgroup-local-value)
-
 
 
 ;;; workgroup associated buffers
@@ -959,7 +923,6 @@ Binds `wg-current-buffer-list-filter-id' in BODY."
                            (cadr ,status))))))))))
 
 
-
 ;;; workgroup working-wconfig and wconfig undo/redo
 
 (defun wg-workgroup-state-table (&optional frame)
@@ -1046,8 +1009,7 @@ with `wg-current-wconfig'."
   "Restore WCONFIG in `selected-frame', saving undo information."
   (when noundo (wg-unflag-undoify-window-configuration-change))
   (wg-update-current-workgroup-working-wconfig)
-  (wg-restore-wconfig wconfig)  ;; err
-  )
+  (wg-restore-wconfig wconfig))
 
 (defun wg-workgroup-offset-position-in-undo-list (workgroup increment)
   "Increment WORKGROUP's undo-pointer by INCREMENT.
