@@ -641,15 +641,6 @@ Think of it as `write-file' for Workgroups sessions."
     (error "File %s can't be written to" filename))
   (wg-perform-session-maintenance)
   (setf (wg-session-file-name (wg-current-session)) filename)
-
-  ;;(wg-set-session-parameter nil wg-key-load-last-workgroup wg-load-last-workgroup)
-  ;;(wg-set-session-parameter nil wg-key-current-workgroup "wg-")
-  ;;(wg-session-parameter     nil wg-key-current-workgroup)
-  ;;(wg-remove-session-parameter nil wg-key-current-workgroup)
-  ;;(if wg-load-last-workgroup
-  ;;    (let ((curr-wg-name (wg-workgroup-name (wg-current-workgroup))))
-  ;;      (wg-set-session-parameter nil wg-key-current-workgroup curr-wg-name)
-  ;;      ))
   (wg-write-sexp-to-file
    (wg-pickel-all-session-parameters (wg-current-session))
    filename)
@@ -705,15 +696,7 @@ the session regardless of whether it's been modified."
          (wg-query-and-save-if-modified)
          (wg-reset-internal (wg-make-session :file-name filename))
          (wg-fontified-message
-           (:cmd "(New Workgroups session file)"))))
-
-  ;;(wg-remove-session-parameter nil wg-key-current-workgroup)
-  ;;(if (wg-session-parameter nil wg-key-load-last-workgroup wg-load-last-workgroup)
-  ;;    (let ((cur-wg (wg-session-parameter nil wg-key-current-workgroup)))
-  ;;      (if cur-wg
-  ;;          (wg-switch-to-workgroup (wg-get-workgroup cur-wg))
-  ;;        )))
-  )
+           (:cmd "(New Workgroups session file)")))))
 
 (defun wg-find-file-in-new-workgroup (filename)
   "Create a new blank workgroup and find file FILENAME in it."
