@@ -264,8 +264,7 @@ can't be restored.  Also used when a blank workgroup is created."
 ;; What to restore:
 
 (defcustom wg-restore-remote-buffers t
-  "nil means do not restore buffers that get \"t\" with
-`wg-is-file-remote'"
+  "Restore buffers that get \"t\" with `file-remote-p'."
   :type 'boolean
   :group 'workgroups)
 
@@ -276,7 +275,7 @@ only needed buffers to show them to you."
   :type 'boolean
   :group 'workgroups)
 
-(defcustom wg-restore-frame-position nil
+(defcustom wg-restore-frame-position t
   "Non-nil means restore frame position on workgroup restore."
   :type 'boolean
   :group 'workgroups)
@@ -319,6 +318,13 @@ say, irc buffers where `point-max' is constantly increasing."
 
 (defcustom wg-restore-window-dedicated-p t
   "Non-nil means restore `window-dedicated-p' on workgroup restore."
+  :type 'boolean
+  :group 'workgroups)
+
+(defcustom wg-remember-frame-for-each-wg nil
+  "When switching workgroups - restore frame parameters for each workgroup.
+
+When nil - save/restore frame parameters to/from the first workgroup."
   :type 'boolean
   :group 'workgroups)
 
@@ -889,6 +895,13 @@ happen.")
 Used to avoid associating the old workgroup's buffers with the
 new workgroup during a switch.")
 
+(defvar wg-incorrectly-restored-bufs nil
+  "FIXME: docstring this.")
+;; TODO: check it on switching WG
+
+(defvar wg-record-incorrectly-restored-bufs nil
+  "FIXME: docstring this.")
+
 ;;; faces
 
 (defmacro wg-defface (face key spec doc &rest args)
@@ -942,7 +955,6 @@ new workgroup during a switch.")
   '((t :inherit font-lock-keyword-face :bold nil))
   "Face used for filenames."
   :group 'workgroups)
-
 
 (provide 'workgroups-variables)
 ;;; workgroups-variables.el ends here
