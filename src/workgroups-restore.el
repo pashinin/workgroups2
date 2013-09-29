@@ -1,9 +1,18 @@
-;;; workgroups-wconfig --- wconfig restoration
+;;; workgroups-restore --- Functions to restore buffers and frames
 ;;; Commentary:
+;;
+;; TIPS
+;;---------
+;; Each Emacs frame ("window") can contain several workgroups.
+;; WCONFIG is settings for each workgroup (buffers, parameters,...)
+;;
+;; So restoring WCONFIG using `wg-restore-wconfig' is restoring buffers
+;; for current workgroup. Generally speaking each Workgroup can have
+;; several WCONFIGs.
+;;
 ;;; Code:
 
 (require 'workgroups-variables)
-(require 'workgroups-misc)
 
 (defun wg-restore-default-buffer ()
   "Switch to `wg-default-buffer'."
@@ -20,27 +29,29 @@
   "Restore BUF by finding its file.  Return the created buffer.
 If BUF's file doesn't exist, call `wg-restore-default-buffer'"
   (wg-when-let ((file-name (wg-buf-file-name buf)))
-    (cond ((file-exists-p file-name)
-           (find-file file-name)
-           (rename-buffer (wg-buf-name buf) t)
-           (wg-set-buffer-uid-or-error (wg-buf-uid buf))
-           (when wg-restore-mark
-             (set-mark (wg-buf-mark buf))
-             (deactivate-mark))
-           (wg-deserialize-buffer-local-variables buf)
-           (current-buffer))
-          (t
-           ;; try directory
-           (if (not (wg-is-file-remote file-name))
-               (if (file-directory-p (file-name-directory file-name))
+    (when (or wg-restore-remote-buffers
+              (not (file-remote-p file-name)))
+      (cond ((file-exists-p file-name)
+             (find-file file-name)
+             (rename-buffer (wg-buf-name buf) t)
+             (wg-set-buffer-uid-or-error (wg-buf-uid buf))
+             (when wg-restore-mark
+               (set-mark (wg-buf-mark buf))
+               (deactivate-mark))
+             (wg-deserialize-buffer-local-variables buf)
+             (current-buffer))
+            (t
+             ;; try directory
+             (if (not (file-remote-p file-name))
+                 (if (file-directory-p (file-name-directory file-name))
+                     (progn
+                       (dired (file-name-directory file-name))
+                       (current-buffer))
                    (progn
-                     (dired (file-name-directory file-name))
-                     (current-buffer))
-                 (progn
-                   (message "Attempt to restore nonexistent file: %S" file-name)
-                   nil))
-             nil)
-           ))))
+                     (message "Attempt to restore nonexistent file: %S" file-name)
+                     nil))
+               nil)
+             )))))
 
 (defun wg-restore-special-buffer (buf)
   "Restore a buffer BUF with DESERIALIZER-FN."
@@ -79,13 +90,6 @@ If BUF's file doesn't exist, call `wg-restore-default-buffer'"
              ((eq win-point :max) (point-max))
              (t win-point)))
       (when (>= win-start (point-max)) (recenter)))))
-
-;; FIXME: nix these or move them to the vars section
-(defvar wg-incorrectly-restored-bufs nil
-  "FIXME: docstring this.")
-
-(defvar wg-record-incorrectly-restored-bufs nil
-  "FIXME: docstring this.")
 
 (defun wg-restore-window (win)
   "Restore WIN in `selected-window'."
@@ -140,19 +144,92 @@ a wtree."
   (set-frame-parameter
    nil 'scroll-bar-width (wg-wconfig-scroll-bar-width wconfig)))
 
+;;(defun wg-wconfig-restore-fullscreen (wconfig)
+;;  "Restore `selected-frame's fullscreen settings from WCONFIG."
+;;  (set-frame-parameter
+;;   nil 'fullscreen (wg-wconfig-parameters wconfig))
+;;  )
+
+(defun wg-scale-wconfig-to-frame (wconfig)
+  "Scale WCONFIG buffers to fit current frame size.
+Return a scaled copy of WCONFIG."
+  (interactive)
+  (wg-scale-wconfigs-wtree wconfig
+                           (frame-parameter nil 'width)
+                           (frame-parameter nil 'height)))
+
+(defun wg-frame-resize-and-position (wconfig)
+  "Resize and position a frame based on WCONFIG of current workgroup."
+  (interactive)
+  (let* ((params (wg-wconfig-parameters wconfig))
+         fullscreen)
+    (set-frame-parameter nil 'fullscreen (if (assoc 'fullscreen params)
+                                             (cdr (assoc 'fullscreen params))
+                                           nil))
+    (when (and wg-restore-frame-position
+               (not (frame-parameter nil 'fullscreen)))
+      (wg-wconfig-restore-frame-position wconfig))
+    ))
+
+(defun wg-restore-frame-size-position (wconfig)
+  "Smart-restore of frame size and position.
+
+Depending on `wg-remember-frame-for-each-wg' frame parameters may
+be restored for each workgroup.
+
+If `wg-remember-frame-for-each-wg' is nil (by default) then
+current frame parameters are saved/restored to/from first
+workgroup. And frame parameters for all other workgroups are just
+ignored.
+"
+  (interactive)
+  (let* ((params (wg-wconfig-parameters wconfig))
+         fullscreen)
+    ;;(wg-workgroup-working-wconfig workgroup)
+
+    ;; Frame maximized / fullscreen / none
+    (unless wg-remember-frame-for-each-wg
+      (setq params (wg-wconfig-parameters (wg-workgroup-working-wconfig (wg-first-workgroup)))))
+    (setq fullscreen (if (assoc 'fullscreen params)
+                         (cdr (assoc 'fullscreen params))
+                       nil))
+    (if (and fullscreen
+             (or wg-remember-frame-for-each-wg
+                 (null (wg-current-workgroup t))))
+        (set-frame-parameter nil 'fullscreen fullscreen))
+
+    ;; Position
+    (when (and wg-restore-frame-position
+               wg-remember-frame-for-each-wg
+               (not (frame-parameter nil 'fullscreen)))
+      (wg-wconfig-restore-frame-position wconfig))
+    ))
+
 ;; FIXME: throw a specific error if the restoration was unsuccessful
 (defun wg-restore-wconfig (wconfig)
-  "Restore WCONFIG in `selected-frame'."
+  "Restore a workgroup configuration WCONFIG in `selected-frame'.
+
+Runs each time you're switching workgroups."
   (let ((wg-record-incorrectly-restored-bufs t)
-        (wg-incorrectly-restored-bufs nil))
+        (wg-incorrectly-restored-bufs nil)
+        (params (wg-wconfig-parameters wconfig))
+        fullscreen wtree)
     (wg-barf-on-active-minibuffer)
-    (when wg-restore-frame-position
-      (wg-wconfig-restore-frame-position wconfig))
-    (let ((wtree (wg-resize-frame-scale-wtree wconfig)))
-      (wg-restore-window-tree
-       (if (not (wg-morph-p)) wtree (wg-morph wtree))))
+    (wg-restore-frame-size-position wconfig)
     (when wg-restore-scroll-bars
       (wg-wconfig-restore-scroll-bars wconfig))
+    (setq wtree (wg-scale-wconfig-to-frame wconfig))  ; scale wtree to frame size
+
+    ;; Restore buffers
+    (wg-restore-window-tree
+     (if (not (wg-morph-p)) wtree (wg-morph wtree)))
+
+    ;; Restore frame position
+    (when (and wg-restore-frame-position
+               (not (frame-parameter nil 'fullscreen))
+               (null (wg-current-workgroup t)))
+      (wg-wconfig-restore-frame-position wconfig))
+
     (when wg-incorrectly-restored-bufs
       (message "Unable to restore these buffers: %S\
 If you want, restore them manually and try again."
@@ -160,5 +237,5 @@ If you want, restore them manually and try again."
 
 
 
-(provide 'workgroups-wconfig-restore)
-;;; workgroups-wconfig-restore.el ends here
+(provide 'workgroups-restore)
+;;; workgroups-restore.el ends here

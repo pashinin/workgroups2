@@ -110,76 +110,7 @@ This needs to be a macro to allow specification of a setf'able place."
   (float-time (wg-uid-to-time uid)))
 
 
-
-;;; structure types
-
-(wg-defstruct wg buf
-  (uid (wg-generate-uid))
-  (name)
-  (file-name)
-  (point)
-  (mark)
-  (local-vars)
-  (special-data)
-  ;; This may be used later:
-  (gc))
-
-(wg-defstruct wg win
-  (uid)
-  (parameters)
-  (edges)
-  (point)
-  (start)
-  (hscroll)
-  (dedicated)
-  (selected)
-  (minibuffer-scroll)
-  (buf-uid))
-
-(wg-defstruct wg wtree
-  (uid)
-  (dir)
-  (edges)
-  (wlist))
-
-(wg-defstruct wg wconfig
-  (uid (wg-generate-uid))
-  (name)
-  (parameters)
-  (left)
-  (top)
-  (width)
-  (height)
-  (vertical-scroll-bars)
-  (scroll-bar-width)
-  (wtree))
-
-(wg-defstruct wg workgroup
-  (uid (wg-generate-uid))
-  (name)
-  (modified)
-  (parameters)
-  (base-wconfig)
-  (selected-frame-wconfig)
-  (saved-wconfigs)
-  (strong-buf-uids)
-  (weak-buf-uids))
-
-(wg-defstruct wg session
-  (uid (wg-generate-uid))
-  (name)
-  (modified)
-  (parameters)
-  (file-name)
-  (version wg-version)
-  (workgroup-list)
-  (buf-list))
-
-(wg-defstruct wg workgroup-state
-  (undo-pointer)
-  (undo-list))
-
-
+(require 'workgroups-structs)
 
 ;;; session ops
 
@@ -460,22 +391,33 @@ If BUFOBJ is a buffer or a buffer name, see `wg-buffer-uid-or-add'."
 (defun wg-frame-to-wconfig (&optional frame)
   "Return the serialization (a wg-wconfig) of Emacs frame FRAME.
 FRAME nil defaults to `selected-frame'."
-  (let ((frame (or frame (selected-frame))))
+  (let* ((frame (or frame (selected-frame)))
+         (fullscrn (frame-parameter frame 'fullscreen)))
     (wg-make-wconfig
      :left                  (frame-parameter frame 'left)
      :top                   (frame-parameter frame 'top)
      :width                 (frame-parameter frame 'width)
      :height                (frame-parameter frame 'height)
+     :parameters            `((fullscreen . ,fullscrn))
      :vertical-scroll-bars  (frame-parameter frame 'vertical-scroll-bars)
      :scroll-bar-width      (frame-parameter frame 'scroll-bar-width)
-     :wtree                 (wg-window-tree-to-wtree (window-tree frame)))))
+     :wtree                 (wg-window-tree-to-wtree (window-tree frame))
+     )))
+;; (frame-parameter nil 'fullscreen)
+;; (window-tree (selected-frame))
+;; (wg-frame-to-wconfig)
+;; (cdr (assoc 'fullscreen (wg-wconfig-parameters (wg-current-wconfig))))
+
 
 (defun wg-current-wconfig ()
   "Return the current wconfig.
 If `wg-current-wconfig' is non-nil, return it.  Otherwise return
 `wg-frame-to-wconfig'."
   (or (frame-parameter nil 'wg-current-wconfig)
-      (wg-frame-to-wconfig)))
+      (wg-frame-to-wconfig))
+  ;;(wg-frame-to-wconfig)
+  )
+;; (wg-current-wconfig)
 
 (defmacro wg-with-current-wconfig (frame wconfig &rest body)
   "Eval BODY with WCONFIG current in FRAME.
@@ -681,6 +623,7 @@ WCONFIG's height."
     (wg-wconfig-wtree wconfig)
     (/ (float new-width)  (wg-wconfig-width wconfig))
     (/ (float new-height) (wg-wconfig-height wconfig)))))
+;; (wg-wconfig-width (wg-current-wconfig))
 
 (defun wg-resize-frame-scale-wtree (wconfig)
   "Set FRAME's size to WCONFIG's, returning a possibly scaled wtree.
@@ -755,7 +698,7 @@ KEY non-nil returns a list of the results of calling KEY on each win."
 
 
 (require 'workgroups-specialbufs)
-(require 'workgroups-wconfig-restore)
+(require 'workgroups-restore)
 (require 'workgroups-morph)
 
 
@@ -776,6 +719,11 @@ KEY non-nil returns a list of the results of calling KEY on each win."
         (unless noerror
           (error "No are no workgroups with a %S of %S"
                  accessor value)))))
+
+(defun wg-first-workgroup ()
+  "Return a first workgroup."
+  (interactive)
+  (car (wg-workgroup-list-or-error)))
 
 (defun wg-current-workgroup (&optional noerror frame)
   "Return the current workgroup in FRAME, or error unless NOERROR."
@@ -1202,7 +1150,8 @@ with `wg-current-wconfig'."
   "Restore WCONFIG in `selected-frame', saving undo information."
   (when noundo (wg-unflag-undoify-window-configuration-change))
   (wg-update-current-workgroup-working-wconfig)
-  (wg-restore-wconfig wconfig))
+  (wg-restore-wconfig wconfig)  ;; err
+  )
 
 (defun wg-workgroup-offset-position-in-undo-list (workgroup increment)
   "Increment WORKGROUP's undo-pointer by INCREMENT.
@@ -1447,7 +1396,8 @@ nil otherwise."
     (wg-restore-workgroup-associated-buffers-internal workgroup))
   (let (wg-flag-modified)
     (wg-restore-wconfig-undoably
-     (wg-workgroup-working-wconfig workgroup) t)))
+     (wg-workgroup-working-wconfig workgroup)
+     t)))
 
 
 
