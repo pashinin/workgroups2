@@ -8,7 +8,6 @@
 ;;; Code:
 
 (require 'dflet)
-(require 'workgroups-misc)
 
 ;; Dired
 
@@ -16,7 +15,8 @@
   "Deserialize Dired buffer."
   (wg-dbind (this-function params) (wg-buf-special-data buf)
     (let ((dir (car params)))
-      (if (or wg-restore-remote-buffers (not (wg-is-file-remote dir)))
+      (if (or wg-restore-remote-buffers
+              (not (file-remote-p dir)))
           ;; TODO: try to restore parent dir if not exist
           (if (file-directory-p dir)
               (dired dir)))
