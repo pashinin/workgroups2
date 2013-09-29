@@ -27,7 +27,6 @@
           (wg-fontified-message
             (:cmd "Switched: ")
             (wg-workgroup-name (wg-current-workgroup t))
-            ;;(wg-workgroup-list-display)
             ))
       (when current (pop wg-deactivation-list)))))
 
@@ -710,7 +709,6 @@ the session regardless of whether it's been modified."
          (wg-reset-internal (wg-make-session :file-name filename))
          (wg-fontified-message
            (:cmd "(New Workgroups session file)"))))
-
 
   ;;(wg-remove-session-parameter nil wg-key-current-workgroup)
   ;;(if (wg-session-parameter nil wg-key-load-last-workgroup wg-load-last-workgroup)
