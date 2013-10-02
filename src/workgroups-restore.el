@@ -135,7 +135,11 @@ a wtree."
   "Restore `selected-frame's position from WCONFIG."
   (wg-when-let ((left (wg-wconfig-left wconfig))
                 (top (wg-wconfig-top wconfig)))
-    (set-frame-position (selected-frame) left top)))
+    ;; Check that arguments are integers
+    ;; Problem: https://github.com/pashinin/workgroups2/issues/15
+    (if (and (integerp left)
+             (integerp top))
+        (set-frame-position (selected-frame) left top))))
 
 (defun wg-wconfig-restore-scroll-bars (wconfig)
   "Restore `selected-frame's scroll-bar settings from WCONFIG."
