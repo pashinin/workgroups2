@@ -445,7 +445,7 @@ Run shell with a last working directory."
                 )))))
 
 
-;; speed-bar-mode
+;; speedbar-mode
 (defun wg-deserialize-speedbar-buffer (buf)
   "Deserialize speedbar-buffer BUF."
   (when (and (require 'speedbar nil 'noerror)
