@@ -460,19 +460,20 @@ Run shell with a last working directory."
                    (fboundp 'speedbar-reconfigure-keymaps)
                    (fboundp 'speedbar-update-contents)
                    (fboundp 'speedbar-set-timer))
-          (setq speedbar-buffer (get-buffer-create bufname))
-          (setq speedbar-frame (selected-frame)
-                dframe-attached-frame (selected-frame)
-                speedbar-select-frame-method 'attached
-                speedbar-verbosity-level 0
-                speedbar-last-selected-file nil)
-          (set-buffer speedbar-buffer)
-          (speedbar-mode)
-          (speedbar-reconfigure-keymaps)
-          (speedbar-update-contents)
-          (speedbar-set-timer 1)
-          (set-window-dedicated-p (get-buffer-window bufname) t)
-          (switch-to-buffer bufname))
+          (with-no-warnings
+            (setq speedbar-buffer (get-buffer-create bufname))
+            (setq speedbar-frame (selected-frame)
+                  dframe-attached-frame (selected-frame)
+                  speedbar-select-frame-method 'attached
+                  speedbar-verbosity-level 0
+                  speedbar-last-selected-file nil)
+            (set-buffer speedbar-buffer)
+            (speedbar-mode)
+            (speedbar-reconfigure-keymaps)
+            (speedbar-update-contents)
+            (speedbar-set-timer 1)
+            (set-window-dedicated-p (get-buffer-window bufname) t)
+            (switch-to-buffer bufname)))
         (current-buffer)
         ))))
 
