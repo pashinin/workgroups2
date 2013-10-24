@@ -488,6 +488,40 @@ Run shell with a last working directory."
                 )))))
 
 
+(defun wg-deserialize-slime-buffer (buf)
+  "Deserialize `slime' buffer BUF."
+  (when (require 'slime nil 'noerror)
+    (wg-dbind (this-function args) (wg-buf-special-data buf)
+      (let ((default-directory (car args))
+            (arguments (nth 1 args)))
+        (save-window-excursion
+          (slime-start* arguments))
+        (switch-to-buffer (process-buffer (slime-process)))
+        (current-buffer)
+        ))))
+
+;; `comint-mode'  (general mode for all shells)
+;;
+;; It may have different shells. So we need to determine which shell is
+;; now in `comint-mode' and how to restore it.
+;;
+;; Just executing `comint-exec' may be not enough because we can miss
+;; some hooks or any other stuff that is executed when you run a
+;; specific shell.
+(defun wg-serialize-comint-buffer (buffer)
+  "Serialize comint BUFFER."
+  (with-current-buffer buffer
+    (if (fboundp 'comint-mode)
+        (when (eq major-mode 'comint-mode)
+          ;; `slime-inferior-lisp-args' var is used when in `slime'
+          (when (and (boundp 'slime-inferior-lisp-args)
+                     slime-inferior-lisp-args)
+            (list 'wg-deserialize-slime-buffer
+                  (wg-take-until-unreadable (list default-directory
+                                                  slime-inferior-lisp-args))
+                ))))))
+
+
 ;;; buffer-local variable serdes
 
 (defun wg-serialize-buffer-mark-ring ()
