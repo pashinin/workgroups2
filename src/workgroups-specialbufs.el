@@ -324,6 +324,31 @@ Saves shell current directory, python command and arguments."
                                             python-shell-interpreter-args))
             ))))
 
+;;
+;; `inferior-sage-mode'
+;;
+(defun wg-deserialize-sage-shell-buffer (buf)
+  "Deserialize `inferior-sage-mode' shell buffer BUF."
+  ;;run-sage (&optional new cmd noshow)
+  (wg-dbind (this-function args) (wg-buf-special-data buf)
+    (let ((default-directory (car args)))
+      (save-window-excursion
+        (run-sage t sage-command t))
+      (wg-awhen sage-buffer
+        (set-buffer it)
+        (switch-to-buffer sage-buffer)
+        (goto-char (point-max)))
+      (current-buffer)
+      )))
+
+(defun wg-serialize-sage-shell-buffer (buffer)
+  "Serialize `inferior-sage-mode' shell BUFFER."
+  (with-current-buffer buffer
+    (when (and (eq major-mode 'inferior-sage-mode)
+               (boundp 'sage-command))
+      (list 'wg-deserialize-sage-shell-buffer
+            (wg-take-until-unreadable (list default-directory))))))
+
 
 ;; inferior-ess-mode   (ess-inf.el)
 
