@@ -690,7 +690,10 @@ the session regardless of whether it's been modified."
            (wg-reset-internal (wg-unpickel-session-parameters session)))
          (wg-awhen (and wg-switch-to-first-workgroup-on-find-session-file
                         (wg-workgroup-list))
-           (wg-switch-to-workgroup (car it)))
+           (if (and wg-open-this-wg
+                    (member wg-open-this-wg (wg-workgroup-names)))
+               (wg-switch-to-workgroup wg-open-this-wg)
+             (wg-switch-to-workgroup (car it))))
          (wg-fontified-message (:cmd "Loaded: ") (:file filename)))
         (t
          (wg-query-and-save-if-modified)

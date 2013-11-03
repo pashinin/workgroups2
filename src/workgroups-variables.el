@@ -19,8 +19,6 @@
   :group 'workgroups
   :type 'boolean)
 
-
-
 (defcustom wg-load-last-workgroup nil
   "Load last active, not first, workgroup from all your workgroups."
   :group 'workgroups
@@ -85,6 +83,11 @@ FIXME: docstring this"
   "~/.emacs_workgroups"
   "Default filename to be used to save workgroups."
   :type 'file
+  :group 'workgroups)
+
+(defcustom wg-open-this-wg nil
+  "Try to open this workgroup on start. If nil - nothing happens."
+  :type 'string
   :group 'workgroups)
 
 (defcustom wg-switch-to-first-workgroup-on-find-session-file t
