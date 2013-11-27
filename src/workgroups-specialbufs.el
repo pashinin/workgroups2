@@ -444,6 +444,39 @@ Run shell with a last working directory."
 ;;                )))))
 
 
+;; compilation-mode
+;;
+;; I think it's not a good idea to compile a program just to switch
+;; workgroups. So just restoring a buffer name.
+(defun wg-deserialize-compilation-buffer (buf)
+  "Deserialize compilation-mode buffer BUF."
+  (when (require 'compile nil 'noerror)
+    (wg-dbind (this-function args) (wg-buf-special-data buf)
+      (let ((default-directory (car args))
+            (bufname (nth 1 args))
+            (arguments (nth 2 args)))
+        (save-window-excursion
+          (get-buffer-create bufname))
+        (with-current-buffer bufname
+          (make-local-variable 'compilation-arguments)
+          (setq compilation-arguments args))
+        (switch-to-buffer bufname)
+        (goto-char (point-max))
+        (current-buffer)
+        ))))
+
+(defun wg-serialize-compilation-buffer (buffer)
+  "Serialize compilation BUFFER."
+  (with-current-buffer buffer
+    (if (fboundp 'compilation-mode)
+        (when (and (eq major-mode 'compilation-mode)
+                   (boundp 'compilation-arguments))
+          (list 'wg-deserialize-compilation-buffer
+                (wg-take-until-unreadable (list default-directory
+                                                (buffer-name)
+                                                compilation-arguments))
+                )))))
+
 ;; grep-mode
 ;; see grep.el - `compilation-start' - it is just a compilation buffer
 ;; local variables:

@@ -216,6 +216,7 @@ it to `major-mode'."
     wg-serialize-ess-shell-buffer
     wg-serialize-python-shell-buffer
     wg-serialize-prolog-shell-buffer
+    wg-serialize-compilation-buffer
     wg-serialize-grep-buffer
     wg-serialize-speedbar-buffer
     wg-serialize-comint-buffer
