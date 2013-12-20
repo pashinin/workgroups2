@@ -580,6 +580,27 @@ Run shell with a last working directory."
                 ))))))
 
 
+;; Functions to serialize deserialize inf-mongo buffer
+;; `mongo-command' is the command used to start inferior
+;; mongo
+(defun wg-deserialize-inf-mongo-buffer (buf)
+  "Deserialize an inf-mongo buffer."
+  (load "inf-mongo")
+  (wg-dbind (this-function mongo-command) (wg-buf-special-data buf)
+    (save-window-excursion
+      (inf-mongo mongo-command))
+    (when (get-buffer "*mongo*")
+      (switch-to-buffer "*mongo*")
+      (goto-char (point-max)))
+    (current-buffer)))
+
+(defun wg-serialize-inf-mongo-buffer (buffer)
+  "Serialize an inf-mongo buffer."
+  (with-current-buffer buffer
+    (when (eq major-mode 'inf-mongo-mode)
+      (list 'wg-deserialize-inf-mongo-buffer inf-mongo-command))))
+
+
 ;;; buffer-local variable serdes
 
 (defun wg-serialize-buffer-mark-ring ()
