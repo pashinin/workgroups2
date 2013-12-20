@@ -221,6 +221,7 @@ it to `major-mode'."
     wg-serialize-speedbar-buffer
     wg-serialize-comint-buffer
     wg-serialize-sage-shell-buffer
+    wg-serialize-inf-mongo-buffer
 
     wg-serialize-wl-folders-buffer
     ;;wg-serialize-wl-summary-buffer
