@@ -222,7 +222,7 @@ it to `major-mode'."
     wg-serialize-comint-buffer
     wg-serialize-sage-shell-buffer
     wg-serialize-inf-mongo-buffer
-
+    wg-serialize-inf-sml-buffer
     wg-serialize-wl-folders-buffer
     ;;wg-serialize-wl-summary-buffer
     ;;wg-serialize-mime-view-buffer

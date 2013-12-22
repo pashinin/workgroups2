@@ -599,6 +599,63 @@ Run shell with a last working directory."
     (when (eq major-mode 'inf-mongo-mode)
       (list 'wg-deserialize-inf-mongo-buffer inf-mongo-command))))
 
+(defun wg-temporarily-rename-buffer-if-exists (buffer)
+  "Rename BUFFER if it exists"
+  (when (get-buffer buffer)
+    (with-current-buffer buffer
+      (rename-buffer "*wg--temp-buffer*" t))))
+
+;; Functions to serialize deserialize inferior sml buffer
+;; `inf-sml-program' is the program run as inferior sml, is the
+;; `inf-sml-args' are the extra parameters passed, `inf-sml-host'
+;; is the host on which sml was running when serialized
+(defun wg-deserialize-inf-sml-buffer (buffer)
+  "Deserialize an inferior-sml BUFFER."
+  (when (require 'sml-mode nil 'noerror)
+    (wg-dbind (this-function 
+               buf-name
+               inf-sml-program
+               inf-sml-args
+               inf-sml-host) (wg-buf-special-data buffer)
+
+      (save-window-excursion
+        ;; If a *sml* buffer already exists rename it temporarily
+        ;; otherwise `run-sml' will simply switch to the existing
+        ;; buffer, however we want to create a separate buffer with
+        ;; the serialized name
+        (let ((existing-sml-buf 
+               (wg-temporarily-rename-buffer-if-exists "*sml*")))
+
+          (with-current-buffer (run-sml inf-sml-program 
+                                        inf-sml-args 
+                                        inf-sml-host)
+
+            ;; Rename the buffer it had some different name
+            (when buf-name
+              (rename-buffer buf-name t))
+
+            ;; Now we can re-rename the previously renamed buffer
+            (when existing-sml-buf
+              (with-current-buffer existing-sml-buf
+                (rename-buffer "*sml*" t)))
+
+            (goto-char (point-max))
+            (current-buffer)))))))
+
+(defun wg-serialize-inf-sml-buffer (buffer)
+  "Serialize an inferior sml BUFFER."
+  (with-current-buffer buffer
+    (when (eq major-mode 'inferior-sml-mode)
+      (list 'wg-deserialize-inf-sml-buffer 
+            ;; If user has renamed this buffer we will need to
+            ;; restore it with same name
+            (when (not (string= (buffer-name) "*sml*"))
+              (buffer-name))
+            sml-program-name
+            sml-default-arg
+            sml-host-name))))
+
+
 ;;; buffer-local variable serdes
 
 (defun wg-serialize-buffer-mark-ring ()
