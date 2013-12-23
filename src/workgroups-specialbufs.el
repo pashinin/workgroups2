@@ -619,25 +619,27 @@ Run shell with a last working directory."
                inf-sml-host) (wg-buf-special-data buffer)
 
       (save-window-excursion
-        ;; If a *sml* buffer already exists rename it temporarily
+        ;; If a inf-sml buffer already exists rename it temporarily
         ;; otherwise `run-sml' will simply switch to the existing
         ;; buffer, however we want to create a separate buffer with
         ;; the serialized name
-        (let ((existing-sml-buf 
-               (wg-temporarily-rename-buffer-if-exists "*sml*")))
+        (let* ((inf-sml-buffer-name (concat "*" 
+					    (file-name-nondirectory inf-sml-program)
+					    "*"))
+               (existing-sml-buf (wg-temporarily-rename-buffer-if-exists 
+                                  inf-sml-buffer-name)))
 
           (with-current-buffer (run-sml inf-sml-program 
                                         inf-sml-args 
                                         inf-sml-host)
 
-            ;; Rename the buffer it had some different name
-            (when buf-name
-              (rename-buffer buf-name t))
+            ;; Rename the buffer
+            (rename-buffer buf-name t)
 
             ;; Now we can re-rename the previously renamed buffer
             (when existing-sml-buf
               (with-current-buffer existing-sml-buf
-                (rename-buffer "*sml*" t)))
+                (rename-buffer inf-sml-buffer-name t)))
 
             (goto-char (point-max))
             (current-buffer)))))))
@@ -649,8 +651,7 @@ Run shell with a last working directory."
       (list 'wg-deserialize-inf-sml-buffer 
             ;; If user has renamed this buffer we will need to
             ;; restore it with same name
-            (when (not (string= (buffer-name) "*sml*"))
-              (buffer-name))
+            (buffer-name)
             sml-program-name
             sml-default-arg
             sml-host-name))))
