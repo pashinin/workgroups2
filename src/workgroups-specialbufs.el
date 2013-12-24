@@ -624,8 +624,8 @@ Run shell with a last working directory."
         ;; buffer, however we want to create a separate buffer with
         ;; the serialized name
         (let* ((inf-sml-buffer-name (concat "*" 
-					    (file-name-nondirectory inf-sml-program)
-					    "*"))
+                                            (file-name-nondirectory inf-sml-program)
+                                            "*"))
                (existing-sml-buf (wg-temporarily-rename-buffer-if-exists 
                                   inf-sml-buffer-name)))
 
@@ -655,6 +655,23 @@ Run shell with a last working directory."
             sml-program-name
             sml-default-arg
             sml-host-name))))
+
+;; Functions to restore geiser repls
+(defun wg-deserialize-inf-geiser-buffer (buffer)
+  "Deserialize an geiser repl BUFFER."
+  (when (require 'geiser nil 'noerror)
+    (wg-dbind (this-function implementation) (wg-buf-special-data buffer)
+      (save-window-excursion
+        (run-geiser implementation)
+        (goto-char (point-max))
+        (current-buffer)))))
+
+(defun wg-serialize-inf-geiser-buffer (buffer)
+  "Serialize an geiser repl BUFFER."
+  (with-current-buffer buffer
+    (when (eq major-mode 'geiser-repl-mode)
+      (list 'wg-deserialize-inf-geiser-buffer 
+            geiser-impl--implementation))))
 
 
 ;;; buffer-local variable serdes
