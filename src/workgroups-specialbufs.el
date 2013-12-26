@@ -612,7 +612,7 @@ Run shell with a last working directory."
 (defun wg-deserialize-inf-sml-buffer (buffer)
   "Deserialize an inferior-sml BUFFER."
   (when (require 'sml-mode nil 'noerror)
-    (wg-dbind (this-function 
+    (wg-dbind (this-function
                buf-name
                inf-sml-program
                inf-sml-args
@@ -623,14 +623,14 @@ Run shell with a last working directory."
         ;; otherwise `run-sml' will simply switch to the existing
         ;; buffer, however we want to create a separate buffer with
         ;; the serialized name
-        (let* ((inf-sml-buffer-name (concat "*" 
+        (let* ((inf-sml-buffer-name (concat "*"
                                             (file-name-nondirectory inf-sml-program)
                                             "*"))
-               (existing-sml-buf (wg-temporarily-rename-buffer-if-exists 
+               (existing-sml-buf (wg-temporarily-rename-buffer-if-exists
                                   inf-sml-buffer-name)))
 
-          (with-current-buffer (run-sml inf-sml-program 
-                                        inf-sml-args 
+          (with-current-buffer (run-sml inf-sml-program
+                                        inf-sml-args
                                         inf-sml-host)
 
             ;; Rename the buffer
@@ -648,7 +648,7 @@ Run shell with a last working directory."
   "Serialize an inferior sml BUFFER."
   (with-current-buffer buffer
     (when (eq major-mode 'inferior-sml-mode)
-      (list 'wg-deserialize-inf-sml-buffer 
+      (list 'wg-deserialize-inf-sml-buffer
             ;; If user has renamed this buffer we will need to
             ;; restore it with same name
             (buffer-name)
@@ -670,7 +670,7 @@ Run shell with a last working directory."
   "Serialize an geiser repl BUFFER."
   (with-current-buffer buffer
     (when (eq major-mode 'geiser-repl-mode)
-      (list 'wg-deserialize-inf-geiser-buffer 
+      (list 'wg-deserialize-inf-geiser-buffer
             geiser-impl--implementation))))
 
 
