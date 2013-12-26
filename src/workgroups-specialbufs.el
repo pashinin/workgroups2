@@ -208,48 +208,17 @@ Since `help-mode' is used by many buffers that aren't actually
 ;;            ))))
 
 
-;; Magit buffers
+;; Magit status
+(wg-support 'magit-status-mode 'magit
+            '((deserialize . (lambda (buffer vars)
+                               (when (file-directory-p default-directory)
+                                 (magit-status default-directory))
+                               ))))
 
-(defun wg-deserialize-magit-buffer (buf)
-  "Deserialize a Magit-status buffer BUF."
-  (if (require 'magit nil 'noerror)
-      (if (fboundp 'magit-status)
-          (wg-dbind (this-function dir) (wg-buf-special-data buf)
-            (let ((default-directory (car dir)))
-              (when (file-directory-p default-directory)
-                (magit-status default-directory))
-              (current-buffer))))))
-
-(defun wg-serialize-magit-buffer (buf)
-  "Serialize a Magit-status buffer BUF."
-  (if (fboundp 'magit-status-mode)
-      (with-current-buffer buf
-        (when (eq major-mode 'magit-status-mode)
-          (list 'wg-deserialize-magit-buffer
-                (wg-take-until-unreadable (list (or (buffer-file-name) default-directory)))
-                )))))
-
-
-;; shell buffer serdes
-
-(defun wg-deserialize-shell-buffer (buf)
-  "Deserialize a `shell-mode' buffer BUF.
-Run shell with last working dir"
-  (wg-dbind (this-function dir) (wg-buf-special-data buf)
-    (let ((default-directory (car dir)))
-      (shell (wg-buf-name buf))
-      (current-buffer)
-      )))
-
-(defun wg-serialize-shell-buffer (buffer)
-  "Serialize a `shell-mode' buffer BUFFER.
-Save shell directory"
-  (with-current-buffer buffer
-    (when (eq major-mode 'shell-mode)
-      (list 'wg-deserialize-shell-buffer
-            (wg-take-until-unreadable (list (or (buffer-file-name) default-directory)))
-            ))))
-
+;; Shell
+(wg-support 'shell-mode 'shell
+            '((deserialize . (lambda (buffer vars)
+                               (shell (wg-buf-name buffer))))))
 
 ;; org-agenda buffer
 
