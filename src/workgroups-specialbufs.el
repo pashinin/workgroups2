@@ -25,8 +25,9 @@ Gets saved variables and runs code to restore a BUFFER."
         (when (require ',,pkg nil 'noerror)
           (wg-dbind (this-function variables) (wg-buf-special-data buffer)
             (let ((default-directory (car variables))
-                  (df (cdr (assoc 'deserialize ',,params))))
-              (if df (funcall df buffer variables))
+                  (df (cdr (assoc 'deserialize ',,params)))
+                  (user-vars (cdr variables)))
+              (if df (funcall df buffer user-vars))
               (current-buffer)
             )))))
 
