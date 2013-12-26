@@ -8,7 +8,7 @@
 ;;; Code:
 
 (require 'dflet)
-(require 'workgroups-functions)
+(require 'workgroups-variables)
 
 (defmacro wg-support (mode pkg params)
   "Macro to create (de)serialization functions for a buffer.
