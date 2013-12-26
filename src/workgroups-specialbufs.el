@@ -260,17 +260,10 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
 
 
 ;; eshell
-
-(defun wg-deserialize-eshell-buffer (buf)
-  "Deserialize an `eshell-mode' buffer BUF."
-  (prog1 (eshell t)
-    (rename-buffer (wg-buf-name buf) t)))
-
-(defun wg-serialize-eshell-buffer (buffer)
-  "Serialize an `eshell-mode' buffer BUFFER."
-  (with-current-buffer buffer
-    (when (eq major-mode 'eshell-mode)
-      (list 'wg-deserialize-eshell-buffer))))
+(wg-support 'eshell-mode 'esh-mode
+            '((deserialize . (lambda (buffer vars)
+                               (prog1 (eshell t)
+                                 (rename-buffer (wg-buf-name buffer) t))))))
 
 
 ;; term and ansi-term buffer serdes
