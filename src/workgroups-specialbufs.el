@@ -26,7 +26,7 @@ Gets saved variables and runs code to restore a BUFFER."
           (wg-dbind (this-function variables) (wg-buf-special-data buffer)
             (let ((default-directory (car variables))
                   (df (cdr (assoc 'deserialize ',,params)))
-                  (user-vars (cdr variables)))
+                  (user-vars (car (cdr variables))))
               (if df (funcall df buffer user-vars))
               (current-buffer)
             )))))
@@ -255,7 +255,7 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
                                (org-agenda-list)
                                (wg-awhen (get-buffer org-agenda-buffer-name)
                                  (set-buffer it)
-                                 (wg-run-agenda-cmd (nth 0 vars)))
+                                 (wg-run-agenda-cmd vars))
                                ))))
 
 
@@ -272,46 +272,31 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
 ;; be any difference between the two except how the name of the
 ;; buffer is generated.
 ;;
-;; (dflet ((term-window-width () 80)
-;; (window-height () 24))
 (wg-support 'term-mode 'term
             '((serialize . (lambda (buffer)
-                             (wg-last1 (process-command (get-buffer-process buffer)))))
+                             (if (get-buffer-process buffer)
+                                 (wg-last1 (process-command (get-buffer-process buffer)))
+                               "/bin/bash")))
               (deserialize . (lambda (buffer vars)
-                               (prog1(term (nth 0 vars))
-                                 (rename-buffer (wg-buf-name buffer) t))))))
+                               (dflet ((term-window-width () 80)
+                                       (window-height () 24))
+                                 (prog1 (term vars)
+                                   (rename-buffer (wg-buf-name buffer) t)))))))
 
 
-;; inferior-python-mode   (python.el)
-
-(defun wg-deserialize-python-shell-buffer (buf)
-  "Deserialize a python-shell buffer BUF.
-Run shell with a last working directory."
-  (wg-dbind (this-function args) (wg-buf-special-data buf)
-    (let ((default-directory (car args))
-          (pythoncmd (nth 1 args))
-          (pythonargs (nth 2 args)))
-      (save-window-excursion
-        (run-python (concat pythoncmd " " pythonargs)))
-      (wg-awhen (get-buffer (process-buffer (python-shell-get-or-create-process)))
-        (set-buffer it)
-        (switch-to-buffer (process-buffer (python-shell-get-or-create-process)))
-        (goto-char (point-max)))
-      (current-buffer)
-      )))
-
-(defun wg-serialize-python-shell-buffer (buffer)
-  "Serialize a python-shell buffer BUFFER.
-Saves shell current directory, python command and arguments."
-  (with-current-buffer buffer
-    (when (and (eq major-mode 'inferior-python-mode)
-               (boundp 'python-shell-interpreter)
-               (boundp 'python-shell-interpreter-args))
-      (list 'wg-deserialize-python-shell-buffer
-            (wg-take-until-unreadable (list default-directory
-                                            python-shell-interpreter
-                                            python-shell-interpreter-args))
-            ))))
+;; Python
+(wg-support 'inferior-python-mode 'python
+            '((serialize . (lambda (buffer)
+                             (list python-shell-interpreter python-shell-interpreter-args)))
+              (deserialize . (lambda (buffer vars)
+                               (wg-dbind (pythoncmd pythonargs) vars
+                                   (save-window-excursion
+                                     (run-python (concat pythoncmd " " pythonargs)))
+                                   (wg-awhen (get-buffer (process-buffer (python-shell-get-or-create-process)))
+                                     (set-buffer it)
+                                     (switch-to-buffer (process-buffer (python-shell-get-or-create-process)))
+                                     (goto-char (point-max)))
+                                   )))))
 
 ;;
 ;; `inferior-sage-mode'
