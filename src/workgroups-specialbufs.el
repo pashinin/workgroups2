@@ -213,8 +213,7 @@ Since `help-mode' is used by many buffers that aren't actually
 (wg-support 'magit-status-mode 'magit
             '((deserialize . (lambda (buffer vars)
                                (when (file-directory-p default-directory)
-                                 (magit-status default-directory))
-                               ))))
+                                 (magit-status default-directory))))))
 
 ;; Shell
 (wg-support 'shell-mode 'shell
