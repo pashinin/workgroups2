@@ -237,9 +237,8 @@ Can be restored using \"(eval commands)\"."
               (get-text-property p 'org-redo-cmd)))))))
 
 (defun wg-run-agenda-cmd (f)
-  "Run commands \"F\" in Agenda buffer.
-You can get these commands using
-\"wg-get-org-agenda-view-commands\"."
+  "Run commands F in Agenda buffer.
+You can get these commands using `wg-get-org-agenda-view-commands'."
   (when (and (boundp 'org-agenda-buffer-name)
              (fboundp 'org-current-line)
              (fboundp 'org-goto-line))
