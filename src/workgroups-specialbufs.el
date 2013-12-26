@@ -249,23 +249,15 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
               (if f (eval f))
               (org-goto-line line)))))))
 
-(defun wg-deserialize-org-agenda-buffer (buf)
-  "Deserialize an `org-agenda-mode' buffer BUF."
-  (org-agenda-list)
-  (when (boundp 'org-agenda-buffer-name)
-    (wg-dbind (this-function item) (wg-buf-special-data buf)
-      (wg-awhen (get-buffer org-agenda-buffer-name)
-        (set-buffer it)
-        (wg-run-agenda-cmd item)
-        (current-buffer)))))
-
-(defun wg-serialize-org-agenda-buffer (buffer)
-  "Serialize an `org-agenda-mode' buffer BUFFER."
-  (with-current-buffer buffer
-    (when (eq major-mode 'org-agenda-mode)
-      (list 'wg-deserialize-org-agenda-buffer
-            (wg-take-until-unreadable (wg-get-org-agenda-view-commands))
-            ))))
+(wg-support 'org-agenda-mode 'org-agenda
+            '((serialize . (lambda (buffer)
+                             (wg-get-org-agenda-view-commands)))
+              (deserialize . (lambda (buffer vars)
+                               (org-agenda-list)
+                               (wg-awhen (get-buffer org-agenda-buffer-name)
+                                 (set-buffer it)
+                                 (wg-run-agenda-cmd (nth 0 vars)))
+                               ))))
 
 
 ;; eshell
