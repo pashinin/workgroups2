@@ -266,27 +266,20 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
                                  (rename-buffer (wg-buf-name buffer) t))))))
 
 
-;; term and ansi-term buffer serdes
-
-(defun wg-deserialize-term-buffer (buf)
-  "Deserialize a `term-mode' buffer BUF."
-  (require 'term)
-  ;; flet'ing these prevents scrunched up wrapping when restoring during morph
-  (dflet ((term-window-width () 80)
-         (window-height () 24))
-    (prog1 (term (nth 1 (wg-buf-special-data buf)))
-      (rename-buffer (wg-buf-name buf) t))))
-
-(defun wg-serialize-term-buffer (buffer)
-  "Serialize a `term-mode' buffer BUFFER.
-This should work for `ansi-term's, too, as there doesn't seem to
-be any difference between the two except how the name of the
-buffer is generated."
-  (with-current-buffer buffer
-    (when (eq major-mode 'term-mode)
-      (wg-when-let ((process (get-buffer-process buffer)))
-        (list 'wg-deserialize-term-buffer
-              (wg-last1 (process-command process)))))))
+;; term-mode
+;;
+;; This should work for `ansi-term's, too, as there doesn't seem to
+;; be any difference between the two except how the name of the
+;; buffer is generated.
+;;
+;; (dflet ((term-window-width () 80)
+;; (window-height () 24))
+(wg-support 'term-mode 'term
+            '((serialize . (lambda (buffer)
+                             (wg-last1 (process-command (get-buffer-process buffer)))))
+              (deserialize . (lambda (buffer vars)
+                               (prog1(term (nth 0 vars))
+                                 (rename-buffer (wg-buf-name buffer) t))))))
 
 
 ;; inferior-python-mode   (python.el)
