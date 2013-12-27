@@ -52,7 +52,6 @@ Saves some variables to restore a BUFFER later."
                          ',(intern (format "wg-serialize-%s-buffer" mode-str)) t))
      ))
 
-
 ;; Dired
 (wg-support 'dired-mode 'dired
             '((deserialize . (lambda (buffer vars)
@@ -72,7 +71,6 @@ Saves some variables to restore a BUFFER later."
                                    (if (fboundp 'Info-find-node)
                                        (apply #'Info-find-node it))
                                  (info))))))
-
 
 ;; help-mode
 (wg-support 'help-mode 'help-mode
@@ -94,9 +92,7 @@ Saves some variables to restore a BUFFER later."
                                      (setq help-xref-stack stack
                                            help-xref-forward-stack forward-stack))))))))
 
-
 ;; ielm buffer serdes
-
 (defun wg-deserialize-ielm-buffer (buf)
   "Deserialize an `inferior-emacs-lisp-mode' buffer BUF."
   (ielm)
@@ -174,7 +170,6 @@ Saves some variables to restore a BUFFER later."
 ;;      (list 'wg-deserialize-mime-view-buffer
 ;;            ))))
 
-
 ;; Magit status
 (wg-support 'magit-status-mode 'magit
             '((deserialize . (lambda (buffer vars)
@@ -187,7 +182,6 @@ Saves some variables to restore a BUFFER later."
                                (shell (wg-buf-name buffer))))))
 
 ;; org-agenda buffer
-
 (defun wg-get-org-agenda-view-commands ()
   "Return commands to restore the state of Agenda buffer.
 Can be restored using \"(eval commands)\"."
@@ -224,13 +218,11 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
                                  (wg-run-agenda-cmd vars))
                                ))))
 
-
 ;; eshell
 (wg-support 'eshell-mode 'esh-mode
             '((deserialize . (lambda (buffer vars)
                                (prog1 (eshell t)
                                  (rename-buffer (wg-buf-name buffer) t))))))
-
 
 ;; term-mode
 ;;
@@ -273,7 +265,6 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
                                   (switch-to-buffer sage-buffer)
                                   (goto-char (point-max)))))))
 
-
 ;; inferior-ess-mode   (ess-inf.el)
 ;; R shell, M-x R
 (wg-support 'inferior-ess-mode 'ess-inf
@@ -285,7 +276,6 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
                                         (ess-ask-for-ess-directory nil)
                                         (ess-history-file nil))
                                     (R)))))))
-
 
 ;; Prolog shell
 (wg-support 'prolog-inferior-mode 'prolog
