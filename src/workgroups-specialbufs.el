@@ -111,23 +111,23 @@ Saves some variables to restore a BUFFER later."
 
 ;; Wanderlust modes:
 ;; WL - folders
-(defun wg-deserialize-wl-folders-buffer (buf)
-  ""
-  (if (fboundp 'wl)
-      (wg-dbind (this-function) (wg-buf-special-data buf)
-        ;;(when (not (eq major-mode 'wl-folder-mode))
-        (wl)
-        (goto-char (point-max))
-        (current-buffer)
-        )))
-
-(defun wg-serialize-wl-folders-buffer (buffer)
-  ""
-  (if (fboundp 'wl)
-      (with-current-buffer buffer
-        (when (eq major-mode 'wl-folder-mode)
-          (list 'wg-deserialize-wl-folders-buffer
-                )))))
+;;(defun wg-deserialize-wl-folders-buffer (buf)
+;;  ""
+;;  (if (fboundp 'wl)
+;;      (wg-dbind (this-function) (wg-buf-special-data buf)
+;;        ;;(when (not (eq major-mode 'wl-folder-mode))
+;;        (wl)
+;;        (goto-char (point-max))
+;;        (current-buffer)
+;;        )))
+;;
+;;(defun wg-serialize-wl-folders-buffer (buffer)
+;;  ""
+;;  (if (fboundp 'wl)
+;;      (with-current-buffer buffer
+;;        (when (eq major-mode 'wl-folder-mode)
+;;          (list 'wg-deserialize-wl-folders-buffer
+;;                )))))
 
 ;; WL - summary mode (list of mails)
 ;;(defun wg-deserialize-wl-summary-buffer (buf)
@@ -248,7 +248,6 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
                                        (window-height () 24))
                                  (prog1 (term vars)
                                    (rename-buffer (wg-buf-name buffer) t)))))))
-
 
 ;; Python
 (wg-support 'inferior-python-mode 'python
