@@ -62,25 +62,16 @@ Saves some variables to restore a BUFFER later."
                                    (if (file-directory-p default-directory)
                                        (dired default-directory)))))))
 
-;; Info buffer serdes
-
-(defun wg-deserialize-Info-buffer (buf)
-  "Deserialize an Info buffer."
-  (require 'info)
-  (wg-aif (cdr (wg-buf-special-data buf))
-      (if (fboundp 'Info-find-node)
-          (apply #'Info-find-node it))
-    (info))
-  (current-buffer))
-
-(defun wg-serialize-Info-buffer (buffer)
-  "Serialize an Info buffer."
-  (with-current-buffer buffer
-    (when (eq major-mode 'Info-mode)
-      (wg-when-boundp (Info-current-file Info-current-node)
-        (list 'wg-deserialize-Info-buffer
-              Info-current-file
-              Info-current-node)))))
+;; Info-mode
+(wg-support 'Info-mode 'info
+            '((serialize . (lambda (buffer)
+                             (wg-when-boundp (Info-current-file Info-current-node)
+                               (list Info-current-file Info-current-node))))
+              (deserialize . (lambda (buffer vars)
+                               (wg-aif vars
+                                   (if (fboundp 'Info-find-node)
+                                       (apply #'Info-find-node it))
+                                 (info))))))
 
 
 ;; help buffer serdes
