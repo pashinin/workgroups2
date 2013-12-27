@@ -275,32 +275,16 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
 
 
 ;; inferior-ess-mode   (ess-inf.el)
-
-(defun wg-deserialize-ess-shell-buffer (buf)
-  "Deserialize ess-shell buffer BUF.
-Run shell with a last working directory."
-  (when (require 'ess nil 'noerror)
-    (if (fboundp 'inferior-ess-mode)
-        (wg-dbind (this-function args) (wg-buf-special-data buf)
-          (let ((default-directory (car args))
-                (cmdname (nth 1 args))
-                (ess-ask-about-transfile nil)
-                (ess-ask-for-ess-directory nil)
-                (ess-history-file nil))
-            (R)
-            (current-buffer)
-            )))))
-
-(defun wg-serialize-ess-shell-buffer (buffer)
-  "Serialize a ess-shell buffer BUFFER."
-  (with-current-buffer buffer
-    (if (fboundp 'inferior-ess-mode)
-        (when (and (eq major-mode 'inferior-ess-mode)
-                   (boundp 'inferior-ess-program))
-          (list 'wg-deserialize-ess-shell-buffer
-                (wg-take-until-unreadable (list default-directory
-                                                inferior-ess-program))
-                )))))
+;; R shell, M-x R
+(wg-support 'inferior-ess-mode 'ess-inf
+            `((serialize . ,(lambda (buffer)
+                              (list inferior-ess-program)))
+              (deserialize . ,(lambda (buffer vars)
+                                (wg-dbind (cmd) vars
+                                  (let ((ess-ask-about-transfile nil)
+                                        (ess-ask-for-ess-directory nil)
+                                        (ess-history-file nil))
+                                    (R)))))))
 
 
 ;; prolog-inferior-mode
