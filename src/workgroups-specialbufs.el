@@ -74,38 +74,25 @@ Saves some variables to restore a BUFFER later."
                                  (info))))))
 
 
-;; help buffer serdes
-
-(defun wg-deserialize-help-buffer (buf)
-  "Deserialize a help buffer BUF.
-See `wg-serialize-help-buffer'."
-  (require 'help-mode)
-  (wg-dbind (this-function item stack forward-stack) (wg-buf-special-data buf)
-    (condition-case err
-        (apply (car item) (cdr item))
-      (error (message "%s" err)))
-    (wg-awhen (get-buffer "*Help*")
-      (set-buffer it)
-      (wg-when-boundp (help-xref-stack help-xref-forward-stack)
-        (setq help-xref-stack stack
-              help-xref-forward-stack forward-stack))
-      (current-buffer))))
-
-(defun wg-serialize-help-buffer (buffer)
-  "Serialize a help buffer BUFFER.
-Since `help-mode' is used by many buffers that aren't actually
-*Help* buffers (e.g. *Process List*), we also check that
-`help-xref-stack-item' has a local binding."
-  (with-current-buffer buffer
-    (when (and (eq major-mode 'help-mode)
-               (local-variable-p 'help-xref-stack-item)
-               (boundp 'help-xref-stack-item)
-               (boundp 'help-xref-stack)
-               (boundp 'help-xref-forward-stack))
-      (list 'wg-deserialize-help-buffer
-            (wg-take-until-unreadable help-xref-stack-item)
-            (mapcar 'wg-take-until-unreadable help-xref-stack)
-            (mapcar 'wg-take-until-unreadable help-xref-forward-stack)))))
+;; help-mode
+(wg-support 'help-mode 'help-mode
+            `((serialize . ,(lambda (buffer)
+                             (wg-when-boundp (help-xref-stack-item
+                                              help-xref-stack
+                                              help-xref-forward-stack)
+                               (list (wg-take-until-unreadable help-xref-stack-item)
+                                     (mapcar 'wg-take-until-unreadable help-xref-stack)
+                                     (mapcar 'wg-take-until-unreadable help-xref-forward-stack)))))
+              (deserialize . ,(lambda (buffer vars)
+                               (wg-dbind (item stack forward-stack) vars
+                                 (condition-case err
+                                     (apply (car item) (cdr item))
+                                   (error (message "%s" err)))
+                                 (wg-awhen (get-buffer "*Help*")
+                                   (set-buffer it)
+                                   (wg-when-boundp (help-xref-stack help-xref-forward-stack)
+                                     (setq help-xref-stack stack
+                                           help-xref-forward-stack forward-stack))))))))
 
 
 ;; ielm buffer serdes
