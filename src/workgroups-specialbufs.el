@@ -287,29 +287,13 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
                                     (R)))))))
 
 
-;; prolog-inferior-mode
-
-(defun wg-deserialize-prolog-shell-buffer (buf)
-  "Deserialize prolog shell buffer BUF."
-  (when (require 'prolog nil 'noerror)
-    (if (fboundp 'prolog-inferior-mode)
-        (wg-dbind (this-function args) (wg-buf-special-data buf)
-          (let ((default-directory (car args)))
-            (save-window-excursion
-              (run-prolog nil))
-            (switch-to-buffer "*prolog*")
-            (goto-char (point-max))  ; Don't know why it's not working for me
-            (current-buffer)
-            )))))
-
-(defun wg-serialize-prolog-shell-buffer (buffer)
-  "Serialize a prolog shell buffer BUFFER."
-  (with-current-buffer buffer
-    (if (fboundp 'prolog-inferior-mode)
-        (when (eq major-mode 'prolog-inferior-mode)
-          (list 'wg-deserialize-prolog-shell-buffer
-                (wg-take-until-unreadable (list default-directory))
-                )))))
+;; Prolog shell
+(wg-support 'prolog-inferior-mode 'prolog
+            `((deserialize . ,(lambda (buffer vars)
+                                (save-window-excursion
+                                  (run-prolog nil))
+                                (switch-to-buffer "*prolog*")
+                                (goto-char (point-max))))))
 
 
 ;; emms-playlist-mode
