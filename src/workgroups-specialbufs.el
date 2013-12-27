@@ -363,26 +363,12 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
 ;; see grep.el - `compilation-start' - it is just a compilation buffer
 ;; local variables:
 ;; `compilation-arguments' == (cmd mode nil nil)
-(defun wg-deserialize-grep-buffer (buf)
-  "Deserialize grep-buffer BUF."
-  (when (require 'grep nil 'noerror)
-    (wg-dbind (this-function args) (wg-buf-special-data buf)
-      (let ((default-directory (car args))
-            (arguments (nth 1 args)))
-        ;; (compilation-start "cmd" 'grep-mode)
-        (compilation-start (car arguments) (nth 1 arguments))
-        ))))
-
-(defun wg-serialize-grep-buffer (buffer)
-  "Serialize grep BUFFER."
-  (with-current-buffer buffer
-    (if (fboundp 'grep-mode)
-        (when (and (eq major-mode 'grep-mode)
-                   (boundp 'compilation-arguments))
-          (list 'wg-deserialize-grep-buffer
-                (wg-take-until-unreadable (list default-directory
-                                                compilation-arguments))
-                )))))
+(wg-support 'grep-mode 'grep
+            `((serialize . ,(lambda (buffer)
+                              compilation-arguments))
+              (deserialize . ,(lambda (buffer vars)
+                                (compilation-start (car vars) (nth 1 vars))
+                                (switch-to-buffer "*grep*")))))
 
 
 ;; speedbar-mode
