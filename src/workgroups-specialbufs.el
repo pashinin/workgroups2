@@ -92,17 +92,9 @@ Saves some variables to restore a BUFFER later."
                                      (setq help-xref-stack stack
                                            help-xref-forward-stack forward-stack))))))))
 
-;; ielm buffer serdes
-(defun wg-deserialize-ielm-buffer (buf)
-  "Deserialize an `inferior-emacs-lisp-mode' buffer BUF."
-  (ielm)
-  (current-buffer))
-
-(defun wg-serialize-ielm-buffer (buffer)
-  "Serialize an `inferior-emacs-lisp-mode' buffer BUFFER."
-  (with-current-buffer buffer
-    (when (eq major-mode 'inferior-emacs-lisp-mode)
-      (list 'wg-deserialize-ielm-buffer))))
+;; ielm
+(wg-support 'inferior-emacs-lisp-mode 'ielm
+            `((deserialize . ,(lambda (buffer vars) (ielm)))))
 
 
 ;; Wanderlust modes:

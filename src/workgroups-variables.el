@@ -203,7 +203,9 @@ it to `major-mode'."
   :type 'alist
   :group 'workgroups)
 
-(defcustom wg-special-buffer-serdes-functions '()
+(defcustom wg-special-buffer-serdes-functions
+  '(wg-serialize-comint-buffer
+    wg-serialize-speedbar-buffer)
   "List of functions providing special buffer serialization/deserialization.
 
 Use `wg-support' macro and this variable will be filled
