@@ -203,32 +203,12 @@ it to `major-mode'."
   :type 'alist
   :group 'workgroups)
 
-(defcustom wg-special-buffer-serdes-functions
-  '(wg-serialize-Info-buffer
-    wg-serialize-dired-buffer
-    wg-serialize-org-agenda-buffer
-    wg-serialize-help-buffer
-    wg-serialize-ielm-buffer
-    wg-serialize-shell-buffer
-    wg-serialize-eshell-buffer
-    wg-serialize-term-buffer
-    wg-serialize-magit-buffer
-    wg-serialize-ess-shell-buffer
-    wg-serialize-python-shell-buffer
-    wg-serialize-prolog-shell-buffer
-    wg-serialize-compilation-buffer
-    wg-serialize-grep-buffer
-    wg-serialize-speedbar-buffer
-    wg-serialize-comint-buffer
-    wg-serialize-sage-shell-buffer
-    wg-serialize-inf-mongo-buffer
-    wg-serialize-inf-sml-buffer
-    wg-serialize-inf-geiser-buffer
-    wg-serialize-wl-folders-buffer
-    ;;wg-serialize-wl-summary-buffer
-    ;;wg-serialize-mime-view-buffer
-    )
+(defcustom wg-special-buffer-serdes-functions '()
   "List of functions providing special buffer serialization/deserialization.
+
+Use `wg-support' macro and this variable will be filled
+automatically.
+
 An entry should be either a function symbol or a lambda, and should
 accept a single Emacs buffer object as an argument.
 
