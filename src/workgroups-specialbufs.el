@@ -452,7 +452,9 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
 ;; is the host on which sml was running when serialized
 (wg-support 'inferior-sml-mode 'sml-mode
             `((serialize . ,(lambda (buffer)
-                              (list sml-program-name sml-default-arg sml-host-name)))
+                              (list (if (boundp 'sml-program-name) sml-program-name)
+                                    (if (boundp 'sml-default-arg) sml-default-arg)
+                                    (if (boundp 'sml-host-name) sml-host-name))))
               (deserialize . ,(lambda (buffer vars)
                                 (wg-dbind (program args host) vars
                                   (save-window-excursion
