@@ -260,16 +260,18 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
             `((deserialize . ,(lambda (buffer vars)
                                 (save-window-excursion
                                   (run-sage t sage-command t))
-                                (wg-awhen sage-buffer
-                                  (set-buffer it)
-                                  (switch-to-buffer sage-buffer)
-                                  (goto-char (point-max)))))))
+                                (if (boundp 'sage-buffer)
+                                    (wg-awhen (and
+                                               sage-buffer)
+                                      (set-buffer it)
+                                      (switch-to-buffer sage-buffer)
+                                      (goto-char (point-max))))))))
 
 ;; inferior-ess-mode   (ess-inf.el)
 ;; R shell, M-x R
 (wg-support 'inferior-ess-mode 'ess-inf
             `((serialize . ,(lambda (buffer)
-                              (list inferior-ess-program)))
+                              (list (if (boundp 'inferior-ess-program) inferior-ess-program))))
               (deserialize . ,(lambda (buffer vars)
                                 (wg-dbind (cmd) vars
                                   (let ((ess-ask-about-transfile nil)
@@ -403,11 +405,12 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
     (wg-dbind (this-function args) (wg-buf-special-data buf)
       (let ((default-directory (car args))
             (arguments (nth 1 args)))
-        (save-window-excursion
-          (slime-start* arguments))
-        (switch-to-buffer (process-buffer (slime-process)))
-        (current-buffer)
-        ))))
+        (when (and (fboundp 'slime-start*)
+                   (fboundp 'slime-process))
+          (save-window-excursion
+            (slime-start* arguments))
+          (switch-to-buffer (process-buffer (slime-process)))
+          (current-buffer))))))
 
 ;; `comint-mode'  (general mode for all shells)
 ;;
@@ -438,7 +441,8 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
   (when (require 'inf-mongo nil 'noerror)
     (wg-dbind (this-function mongo-command) (wg-buf-special-data buffer)
       (save-window-excursion
-        (inf-mongo mongo-command))
+        (when (fboundp 'inf-mongo)
+          (inf-mongo mongo-command)))
       (when (get-buffer "*mongo*")
         (switch-to-buffer "*mongo*")
         (goto-char (point-max)))
@@ -448,7 +452,8 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
   "Serialize an inf-mongo BUFFER."
   (with-current-buffer buffer
     (when (eq major-mode 'inf-mongo-mode)
-      (list 'wg-deserialize-inf-mongo-buffer inf-mongo-command))))
+      (list 'wg-deserialize-inf-mongo-buffer
+            (if (boundp 'inf-mongo-command) inf-mongo-command)))))
 
 (defun wg-temporarily-rename-buffer-if-exists (buffer)
   "Rename BUFFER if it exists"
@@ -513,8 +518,9 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
   (when (require 'geiser nil 'noerror)
     (wg-dbind (this-function implementation) (wg-buf-special-data buffer)
       (save-window-excursion
-        (run-geiser implementation)
-        (goto-char (point-max))
+        (when (fboundp 'run-geiser)
+          (run-geiser implementation)
+          (goto-char (point-max)))
         (current-buffer)))))
 
 (defun wg-serialize-inf-geiser-buffer (buffer)
@@ -522,7 +528,7 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
   (with-current-buffer buffer
     (when (eq major-mode 'geiser-repl-mode)
       (list 'wg-deserialize-inf-geiser-buffer
-            geiser-impl--implementation))))
+            (if (boundp 'geiser-impl--implementation) geiser-impl--implementation)))))
 
 
 ;;; buffer-local variable serdes
