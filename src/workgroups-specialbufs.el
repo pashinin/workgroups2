@@ -54,23 +54,23 @@ Saves some variables to restore a BUFFER later."
 
 ;; Dired
 (wg-support 'dired-mode 'dired
-            '((deserialize . (lambda (buffer vars)
-                               (if (or wg-restore-remote-buffers
-                                       (not (file-remote-p dir)))
-                                   ;; TODO: try to restore parent dir if not exist
-                                   (if (file-directory-p default-directory)
-                                       (dired default-directory)))))))
+            `((deserialize . ,(lambda (buffer vars)
+                                (if (or wg-restore-remote-buffers
+                                        (not (file-remote-p default-directory)))
+                                    ;; TODO: try to restore parent dir if not exist
+                                    (if (file-directory-p default-directory)
+                                        (dired default-directory)))))))
 
 ;; Info-mode
 (wg-support 'Info-mode 'info
-            '((serialize . (lambda (buffer)
-                             (wg-when-boundp (Info-current-file Info-current-node)
-                               (list Info-current-file Info-current-node))))
-              (deserialize . (lambda (buffer vars)
-                               (wg-aif vars
-                                   (if (fboundp 'Info-find-node)
-                                       (apply #'Info-find-node it))
-                                 (info))))))
+            `((serialize . ,(lambda (buffer)
+                              (wg-when-boundp (Info-current-file Info-current-node)
+                                (list Info-current-file Info-current-node))))
+              (deserialize . ,(lambda (buffer vars)
+                                (wg-aif vars
+                                    (if (fboundp 'Info-find-node)
+                                        (apply #'Info-find-node it))
+                                  (info))))))
 
 ;; help-mode
 (wg-support 'help-mode 'help-mode
@@ -164,14 +164,14 @@ Saves some variables to restore a BUFFER later."
 
 ;; Magit status
 (wg-support 'magit-status-mode 'magit
-            '((deserialize . (lambda (buffer vars)
-                               (when (file-directory-p default-directory)
-                                 (magit-status default-directory))))))
+            `((deserialize . ,(lambda (buffer vars)
+                                (when (file-directory-p default-directory)
+                                  (magit-status default-directory))))))
 
 ;; Shell
 (wg-support 'shell-mode 'shell
-            '((deserialize . (lambda (buffer vars)
-                               (shell (wg-buf-name buffer))))))
+            `((deserialize . ,(lambda (buffer vars)
+                                (shell (wg-buf-name buffer))))))
 
 ;; org-agenda buffer
 (defun wg-get-org-agenda-view-commands ()
@@ -223,29 +223,29 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
 ;; buffer is generated.
 ;;
 (wg-support 'term-mode 'term
-            '((serialize . (lambda (buffer)
-                             (if (get-buffer-process buffer)
-                                 (wg-last1 (process-command (get-buffer-process buffer)))
-                               "/bin/bash")))
-              (deserialize . (lambda (buffer vars)
-                               (dflet ((term-window-width () 80)
-                                       (window-height () 24))
-                                 (prog1 (term vars)
-                                   (rename-buffer (wg-buf-name buffer) t)))))))
+            `((serialize . ,(lambda (buffer)
+                              (if (get-buffer-process buffer)
+                                  (wg-last1 (process-command (get-buffer-process buffer)))
+                                "/bin/bash")))
+              (deserialize . ,(lambda (buffer vars)
+                                (dflet ((term-window-width () 80)
+                                        (window-height () 24))
+                                  (prog1 (term vars)
+                                    (rename-buffer (wg-buf-name buffer) t)))))))
 
 ;; Python
 (wg-support 'inferior-python-mode 'python
-            '((serialize . (lambda (buffer)
-                             (list python-shell-interpreter python-shell-interpreter-args)))
-              (deserialize . (lambda (buffer vars)
-                               (wg-dbind (pythoncmd pythonargs) vars
-                                   (save-window-excursion
-                                     (run-python (concat pythoncmd " " pythonargs)))
-                                   (wg-awhen (get-buffer (process-buffer (python-shell-get-or-create-process)))
-                                     (set-buffer it)
-                                     (switch-to-buffer (process-buffer (python-shell-get-or-create-process)))
-                                     (goto-char (point-max)))
-                                   )))))
+            `((serialize . ,(lambda (buffer)
+                              (list python-shell-interpreter python-shell-interpreter-args)))
+              (deserialize . ,(lambda (buffer vars)
+                                (wg-dbind (pythoncmd pythonargs) vars
+                                  (save-window-excursion
+                                    (run-python (concat pythoncmd " " pythonargs)))
+                                  (wg-awhen (get-buffer (process-buffer (python-shell-get-or-create-process)))
+                                    (set-buffer it)
+                                    (switch-to-buffer (process-buffer (python-shell-get-or-create-process)))
+                                    (goto-char (point-max)))
+                                  )))))
 
 ;; Sage shell
 (wg-support 'inferior-sage-mode 'sage-mode
