@@ -433,27 +433,19 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
                                                   slime-inferior-lisp-args))
                 ))))))
 
-;; Functions to serialize deserialize inf-mongo buffer
-;; `mongo-command' is the command used to start inferior
-;; mongo
-(defun wg-deserialize-inf-mongo-buffer (buffer)
-  "Deserialize an inf-mongo BUFFER."
-  (when (require 'inf-mongo nil 'noerror)
-    (wg-dbind (this-function mongo-command) (wg-buf-special-data buffer)
-      (save-window-excursion
-        (when (fboundp 'inf-mongo)
-          (inf-mongo mongo-command)))
-      (when (get-buffer "*mongo*")
-        (switch-to-buffer "*mongo*")
-        (goto-char (point-max)))
-      (current-buffer))))
-
-(defun wg-serialize-inf-mongo-buffer (buffer)
-  "Serialize an inf-mongo BUFFER."
-  (with-current-buffer buffer
-    (when (eq major-mode 'inf-mongo-mode)
-      (list 'wg-deserialize-inf-mongo-buffer
-            (if (boundp 'inf-mongo-command) inf-mongo-command)))))
+;; inf-mongo
+;; https://github.com/tobiassvn/inf-mongo
+;; `mongo-command' - command used to start inferior mongo
+(wg-support 'inf-mongo-mode 'inf-mongo
+            `((serialize . ,(lambda (buffer)
+                              (if (boundp 'inf-mongo-command) inf-mongo-command)))
+              (deserialize . ,(lambda (buffer vars)
+                                (save-window-excursion
+                                  (when (fboundp 'inf-mongo)
+                                    (inf-mongo vars)))
+                                (when (get-buffer "*mongo*")
+                                  (switch-to-buffer "*mongo*")
+                                  (goto-char (point-max)))))))
 
 (defun wg-temporarily-rename-buffer-if-exists (buffer)
   "Rename BUFFER if it exists"
