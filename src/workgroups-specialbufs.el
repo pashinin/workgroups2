@@ -492,23 +492,17 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
                                   (switch-to-buffer (wg-buf-name buffer))
                                   (goto-char (point-max)))))))
 
-;; Functions to restore geiser repls
-(defun wg-deserialize-inf-geiser-buffer (buffer)
-  "Deserialize an geiser repl BUFFER."
-  (when (require 'geiser nil 'noerror)
-    (wg-dbind (this-function implementation) (wg-buf-special-data buffer)
-      (save-window-excursion
-        (when (fboundp 'run-geiser)
-          (run-geiser implementation)
-          (goto-char (point-max)))
-        (current-buffer)))))
-
-(defun wg-serialize-inf-geiser-buffer (buffer)
-  "Serialize an geiser repl BUFFER."
-  (with-current-buffer buffer
-    (when (eq major-mode 'geiser-repl-mode)
-      (list 'wg-deserialize-inf-geiser-buffer
-            (if (boundp 'geiser-impl--implementation) geiser-impl--implementation)))))
+;; Geiser repls
+;; http://www.nongnu.org/geiser/
+(wg-support 'geiser-repl-mode 'geiser
+            `((serialize . ,(lambda (buffer)
+                              (if (boundp 'geiser-impl--implementation) geiser-impl--implementation)))
+              (deserialize . ,(lambda (buffer vars)
+                                (save-window-excursion
+                                  (when (fboundp 'run-geiser)
+                                    (run-geiser vars)
+                                    (goto-char (point-max))))
+                                (switch-to-buffer (wg-buf-name buffer))))))
 
 
 ;;; buffer-local variable serdes
