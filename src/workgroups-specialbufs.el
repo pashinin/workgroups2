@@ -490,6 +490,14 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
                                     (goto-char (point-max))))
                                 (switch-to-buffer (wg-buf-name buffer))))))
 
+;; w3m-mode
+(wg-support 'w3m-mode 'w3m
+            `((serialize . ,(lambda (buffer)
+                              (list (if (boundp 'w3m-current-url) w3m-current-url))))
+              (deserialize . ,(lambda (buffer vars)
+                                (wg-dbind (url) vars
+                                  (w3m-goto-url url))))))
+
 
 ;;; buffer-local variable serdes
 
