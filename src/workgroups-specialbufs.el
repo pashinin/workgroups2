@@ -55,72 +55,6 @@
 (wg-support 'inferior-emacs-lisp-mode 'ielm
             `((deserialize . ,(lambda (buffer vars) (ielm)))))
 
-
-;; Wanderlust modes:
-;; WL - folders
-;;(defun wg-deserialize-wl-folders-buffer (buf)
-;;  ""
-;;  (if (fboundp 'wl)
-;;      (wg-dbind (this-function) (wg-buf-special-data buf)
-;;        ;;(when (not (eq major-mode 'wl-folder-mode))
-;;        (wl)
-;;        (goto-char (point-max))
-;;        (current-buffer)
-;;        )))
-;;
-;;(defun wg-serialize-wl-folders-buffer (buffer)
-;;  ""
-;;  (if (fboundp 'wl)
-;;      (with-current-buffer buffer
-;;        (when (eq major-mode 'wl-folder-mode)
-;;          (list 'wg-deserialize-wl-folders-buffer
-;;                )))))
-
-;; WL - summary mode (list of mails)
-;;(defun wg-deserialize-wl-summary-buffer (buf)
-;;  ""
-;;  (interactive)
-;;  (if (fboundp 'wl)
-;;      (wg-dbind (this-function param-list) (wg-buf-special-data buf)
-;;        (when (not (eq major-mode 'wl-summary-mode))
-;;          (let ((fld-name (car param-list)))
-;;            ;;(switch-to-buffer "*scratch*")
-;;            ;;(wl)
-;;            ;;(wl-folder-jump-folder fld-name)
-;;            ;;(message fld-name)
-;;            ;;(goto-char (point-max))
-;;            ;;(insert fld-name)
-;;            (current-buffer)
-;;          )))))
-;;
-;;(defun wg-serialize-wl-summary-buffer (buffer)
-;;  ""
-;;  (if (fboundp 'wl)
-;;      (with-current-buffer buffer
-;;        (when (eq major-mode 'wl-summary-mode)
-;;          (list 'wg-deserialize-wl-summary-buffer
-;;                (wg-take-until-unreadable (list wl-summary-buffer-folder-name))
-;;                )))))
-;;
-;;
-;;;; mime-view-mode
-;;
-;;(defun wg-deserialize-mime-view-buffer (buf)
-;;  ""
-;;  (wg-dbind (this-function) (wg-buf-special-data buf)
-;;    (when (not (eq major-mode 'mime-view-mode))
-;;      ;;(wl-summary-enter-handler 3570)     ; only in wl-summary-mode
-;;      ;;(wl-summary-enter-handler)     ; only in wl-summary-mode
-;;      (current-buffer)
-;;      )))
-;;
-;;(defun wg-serialize-mime-view-buffer (buffer)
-;;  ""
-;;  (with-current-buffer buffer
-;;    (when (eq major-mode 'mime-view-mode)
-;;      (list 'wg-deserialize-mime-view-buffer
-;;            ))))
-
 ;; Magit status
 (wg-support 'magit-status-mode 'magit
             `((deserialize . ,(lambda (buffer vars)
@@ -237,47 +171,6 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
                                   (run-prolog nil))
                                 (switch-to-buffer "*prolog*")
                                 (goto-char (point-max))))))
-
-
-;; emms-playlist-mode
-;;
-;; Help me on this one:
-;; 1. How to start emms without any user interaction?
-;;
-;;(defun wg-deserialize-emms-buffer (buf)
-;;  "Deserialize emms-playlist buffer BUF."
-;;  (when (require 'emms-setup nil 'noerror)
-;;    (require 'emms-player-mplayer)
-;;    (emms-standard)
-;;    (emms-default-players)
-;;    (if (fboundp 'emms-playlist-mode)
-;;        (wg-dbind (this-function args) (wg-buf-special-data buf)
-;;          (let ((default-directory (car args)))
-;;            (save-window-excursion
-;;              ;;(emms)
-;;              (if (or (null emms-playlist-buffer)
-;;                      (not (buffer-live-p emms-playlist-buffer)))
-;;                  ;;(call-interactively 'emms-add-file)
-;;                  (emms-source-directory "/usr/data/disk_3/Music/SORT/")
-;;                ))
-;;            ;; (emms)
-;;            ;;(with-current-buffer emms-playlist-buffer-name
-;;            ;;(emms-source-playlist-directory-tree "/usr/data/disk_3/Music/SORT/")
-;;            ;;(emms-source-directory "/usr/data/disk_3/Music/SORT")
-;;            ;;(switch-to-buffer emms-playlist-buffer-name)
-;;            (emms-playlist-mode-go)
-;;            (current-buffer)
-;;            )))))
-;;
-;;(defun wg-serialize-emms-buffer (buffer)
-;;  "Serialize emms BUFFER."
-;;  (with-current-buffer buffer
-;;    (if (fboundp 'emms-playlist-mode)
-;;        (when (eq major-mode 'emms-playlist-mode)
-;;          (list 'wg-deserialize-emms-buffer
-;;                (wg-take-until-unreadable (list default-directory))
-;;                )))))
-
 
 ;; compilation-mode
 ;;
@@ -456,6 +349,112 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
               (deserialize . ,(lambda (buffer vars)
                                 (wg-dbind (url) vars
                                   (w3m-goto-url url))))))
+
+
+;; Wanderlust modes:
+;; WL - folders
+;;(defun wg-deserialize-wl-folders-buffer (buf)
+;;  ""
+;;  (if (fboundp 'wl)
+;;      (wg-dbind (this-function) (wg-buf-special-data buf)
+;;        ;;(when (not (eq major-mode 'wl-folder-mode))
+;;        (wl)
+;;        (goto-char (point-max))
+;;        (current-buffer)
+;;        )))
+;;
+;;(defun wg-serialize-wl-folders-buffer (buffer)
+;;  ""
+;;  (if (fboundp 'wl)
+;;      (with-current-buffer buffer
+;;        (when (eq major-mode 'wl-folder-mode)
+;;          (list 'wg-deserialize-wl-folders-buffer
+;;                )))))
+
+;; WL - summary mode (list of mails)
+;;(defun wg-deserialize-wl-summary-buffer (buf)
+;;  ""
+;;  (interactive)
+;;  (if (fboundp 'wl)
+;;      (wg-dbind (this-function param-list) (wg-buf-special-data buf)
+;;        (when (not (eq major-mode 'wl-summary-mode))
+;;          (let ((fld-name (car param-list)))
+;;            ;;(switch-to-buffer "*scratch*")
+;;            ;;(wl)
+;;            ;;(wl-folder-jump-folder fld-name)
+;;            ;;(message fld-name)
+;;            ;;(goto-char (point-max))
+;;            ;;(insert fld-name)
+;;            (current-buffer)
+;;          )))))
+;;
+;;(defun wg-serialize-wl-summary-buffer (buffer)
+;;  ""
+;;  (if (fboundp 'wl)
+;;      (with-current-buffer buffer
+;;        (when (eq major-mode 'wl-summary-mode)
+;;          (list 'wg-deserialize-wl-summary-buffer
+;;                (wg-take-until-unreadable (list wl-summary-buffer-folder-name))
+;;                )))))
+;;
+;;
+;;;; mime-view-mode
+;;
+;;(defun wg-deserialize-mime-view-buffer (buf)
+;;  ""
+;;  (wg-dbind (this-function) (wg-buf-special-data buf)
+;;    (when (not (eq major-mode 'mime-view-mode))
+;;      ;;(wl-summary-enter-handler 3570)     ; only in wl-summary-mode
+;;      ;;(wl-summary-enter-handler)     ; only in wl-summary-mode
+;;      (current-buffer)
+;;      )))
+;;
+;;(defun wg-serialize-mime-view-buffer (buffer)
+;;  ""
+;;  (with-current-buffer buffer
+;;    (when (eq major-mode 'mime-view-mode)
+;;      (list 'wg-deserialize-mime-view-buffer
+;;            ))))
+
+
+;; emms-playlist-mode
+;;
+;; Help me on this one:
+;; 1. How to start emms without any user interaction?
+;;
+;;(defun wg-deserialize-emms-buffer (buf)
+;;  "Deserialize emms-playlist buffer BUF."
+;;  (when (require 'emms-setup nil 'noerror)
+;;    (require 'emms-player-mplayer)
+;;    (emms-standard)
+;;    (emms-default-players)
+;;    (if (fboundp 'emms-playlist-mode)
+;;        (wg-dbind (this-function args) (wg-buf-special-data buf)
+;;          (let ((default-directory (car args)))
+;;            (save-window-excursion
+;;              ;;(emms)
+;;              (if (or (null emms-playlist-buffer)
+;;                      (not (buffer-live-p emms-playlist-buffer)))
+;;                  ;;(call-interactively 'emms-add-file)
+;;                  (emms-source-directory "/usr/data/disk_3/Music/SORT/")
+;;                ))
+;;            ;; (emms)
+;;            ;;(with-current-buffer emms-playlist-buffer-name
+;;            ;;(emms-source-playlist-directory-tree "/usr/data/disk_3/Music/SORT/")
+;;            ;;(emms-source-directory "/usr/data/disk_3/Music/SORT")
+;;            ;;(switch-to-buffer emms-playlist-buffer-name)
+;;            (emms-playlist-mode-go)
+;;            (current-buffer)
+;;            )))))
+;;
+;;(defun wg-serialize-emms-buffer (buffer)
+;;  "Serialize emms BUFFER."
+;;  (with-current-buffer buffer
+;;    (if (fboundp 'emms-playlist-mode)
+;;        (when (eq major-mode 'emms-playlist-mode)
+;;          (list 'wg-deserialize-emms-buffer
+;;                (wg-take-until-unreadable (list default-directory))
+;;                )))))
 
 
 ;;; buffer-local variable serdes
