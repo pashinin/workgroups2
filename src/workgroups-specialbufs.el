@@ -33,13 +33,7 @@
 
 ;; help-mode
 (wg-support 'help-mode 'help-mode
-            `((serialize . ,(lambda (buffer)
-                             (wg-when-boundp (help-xref-stack-item
-                                              help-xref-stack
-                                              help-xref-forward-stack)
-                               (list (wg-take-until-unreadable help-xref-stack-item)
-                                     (mapcar 'wg-take-until-unreadable help-xref-stack)
-                                     (mapcar 'wg-take-until-unreadable help-xref-forward-stack)))))
+            `((save . (help-xref-stack-item help-xref-stack help-xref-forward-stack))
               (deserialize . ,(lambda (buffer vars)
                                (wg-dbind (item stack forward-stack) vars
                                  (condition-case err
@@ -344,8 +338,7 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
 
 ;; w3m-mode
 (wg-support 'w3m-mode 'w3m
-            `((serialize . ,(lambda (buffer)
-                              (list (if (boundp 'w3m-current-url) w3m-current-url))))
+            `((save . (w3m-current-url))
               (deserialize . ,(lambda (buffer vars)
                                 (wg-dbind (url) vars
                                   (w3m-goto-url url))))))
