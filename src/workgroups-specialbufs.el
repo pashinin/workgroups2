@@ -22,9 +22,7 @@
 
 ;; Info-mode
 (wg-support 'Info-mode 'info
-            `((serialize . ,(lambda (buffer)
-                              (wg-when-boundp (Info-current-file Info-current-node)
-                                (list Info-current-file Info-current-node))))
+            `((save . (Info-current-file Info-current-node))
               (deserialize . ,(lambda (buffer vars)
                                 (wg-aif vars
                                     (if (fboundp 'Info-find-node)
@@ -122,8 +120,7 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
 
 ;; Python
 (wg-support 'inferior-python-mode 'python
-            `((serialize . ,(lambda (buffer)
-                              (list python-shell-interpreter python-shell-interpreter-args)))
+            `((save . (python-shell-interpreter python-shell-interpreter-args))
               (deserialize . ,(lambda (buffer vars)
                                 (wg-dbind (pythoncmd pythonargs) vars
                                   (save-window-excursion
@@ -149,8 +146,7 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
 ;; inferior-ess-mode   (ess-inf.el)
 ;; R shell, M-x R
 (wg-support 'inferior-ess-mode 'ess-inf
-            `((serialize . ,(lambda (buffer)
-                              (list (if (boundp 'inferior-ess-program) inferior-ess-program))))
+            `((save . (inferior-ess-program))
               (deserialize . ,(lambda (buffer vars)
                                 (wg-dbind (cmd) vars
                                   (let ((ess-ask-about-transfile nil)
@@ -327,13 +323,13 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
 ;; Geiser repls
 ;; http://www.nongnu.org/geiser/
 (wg-support 'geiser-repl-mode 'geiser
-            `((serialize . ,(lambda (buffer)
-                              (if (boundp 'geiser-impl--implementation) geiser-impl--implementation)))
+            `((save . (geiser-impl--implementation))
               (deserialize . ,(lambda (buffer vars)
                                 (save-window-excursion
                                   (when (fboundp 'run-geiser)
-                                    (run-geiser vars)
-                                    (goto-char (point-max))))
+                                    (wg-dbind (impl) vars
+                                      (run-geiser impl)
+                                      (goto-char (point-max)))))
                                 (switch-to-buffer (wg-buf-name buffer))))))
 
 ;; w3m-mode
