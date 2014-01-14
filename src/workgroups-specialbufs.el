@@ -292,7 +292,7 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
                                   (goto-char (point-max)))))))
 
 (defun wg-temporarily-rename-buffer-if-exists (buffer)
-  "Rename BUFFER if it exists"
+  "Rename BUFFER if it exists."
   (when (get-buffer buffer)
     (with-current-buffer buffer
       (rename-buffer "*wg--temp-buffer*" t))))

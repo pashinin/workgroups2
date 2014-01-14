@@ -7,9 +7,8 @@
 (defmacro wg-support (mode pkg params)
   "Macro to create (de)serialization functions for a buffer.
 You need to save/restore a specific MODE which is loaded from a
-package PKG. In PARAMS you give local variables to save and a
-deserialization function.
-"
+package PKG.  In PARAMS you give local variables to save and a
+deserialization function."
   `(let ((mode-str (symbol-name ,mode))
          (args ,params))
 
