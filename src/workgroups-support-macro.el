@@ -4,6 +4,10 @@
 ;; Author: Sergey Pashinin <sergey@pashinin.com>
 ;;; Code:
 
+(defun wg-get-value (arg)
+  "Get a value of ARG if it exists."
+  (if (boundp `,arg) (eval arg)))
+
 (defmacro wg-support (mode pkg params)
   "Macro to create (de)serialization functions for a buffer.
 You need to save/restore a specific MODE which is loaded from a
@@ -30,10 +34,12 @@ Saves some variables to restore a BUFFER later."
               (when (get-buffer buffer)
                 (with-current-buffer buffer
                   (when (eq major-mode ',,mode)
-                    (let ((sf (cdr (assoc 'serialize ',,params))))
+                    (let ((sf (cdr (assoc 'serialize ',,params)))
+                          (save (cdr (assoc 'save ',,params))))
                       (list ',(intern (format "wg-deserialize-%s-buffer" mode-str))
                             (wg-take-until-unreadable (list default-directory
-                                                            (if sf (funcall sf buffer))
+                                                            (if sf (funcall sf buffer)
+                                                              (if save (mapcar 'wg-get-value save)))
                                                             )))))))))
      ;; Maybe change a docstring for functions
      ;;(put (intern (format "wg-serialize-%s-buffer" (symbol-name mode)))
