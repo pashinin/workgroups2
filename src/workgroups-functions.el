@@ -270,9 +270,7 @@ If BUFOBJ is a buffer or a buffer name, see `wg-buffer-uid-or-add'."
 (defun wg-window-tree-to-wtree (window-tree)
   "Return the serialization (a wg-wtree) of Emacs window tree WINDOW-TREE."
   (wg-barf-on-active-minibuffer)
-  ;;(wg--with-temporary-redefinitions
   (dflet
-  ;;(letf
       ((inner (w) (if (windowp w) (wg-window-to-win w)
                     (wg-dbind (dir edges . wins) w
                       (wg-make-wtree
