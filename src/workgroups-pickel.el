@@ -337,14 +337,13 @@
 
 ;;; parameter pickeling
 
-;;(eval-when-compile
   (defun wg-pickel-workgroup-parameters (workgroup)
     "If WORKGROUP's parameters are non-nil, return a copy of
 WORKGROUP after pickeling its parameters. Otherwise return
 WORKGROUP."
     (if (not (wg-workgroup-parameters workgroup)) workgroup
       (let ((copy (wg-copy-workgroup workgroup)))
-        (wg-asetf (wg-workgroup-parameters copy) (wg-pickel it))
+        (wg-asetf (wg-workgroup-parameters copy) (wg-pickel copy))
         copy)))
 
   (defun wg-unpickel-workgroup-parameters (workgroup)
@@ -353,7 +352,7 @@ WORKGROUP after unpickeling its parameters. Otherwise return
 WORKGROUP."
     (if (not (wg-workgroup-parameters workgroup)) workgroup
       (let ((copy (wg-copy-workgroup workgroup)))
-        (wg-asetf (wg-workgroup-parameters copy) (wg-unpickel it))
+        (wg-asetf (wg-workgroup-parameters copy) (wg-unpickel copy))
         copy)))
 
   (defun wg-pickel-all-session-parameters (session)
@@ -361,7 +360,7 @@ WORKGROUP."
 parameters and the parameters of all its workgroups."
     (let ((copy (wg-copy-session session)))
       (when (wg-session-parameters copy)
-        (wg-asetf (wg-session-parameters copy) (wg-pickel it)))
+        (wg-asetf (wg-session-parameters copy) (wg-pickel copy)))
       (wg-asetf (wg-session-workgroup-list copy)
                 (mapcar 'wg-pickel-workgroup-parameters it))
       copy))
@@ -371,11 +370,10 @@ parameters and the parameters of all its workgroups."
 parameters and the parameters of all its workgroups."
     (let ((copy (wg-copy-session session)))
       (when (wg-session-parameters copy)
-        (wg-asetf (wg-session-parameters copy) (wg-unpickel it)))
+        (wg-asetf (wg-session-parameters copy) (wg-unpickel copy)))
       (wg-asetf (wg-session-workgroup-list copy)
                 (mapcar 'wg-unpickel-workgroup-parameters it))
       copy))
-;;)
 
 (provide 'workgroups-pickel)
 ;;; workgroups-pickel.el ends here
