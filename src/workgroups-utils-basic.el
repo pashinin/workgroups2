@@ -482,11 +482,12 @@ BUFFER-LIST should contain buffer objects and/or buffer names."
     (write-file file)))
 
 (defun wg-read-sexp-from-file (file)
-  "Read and return an sexp from FILE."
+  "Return a Lisp object from FILE."
   (with-temp-buffer
     (insert-file-contents file)
     (goto-char (point-min))
     (read (current-buffer))))
+(defalias 'wg-lisp-object-from-file 'wg-read-sexp-from-file)
 
 (defun wg-file-under-root-path-p (root-path file-path)
   "Return t when FILE-PATH is under ROOT-PATH, nil otherwise."
