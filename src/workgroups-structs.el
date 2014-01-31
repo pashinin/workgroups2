@@ -4,7 +4,18 @@
 ;; Copyright (C) Sergey Pashinin
 ;; Author: Sergey Pashinin <sergey@pashinin.com>
 ;;
-;; `wg-defstruct'?
+;; `wg-defstruct'
+;;
+;; It creates some functions named like "wg-buf-...", "wg-session-..."
+;;
+;; To get a value you can use:
+;; (wg-session-... (wg-current-session))
+;; Like:
+;; (wg-session-file-name (wg-current-session))
+;;
+;; To set a value (in `wg-write-session-file'):
+;;
+;; (setf (wg-session-file-name (wg-current-session)) filename)
 ;;
 ;;; Code:
 
