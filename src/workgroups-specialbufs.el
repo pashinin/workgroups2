@@ -154,6 +154,12 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
                                         (ess-history-file nil))
                                     (R)))))))
 
+;; inferior-octave-mode
+(wg-support 'inferior-octave-mode 'octave
+            `((deserialize . ,(lambda (buffer vars)
+                                (prog1 (run-octave)
+                                  (rename-buffer (wg-buf-name buffer) t))))))
+
 ;; Prolog shell
 (wg-support 'prolog-inferior-mode 'prolog
             `((deserialize . ,(lambda (buffer vars)
