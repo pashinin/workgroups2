@@ -2,7 +2,7 @@
 ;;; Commentary:
 ;;; Code:
 
-(defconst wg-version "1.0.0"
+(defconst wg-version "1.0.1"
   "Current version of workgroups.")
 
 ;;; customization
