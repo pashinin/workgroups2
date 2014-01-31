@@ -641,6 +641,7 @@ Think of it as `write-file' for Workgroups sessions."
     (error "File %s can't be written to" filename))
   (wg-perform-session-maintenance)
   (setf (wg-session-file-name (wg-current-session)) filename)
+  (setf (wg-session-version (wg-current-session)) wg-version)
   (wg-write-sexp-to-file
    (wg-pickel-all-session-parameters (wg-current-session))
    filename)
