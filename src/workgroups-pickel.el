@@ -325,7 +325,7 @@
 
 (defun wg-unpickel-file (file)
   "`unpickel' an object directly from FILE."
-  (wg-unpickel (wg-read-sexp-from-file file)))
+  (wg-unpickel (wg-lisp-object-from-file file)))
 
 (defun wg-unpickel-string (str)
   "`unpickel' and object directly from STR."
