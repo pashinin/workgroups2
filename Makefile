@@ -11,7 +11,7 @@ FLAGS = -L src -batch -l cl.el -l ido.el -l workgroups2.el --eval "(ido-mode t)"
 FLAGSWG = -L src -batch -l ido.el -l workgroups2.el --eval "(ido-mode t)" --eval "(workgroups-mode 1)"
 
 clean:
-	find . -name '*.elc' -print0|xargs -0 rm
+	find . -name '*.elc' -delete
 
 test: clean
 # just load all files
