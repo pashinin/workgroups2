@@ -7,7 +7,7 @@
 ;;
 ;;; Code:
 
-(require 'dflet)
+(require 'workgroups-compat)
 (require 'workgroups-variables)
 (require 'workgroups-support-macro)
 
@@ -472,11 +472,11 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
 
 (defun wg-deserialize-buffer-local-variables (buf)
   "Restore BUF's buffer local variables in `current-buffer'."
-  (loop for ((var . val) . rest) on (wg-buf-local-vars buf)
-        do (wg-awhen (assq var wg-buffer-local-variables-alist)
-             (wg-dbind (var ser des) it
-               (if des (funcall des val)
-                 (set var val))))))
+  (cl-loop for ((var . val) . rest) on (wg-buf-local-vars buf)
+           do (wg-awhen (assq var wg-buffer-local-variables-alist)
+                (wg-dbind (var ser des) it
+                  (if des (funcall des val)
+                    (set var val))))))
 
 (provide 'workgroups-specialbufs)
 ;;; workgroups-specialbufs.el ends here

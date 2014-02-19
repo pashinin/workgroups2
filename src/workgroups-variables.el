@@ -899,7 +899,7 @@ new workgroup during a switch.")
   "`defface' wrapper adding a lookup key used by `wg-fontify'."
   (declare (indent 2))
   `(progn
-     (pushnew (cons ,key ',face) wg-face-abbrevs :test #'equal)
+     (cl-pushnew (cons ,key ',face) wg-face-abbrevs :test #'equal)
      (defface ,face ,spec ,doc ,@args)))
 
 (wg-defface wg-current-workgroup-face :cur
