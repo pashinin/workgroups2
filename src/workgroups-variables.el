@@ -24,8 +24,6 @@
   :group 'workgroups
   :type 'boolean)
 
-(defvar wg-key-current-workgroup   "_current_workgroup")
-(defvar wg-key-load-last-workgroup "_load-last-workgroup")
 
 ;; keybinding customization
 
