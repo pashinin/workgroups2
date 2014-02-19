@@ -222,8 +222,8 @@ Cribbed from `org-id-b36-to-int-one-digit'."
 (defun wg-int-to-b36 (i &optional length)
   "Return a base 36 string from I."
   (let ((base 36) b36)
-    (dflet ((add-digit () (push (wg-int-to-b36-one-digit (mod i base)) b36)
-                      (setq i (/ i base))))
+    (cl-flet ((add-digit () (push (wg-int-to-b36-one-digit (mod i base)) b36)
+                         (setq i (/ i base))))
       (add-digit)
       (while (> i 0) (add-digit))
       (setq b36 (cl-map 'string 'identity b36))
@@ -514,11 +514,11 @@ options."
   (declare (indent 2))
   (let* ((name (if (consp name-form) (car name-form) name-form))
          (prefixed-name (wg-symcat prefix "-" name)))
-    (dflet ((rebind (opstr)
-                   (let ((oldfnsym (wg-symcat opstr "-" prefix "-" name)))
-                     `((fset ',(wg-symcat prefix "-" opstr "-" name)
-                             (symbol-function ',oldfnsym))
-                       (fmakunbound ',oldfnsym)))))
+    (cl-flet ((rebind (opstr)
+                      (let ((oldfnsym (wg-symcat opstr "-" prefix "-" name)))
+                        `((fset ',(wg-symcat prefix "-" opstr "-" name)
+                                (symbol-function ',oldfnsym))
+                          (fmakunbound ',oldfnsym)))))
       ;; `eval-and-compile' gets rid of byte-comp warnings ("function `foo' not
       ;; known to be defined").  We can accomplish this with `declare-function'
       ;; too, but it annoyingly requires inclusion of the function's arglist,
@@ -572,9 +572,9 @@ the cadr as the accessor function."
                               read hist default-value inherit-input-method)
   "PROMPT for an object that satisfies TEST, WARNING if necessary.
 ARGS are `read-from-minibuffer's args, after PROMPT."
-  (dflet ((read () (read-from-minibuffer
-                    prompt initial-contents keymap read hist
-                    default-value inherit-input-method)))
+  (cl-flet ((read () (read-from-minibuffer
+                      prompt initial-contents keymap read hist
+                      default-value inherit-input-method)))
     (let ((obj (read)))
       (when (and (equal obj "") default-value) (setq obj default-value))
       (while (not (funcall test obj))

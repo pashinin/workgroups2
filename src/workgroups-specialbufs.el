@@ -113,8 +113,8 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
                                   (wg-last1 (process-command (get-buffer-process buffer)))
                                 "/bin/bash")))
               (deserialize . ,(lambda (buffer vars)
-                                (dflet ((term-window-width () 80)
-                                        (window-height () 24))
+                                (cl-flet ((term-window-width () 80)
+                                          (window-height () 24))
                                   (prog1 (term vars)
                                     (rename-buffer (wg-buf-name buffer) t)))))))
 
