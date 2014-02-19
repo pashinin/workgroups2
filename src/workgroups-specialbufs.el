@@ -135,7 +135,8 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
 (wg-support 'inferior-sage-mode 'sage-mode
             `((deserialize . ,(lambda (buffer vars)
                                 (save-window-excursion
-                                  (run-sage t sage-command t))
+                                  (if (boundp' sage-command)
+                                      (run-sage t sage-command t)))
                                 (if (boundp 'sage-buffer)
                                     (wg-awhen (and
                                                sage-buffer)
@@ -174,13 +175,14 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
 ;; workgroups. So just restoring a buffer name.
 (wg-support 'compilation-mode 'compile
             `((serialize . ,(lambda (buffer)
-                              compilation-arguments))
+                              (if (boundp' compilation-arguments) compilation-arguments)))
               (deserialize . ,(lambda (buffer vars)
                                 (save-window-excursion
                                   (get-buffer-create (wg-buf-name buffer)))
                                 (with-current-buffer (wg-buf-name buffer)
-                                  (make-local-variable 'compilation-arguments)
-                                  (setq compilation-arguments vars))
+                                  (when (boundp' compilation-arguments)
+                                    (make-local-variable 'compilation-arguments)
+                                    (setq compilation-arguments vars)))
                                 (switch-to-buffer (wg-buf-name buffer))
                                 (goto-char (point-max))))))
 
@@ -190,7 +192,7 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
 ;; `compilation-arguments' == (cmd mode nil nil)
 (wg-support 'grep-mode 'grep
             `((serialize . ,(lambda (buffer)
-                              compilation-arguments))
+                              (if (boundp' compilation-arguments) compilation-arguments)))
               (deserialize . ,(lambda (buffer vars)
                                 (compilation-start (car vars) (nth 1 vars))
                                 (switch-to-buffer "*grep*")))))
