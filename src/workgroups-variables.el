@@ -537,46 +537,6 @@ probably don't want to change this.  See
   :group 'workgroups)
 
 
-;; morph customization
-
-(defcustom wg-morph-on nil
-  "Non-nil means use `wg-morph' when restoring wconfigs."
-  :type 'boolean
-  :group 'workgroups)
-
-(defcustom wg-morph-hsteps 9
-  "Columns/iteration to step window edges during `wg-morph'.
-Values lower than 1 are invalid."
-  :type 'integer
-  :group 'workgroups)
-
-(defcustom wg-morph-vsteps 3
-  "Rows/iteration to step window edges during `wg-morph'.
-Values lower than 1 are invalid."
-  :type 'integer
-  :group 'workgroups)
-
-(defcustom wg-morph-terminal-hsteps 3
-  "Used instead of `wg-morph-hsteps' in terminal frames.
-If nil, `wg-morph-hsteps' is used."
-  :type 'integer
-  :group 'workgroups)
-
-(defcustom wg-morph-terminal-vsteps 1
-  "Used instead of `wg-morph-vsteps' in terminal frames.
-If nil, `wg-morph-vsteps' is used."
-  :type 'integer
-  :group 'workgroups)
-
-(defcustom wg-morph-truncate-partial-width-windows t
-  "Bound to `truncate-partial-width-windows' during `wg-morph'.
-Non-nil, this prevents weird-looking continuation line behavior,
-and can speed up morphing a little.  Lines jump back to their
-wrapped status when `wg-morph' is complete."
-  :type 'boolean
-  :group 'workgroups)
-
-
 ;; mode-line customization
 
 (defcustom wg-mode-line-display-on t
@@ -838,7 +798,7 @@ use by buffer list filtration hooks.")
 `wg-buffer-list-finalization-hook' should modify this variable.")
 
 
-;; wconfig restoration and morph vars
+;; wconfig restoration
 
 (defvar wg-window-min-width 2
   "Bound to `window-min-width' when restoring wtrees. ")
@@ -860,9 +820,6 @@ use by buffer list filtration hooks.")
 
 (defvar wg-null-edges '(0 0 0 0)
   "Null edge list.")
-
-(defvar wg-morph-max-steps 200
-  "Maximum `wg-morph' iterations before forcing exit.")
 
 (defvar wg-window-tree-selected-window nil
   "Used during wconfig restoration to hold the selected window.")

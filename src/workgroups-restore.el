@@ -229,8 +229,7 @@ Runs each time you're switching workgroups."
     (setq wtree (wg-scale-wconfig-to-frame wconfig))  ; scale wtree to frame size
 
     ;; Restore buffers
-    (wg-restore-window-tree
-     (if (not (wg-morph-p)) wtree (wg-morph wtree)))
+    (wg-restore-window-tree wtree)
 
     ;; Restore frame position
     (when (and wg-restore-frame-position

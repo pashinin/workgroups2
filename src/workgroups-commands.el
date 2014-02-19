@@ -746,11 +746,6 @@ the session regardless of whether it's been modified."
   (interactive)
   (wg-toggle-and-message 'wg-mode-line-display-on))
 
-(defun wg-toggle-morph ()
-  "Toggle `wg-morph-on'."
-  (interactive)
-  (wg-toggle-and-message 'wg-morph-on))
-
 
 
 ;;; echo commands

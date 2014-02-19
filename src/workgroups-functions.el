@@ -568,7 +568,6 @@ KEY non-nil returns a list of the results of calling KEY on each win."
 
 (require 'workgroups-specialbufs)
 (require 'workgroups-restore)
-(require 'workgroups-morph)
 
 
 ;;; workgroup utils
