@@ -9,6 +9,7 @@
 ;;; Code:
 
 (require 'macroexp)
+(require 'cl-lib)
 
 (or (fboundp 'declare-function)
     (defmacro declare-function (&rest args)
