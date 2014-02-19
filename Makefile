@@ -10,7 +10,10 @@ BATCHFLAGS = -batch -q --no-site-file
 FLAGS = -L src -batch -l cl.el -l ido.el -l workgroups2.el --eval "(ido-mode t)"
 FLAGSWG = -L src -batch -l cl.el -l ido.el -l workgroups2.el --eval "(ido-mode t)" --eval "(workgroups-mode 1)"
 
-test:
+clean:
+	find . -name '*.elc' -print0|xargs -0 rm
+
+test: clean
 # just load all files
 	${EMACS} -L src $(BATCHFLAGS) -f batch-byte-compile $(TEST_DIR)/*.el
 
