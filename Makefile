@@ -7,8 +7,8 @@ TRAVIS_FILE = .travis.yml
 
 # Compile with noninteractive and relatively clean environment.
 BATCHFLAGS = -batch -q --no-site-file
-FLAGS = -L src -batch -l ido.el -l workgroups2.el --eval "(ido-mode t)"
-FLAGSWG = -L src -batch -l cl-lib.el -l ido.el -l workgroups2.el --eval "(ido-mode t)" --eval "(workgroups-mode 1)"
+FLAGS =   -L src -batch -l workgroups2.el --eval "(ido-mode t)"
+FLAGSWG = -L src -batch -l workgroups2.el --eval "(ido-mode t)" --eval "(workgroups-mode 1)"
 WGCMD = ${EMACS} $(FLAGSWG) --debug-init --eval
 
 clean:
