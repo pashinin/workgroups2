@@ -8,7 +8,8 @@ TRAVIS_FILE = .travis.yml
 # Compile with noninteractive and relatively clean environment.
 BATCHFLAGS = -batch -q --no-site-file
 FLAGS = -L src -batch -l ido.el -l workgroups2.el --eval "(ido-mode t)"
-FLAGSWG = -L src -batch -l ido.el -l workgroups2.el --eval "(ido-mode t)" --eval "(workgroups-mode 1)"
+FLAGSWG = -L src -batch -l cl-lib.el -l ido.el -l workgroups2.el --eval "(ido-mode t)" --eval "(workgroups-mode 1)"
+WGCMD = ${EMACS} $(FLAGSWG) --debug-init --eval
 
 clean:
 	find . -name '*.elc' -delete
@@ -28,6 +29,9 @@ test: clean
 
 # show WG name
 	${EMACS} $(FLAGSWG) --eval "(message (wg-workgroup-name (wg-current-workgroup)))"
+
+# save session
+	${WGCMD} "(wg-save-session)"
 
 test-ido:
 	emacs -Q -L src -l cl.el -l ido.el -l workgroups2.el --eval "(ido-mode t)" --eval "(workgroups-mode 1)"
