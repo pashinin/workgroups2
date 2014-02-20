@@ -222,7 +222,7 @@ Cribbed from `org-id-b36-to-int-one-digit'."
 (defun wg-int-to-b36 (i &optional length)
   "Return a base 36 string from I."
   (let ((base 36) b36)
-    (cl-flet ((add-digit () (push (wg-int-to-b36-one-digit (mod i base)) b36)
+    (cl-labels ((add-digit () (push (wg-int-to-b36-one-digit (mod i base)) b36)
                          (setq i (/ i base))))
       (add-digit)
       (while (> i 0) (add-digit))
@@ -514,7 +514,7 @@ options."
   (declare (indent 2))
   (let* ((name (if (consp name-form) (car name-form) name-form))
          (prefixed-name (wg-symcat prefix "-" name)))
-    (cl-flet ((rebind (opstr)
+    (cl-labels ((rebind (opstr)
                       (let ((oldfnsym (wg-symcat opstr "-" prefix "-" name)))
                         `((fset ',(wg-symcat prefix "-" opstr "-" name)
                                 (symbol-function ',oldfnsym))
@@ -572,7 +572,7 @@ the cadr as the accessor function."
                               read hist default-value inherit-input-method)
   "PROMPT for an object that satisfies TEST, WARNING if necessary.
 ARGS are `read-from-minibuffer's args, after PROMPT."
-  (cl-flet ((read () (read-from-minibuffer
+  (cl-labels ((read () (read-from-minibuffer
                       prompt initial-contents keymap read hist
                       default-value inherit-input-method)))
     (let ((obj (read)))

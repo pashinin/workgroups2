@@ -431,7 +431,7 @@ BUFFER or `wg-default-buffer' is visible in the only window."
 
 (defun wg-scale-w-size (w width-scale height-scale)
   "Scale W's size by WIDTH-SCALE and HEIGHT-SCALE."
-  (cl-flet
+  (cl-labels
       ((wscale (width)  (truncate (* width  width-scale)))
        (hscale (height) (truncate (* height height-scale))))
     (wg-adjust-w-size w #'wscale #'hscale)))
@@ -555,9 +555,9 @@ Otherwise, reverse WTREE vertically."
   "Return a new list by flattening WTREE.
 KEY non returns returns a list of WTREE's wins.
 KEY non-nil returns a list of the results of calling KEY on each win."
-  (cl-flet
+  (cl-labels
       ((inner (w) (if (wg-win-p w) (list (if key (funcall key w) w))
-                    (cl-mapcan 'inner (wg-wtree-wlist w)))))
+                    (cl-mapcan #'inner (wg-wtree-wlist w)))))
     (inner wtree)))
 
 (defun wg-win-list (wtree)
@@ -1204,7 +1204,7 @@ BUFFER-LIST nil defaults to `buffer-list'."
   (let ((all-buf-uids (wg-all-buf-uids)))
     (wg-asetf (wg-buf-list)
               (cl-remove-if-not (lambda (uid) (member uid all-buf-uids)) it
-                             :key 'wg-buf-uid))))
+                                :key 'wg-buf-uid))))
 
 
 ;; FIXME: Duplicate buf names probably shouldn't be allowed.  An unrelated error
