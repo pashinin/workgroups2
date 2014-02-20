@@ -1,5 +1,5 @@
 # Workgroups for Emacs
-[![Build Status](https://api.travis-ci.org/pashinin/workgroups2.png)](https://travis-ci.org/pashinin/workgroups2)
+[![Build Status](https://travis-ci.org/pashinin/workgroups2.png?branch=master)](https://travis-ci.org/pashinin/workgroups2)
 
 ## What is it?
 
