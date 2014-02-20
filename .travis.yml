@@ -14,17 +14,14 @@ before_install:
   - sudo apt-get install -qq $EMACS
 install:
   - if test $EMACS = emacs; then
-      sudo apt-get install -qq emacs23-el;
+    sudo apt-get install -qq emacs23-el;
+    $CURL http://elpa.gnu.org/packages/cl-lib-0.4.el -o src/cl-lib.el;
     fi
   - if [ "$EMACS" = "emacs24" ]; then
       sudo apt-get install -qq emacs24-el;
     fi
   - if [ "$EMACS" = "emacs-snapshot" ]; then
       sudo apt-get install -qq emacs-snapshot-el emacs-snapshot-gtk;
-    fi
-  - if test $EMACS = emacs; then
-      $CURL https://raw.github.com/ohler/ert/fb3c278d/lisp/emacs-lisp/ert.el -o src/ert.el;
-      $CURL https://raw.github.com/emacsmirror/cl-lib/master/cl-lib.el -o src/cl-lib.el;
     fi
 script:
   $EMACS --version && make test EMACS=${EMACS}
