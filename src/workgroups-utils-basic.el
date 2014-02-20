@@ -28,9 +28,9 @@
 ;;
 ;;; Code:
 
-(require 'workgroups-compat)
-
 ;;; utils used in macros
+
+(require 'cl-lib)
 
 (defmacro wg-with-gensyms (syms &rest body)
   "Bind all symbols in SYMS to `gensym's, and eval BODY."

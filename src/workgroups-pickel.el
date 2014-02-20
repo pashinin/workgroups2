@@ -27,7 +27,6 @@
 ;;; Code:
 
 (require 'cl-lib)
-(require 'workgroups-compat)
 (require 'workgroups-utils-basic)
 
 

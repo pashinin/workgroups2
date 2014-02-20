@@ -83,15 +83,12 @@
 ;;
 ;;; Code:
 
-(require 'workgroups-compat)
-(require 'workgroups-utils-basic)
-(require 'workgroups-pickel)
-
 (require 'cl-lib)
 (eval-when-compile
   (require 'ido)
   (require 'iswitchb))
-
+(require 'workgroups-utils-basic)
+(require 'workgroups-pickel)
 (require 'workgroups-variables)
 (require 'workgroups-functions)
 (require 'workgroups-advice)

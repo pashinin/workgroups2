@@ -2,7 +2,7 @@
 ;;; Commentary:
 ;;; Code:
 
-(require 'workgroups-compat)
+(require 'workgroups-utils-basic)
 
 (defun wg-next-buffer-list-filter ()
   "Trigger a switch to the next buffer-list-filter."

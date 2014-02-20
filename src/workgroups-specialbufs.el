@@ -7,7 +7,6 @@
 ;;
 ;;; Code:
 
-(require 'workgroups-compat)
 (require 'workgroups-variables)
 (require 'workgroups-support-macro)
 

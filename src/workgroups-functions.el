@@ -3,7 +3,6 @@
 ;;; Code:
 
 (require 'cl-lib)
-(require 'workgroups-compat)
 (require 'workgroups-variables)
 (require 'workgroups-utils-basic)
 (require 'workgroups-structs)
