@@ -1,6 +1,8 @@
 language: emacs-lisp
 
 env:
+  global:
+    - CURL=curl -fsSkL --retry 9 --retry-delay 9
   matrix:
     - EMACS=emacs AKA=emacs23
     - EMACS=emacs24
@@ -19,6 +21,9 @@ install:
         sudo apt-get install -qq emacs-snapshot &&
         sudo apt-get install -qq emacs-snapshot-el emacs-snapshot-gtk;
     fi
-
+  - if test $EMACS = emacs; then
+      $CURL https://raw.github.com/ohler/ert/fb3c278d/lisp/emacs-lisp/ert.el -o src/ert.el;
+      $CURL https://raw.github.com/emacsmirror/cl-lib/master/cl-lib.el -o src/cl-lib.el;
+    fi
 script:
   $EMACS --version && make test EMACS=${EMACS}
