@@ -1144,15 +1144,19 @@ BUFFER nil defaults to `current-buffer'."
 ;; gc bufs
 
 (defun wg-wtree-buf-uids (wtree)
-  "Return a new list of the buf uids of all wins in wtree."
+  "Return a new list of the buf uids of all wins in WTREE."
+  (if (not wtree)
+      (error "WTREE is nil in `wg-wtree-buf-uids'!"))
   (wg-flatten-wtree wtree 'wg-win-buf-uid))
 
 (defun wg-wtree-unique-buf-uids (wtree)
-  "Return a list of the unique buf uids of all wins in wtree."
+  "Return a list of the unique buf uids of all wins in WTREE."
   (cl-remove-duplicates (wg-wtree-buf-uids wtree) :test 'string=))
 
 (defun wg-wconfig-buf-uids (wconfig)
   "Return WCONFIG's wtree's `wg-wtree-buf-uids'."
+  (if (not (wg-wconfig-wtree wconfig))
+      (error "WTREE is nil in `wg-wconfig-buf-uids'!"))
   (wg-wtree-unique-buf-uids (wg-wconfig-wtree wconfig)))
 
 (defun wg-workgroup-base-wconfig-buf-uids (workgroup)
