@@ -2,6 +2,7 @@
 ;;; Commentary:
 ;;; Code:
 
+(require 'cl-lib)
 (require 'workgroups-compat)
 (require 'workgroups-variables)
 (require 'workgroups-utils-basic)
@@ -269,7 +270,7 @@ If BUFOBJ is a buffer or a buffer name, see `wg-buffer-uid-or-add'."
 (defun wg-window-tree-to-wtree (window-tree)
   "Return the serialization (a wg-wtree) of Emacs window tree WINDOW-TREE."
   (wg-barf-on-active-minibuffer)
-  (cl-flet
+  (cl-labels
       ((inner (w) (if (windowp w) (wg-window-to-win w)
                     (wg-dbind (dir edges . wins) w
                       (wg-make-wtree
@@ -459,8 +460,7 @@ new wlist, return it instead of a new wtree."
         (let* ((min-size (wg-min-size dir))
                (max (- hb1 1 min-size))
                (lastw (wg-last1 wlist)))
-          ;;(wg--with-temporary-redefinitions
-          (cl-flet
+          (cl-labels
               ((mapwl
                 (wl)
                 (wg-dbind (sw . rest) wl
@@ -517,7 +517,7 @@ with `wg-scale-wconfigs-wtree' to fit the frame as it exists."
 If DIR is nil, reverse WTREE horizontally.
 If DIR is 'both, reverse WTREE both horizontally and vertically.
 Otherwise, reverse WTREE vertically."
-  (cl-flet
+  (cl-labels
       ((inner (w) (if (wg-win-p w) w
                     (wg-with-slots w ((d1 wg-wtree-dir))
                       (wg-make-wtree
@@ -531,7 +531,7 @@ Otherwise, reverse WTREE vertically."
 
 (defun wg-wtree-move-window (wtree offset)
   "Offset `selected-window' OFFSET places in WTREE."
-  (cl-flet
+  (cl-labels
       ((inner (w) (if (wg-win-p w) w
                     (wg-with-slots w ((wlist wg-wtree-wlist))
                       (wg-make-wtree

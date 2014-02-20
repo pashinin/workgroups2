@@ -137,7 +137,7 @@
   "Return a table binding unique subobjects of OBJ to ids."
   (let ((binds (make-hash-table :test 'eq))
         (id -1))
-    (cl-flet
+    (cl-labels
      ((inner (obj)
            (unless (gethash obj binds)
               (puthash obj (cl-incf id) binds)
