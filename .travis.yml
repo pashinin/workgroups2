@@ -13,7 +13,7 @@ before_install:
   - sudo apt-get update -qq
   - sudo apt-get install -qq $EMACS
 install:
-  - if [ "$EMACS" = "emacs23" ]; then
+  - if test $EMACS = emacs; then
       sudo apt-get install -qq emacs23-el;
     fi
   - if [ "$EMACS" = "emacs24" ]; then
