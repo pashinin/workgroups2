@@ -1402,20 +1402,20 @@ for display by `other-buffer' in the current workgroup."
                 (:brace wg-mode-line-decor-left-brace)
                 (:mode (wg-workgroup-name wg))
                 (if (not wg-mode-line-only-name)
-                    (progn
-                      (:div wg-mode-line-decor-divider)
-                      (wg-mode-line-buffer-association-indicator wg)
-                      (:div wg-mode-line-decor-divider)
-                      (if (window-dedicated-p)
-                                 wg-mode-line-decor-window-dedicated
-                               wg-mode-line-decor-window-undedicated)
-                      (:div wg-mode-line-decor-divider)
-                      (if (wg-session-modified (wg-current-session))
-                                 wg-mode-line-decor-session-modified
-                               wg-mode-line-decor-session-unmodified)
-                      (if (wg-workgroup-modified wg)
-                          wg-mode-line-decor-workgroup-modified
-                        wg-mode-line-decor-workgroup-unmodified)))
+                    (concat
+                     (wg-add-face :div wg-mode-line-decor-divider)
+                     (wg-mode-line-buffer-association-indicator wg)
+                     (wg-add-face :div wg-mode-line-decor-divider)
+                     (if (window-dedicated-p)
+                         wg-mode-line-decor-window-dedicated
+                       wg-mode-line-decor-window-undedicated)
+                     (wg-add-face :div wg-mode-line-decor-divider)
+                     (if (wg-session-modified (wg-current-session))
+                         wg-mode-line-decor-session-modified
+                       wg-mode-line-decor-session-unmodified)
+                     (if (wg-workgroup-modified wg)
+                         wg-mode-line-decor-workgroup-modified
+                       wg-mode-line-decor-workgroup-unmodified)))
                 (:brace wg-mode-line-decor-right-brace)))
           (t (if wg-display-nowg
                  (progn
