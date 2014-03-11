@@ -649,7 +649,11 @@ If OBJ is nil, return the current workgroup, or error unless NOERROR."
 
 
 ;;; workgroup parameters
-
+;;
+;; Quick test:
+;; (wg-workgroup-parameters (wg-current-workgroup))
+;; (wg-set-workgroup-parameter (wg-current-workgroup) 'test1 t)
+;; (wg-workgroup-parameter (wg-current-workgroup) 'test1)
 (defun wg-workgroup-parameter (workgroup parameter &optional default)
   "Return WORKGROUP's value for PARAMETER.
 If PARAMETER is not found, return DEFAULT which defaults to nil.
