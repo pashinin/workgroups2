@@ -349,6 +349,11 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
                                 (wg-dbind (url) vars
                                   (w3m-goto-url url))))))
 
+;; Erlang shell
+(wg-support 'erlang-shell-mode 'erlang
+            `((deserialize . ,(lambda (buffer vars)
+                                (erlang-shell)))))
+
 
 ;; Wanderlust modes:
 ;; WL - folders
