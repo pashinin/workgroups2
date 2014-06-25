@@ -36,7 +36,19 @@
   "Symbol identifying a stream as a pickel.")
 
 (defvar wg-pickel-pickelable-types
-  '(integer float symbol string cons vector hash-table)
+  '(integer
+    float
+    symbol
+    string
+    cons
+    vector
+    hash-table
+    buffer
+    ;;window-configuration
+    ;;frame
+    ;;window
+    ;;process
+    )
   "Types pickel can serialize.")
 
 (defvar wg-pickel-object-serializers
@@ -46,7 +58,9 @@
     (symbol     . wg-pickel-symbol-serializer)
     (cons       . wg-pickel-cons-serializer)
     (vector     . wg-pickel-vector-serializer)
-    (hash-table . wg-pickel-hash-table-serializer))
+    (hash-table . wg-pickel-hash-table-serializer)
+    ;;(window-configuration   . wg-pickel-window-configuration-serializer)
+    (buffer     . wg-pickel-buffer-serializer))
   "Alist mapping types to object serialization functions.")
 
 (defvar wg-pickel-link-serializers
@@ -59,7 +73,8 @@
   '((s . wg-pickel-deserialize-uninterned-symbol)
     (c . wg-pickel-deserialize-cons)
     (v . wg-pickel-deserialize-vector)
-    (h . wg-pickel-deserialize-hash-table))
+    (h . wg-pickel-deserialize-hash-table)
+    (b . wg-pickel-deserialize-buffer))
   "Alist mapping type keys to object deserialization functions.")
 
 (defvar wg-pickel-link-deserializers
@@ -182,6 +197,15 @@
         (hash-table-rehash-threshold table)
         (hash-table-weakness table)))
 
+(defun wg-pickel-window-configuration-serializer (wc)
+  "Return Window configuration WC's serialization."
+  (list 'wc
+        1))
+
+(defun wg-pickel-buffer-serializer (buffer)
+  "Return BUFFER's UID in workgroups buffer list."
+  (list 'b (wg-add-buffer-to-buf-list buffer)))
+
 (defun wg-pickel-serialize-objects (binds)
   "Return a list of serializations of the objects in BINDS."
   (let (result)
@@ -250,6 +274,10 @@
   "Return a new hash-table with the specified properties."
   (make-hash-table :test test :size size :rehash-size rsize
                    :rehash-threshold rthresh :weakness weakness))
+
+(defun wg-pickel-deserialize-buffer (uid)
+  "Return a restored buffer from it's UID."
+  (wg-restore-buffer (wg-find-buf-by-uid uid)))
 
 (defun wg-pickel-deserialize-objects (serial-objects)
   "Return a hash-table of objects deserialized from SERIAL-OBJECTS."
