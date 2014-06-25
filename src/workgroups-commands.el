@@ -41,6 +41,13 @@
           (wg-set-previous-workgroup current)
           (wg-set-current-workgroup workgroup)
 
+          ;; Save "last-workgroup" to the session params
+          (if (and (wg-current-session t)
+                   (wg-current-workgroup t))
+              (wg-set-session-parameter (wg-current-session t)
+                                        'last-workgroup
+                                        (wg-workgroup-name (wg-current-workgroup))))
+
           ;; If a workgroup had ECB - turn it on
           (if (and (boundp 'ecb-minor-mode)
                    (not ecb-minor-mode)
@@ -719,7 +726,13 @@ the session regardless of whether it's been modified."
            (if (and wg-open-this-wg
                     (member wg-open-this-wg (wg-workgroup-names)))
                (wg-switch-to-workgroup wg-open-this-wg)
-             (wg-switch-to-workgroup (car it))))
+             (if (and wg-load-last-workgroup
+                      (member (wg-session-parameter (wg-current-session t) 'last-workgroup)
+                              (wg-workgroup-names)))
+                 (wg-switch-to-workgroup
+                  (wg-session-parameter (wg-current-session t) 'last-workgroup))
+               (wg-switch-to-workgroup (car it)))
+             ))
          (wg-fontified-message (:cmd "Loaded: ") (:file filename)))
         (t
          (wg-query-and-save-if-modified)

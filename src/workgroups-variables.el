@@ -24,8 +24,8 @@
   :type 'string
   :group 'workgroups)
 
-(defcustom wg-load-last-workgroup nil
-  "Load last active, not first, workgroup from all your workgroups."
+(defcustom wg-load-last-workgroup t
+  "Load last active (not first) workgroup from all your workgroups if it exists."
   :group 'workgroups
   :type 'boolean)
 
