@@ -18,10 +18,17 @@
 (defun wg-switch-to-workgroup (workgroup &optional noerror)
   "Switch to WORKGROUP."
   (interactive (list (wg-read-workgroup-name)))
-  ;; Set a parameter when using ECB
+  ;; Mark if ECB is active
   (if (wg-current-workgroup t)
       (wg-set-workgroup-parameter (wg-current-workgroup t) 'ecb (and (boundp 'ecb-minor-mode)
                                                                      ecb-minor-mode)))
+  ;;(wg-set-workgroup-parameter (wg-current-workgroup t) 'ecb-win-config (ecb-current-window-configuration))
+  ;; (type-of (ecb-current-window-configuration))
+  ;; (type-of (car (ecb-current-window-configuration)))
+  ;; (type-of (car (nthcdr 3 (ecb-current-window-configuration))))
+  ;; (wg-pickelable-or-error (ecb-current-window-configuration))
+  ;;(ecb-current-window-configuration)
+  ;;)
   (let ((workgroup (wg-get-workgroup-create workgroup))
         (current (wg-current-workgroup t)))
     (when (and (eq workgroup current) (not noerror))
@@ -54,6 +61,8 @@
                    (wg-workgroup-parameter (wg-current-workgroup t) 'ecb nil))
               (let ((ecb-split-edit-window-after-start 'before-deactivation))
                 (ecb-activate)))
+          ;;(ecb-last-window-config-before-deactivation
+          ;; (wg-workgroup-parameter (wg-current-workgroup t) 'ecb-win-config nil)))
 
           (run-hooks 'wg-switch-to-workgroup-hook)
           (wg-fontified-message
@@ -674,6 +683,8 @@ Think of it as `write-file' for Workgroups sessions."
   (wg-perform-session-maintenance)
   (setf (wg-session-file-name (wg-current-session)) filename)
   (setf (wg-session-version (wg-current-session)) wg-version)
+  (if wg-control-frames
+      (wg-save-frames))
   (wg-write-sexp-to-file
    (wg-pickel-all-session-parameters (wg-current-session))
    filename)
@@ -712,6 +723,21 @@ the session regardless of whether it's been modified."
          (wg-save-session)
        (wg-query-and-save-if-modified)))))
 
+(defun wg-save-frames ()
+  "Save opened frames as a session parameter.
+Exclude `selected-frame' and daemon one (if any).
+http://stackoverflow.com/questions/21151992/why-emacs-as-daemon-gives-1-more-frame-than-is-opened"
+  (interactive)
+  (let ((fl (frame-list)))
+    (mapc (lambda (frame)
+            (if (string-equal "initial_terminal" (terminal-name frame))
+                (delete frame fl))) fl)
+    (setq fl (delete (selected-frame) fl))
+    (if (wg-current-session t)
+          (wg-set-session-parameter (wg-current-session t)
+                                    'frame-list
+                                    (mapcar 'wg-frame-to-wconfig fl)))))
+
 (defun wg-find-session-file (filename)
   "Load a session visiting FILENAME, creating one if none already exists."
   (interactive "FFind session file: ")
@@ -733,6 +759,8 @@ the session regardless of whether it's been modified."
                   (wg-session-parameter (wg-current-session t) 'last-workgroup))
                (wg-switch-to-workgroup (car it)))
              ))
+         (if wg-control-frames
+             (wg-restore-frames))
          (wg-fontified-message (:cmd "Loaded: ") (:file filename)))
         (t
          (wg-query-and-save-if-modified)

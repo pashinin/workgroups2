@@ -131,15 +131,16 @@ a wtree."
     (wg-restore-window-tree-helper wtree)
     (wg-awhen wg-window-tree-selected-window (select-window it))))
 
-(defun wg-wconfig-restore-frame-position (wconfig)
-  "Restore `selected-frame's position from WCONFIG."
+(defun wg-wconfig-restore-frame-position (wconfig &optional frame)
+  "Use WCONFIG to restore FRAME's position.
+If frame is nil then `selected-frame'."
   (wg-when-let ((left (wg-wconfig-left wconfig))
                 (top (wg-wconfig-top wconfig)))
     ;; Check that arguments are integers
     ;; Problem: https://github.com/pashinin/workgroups2/issues/15
     (if (and (integerp left)
              (integerp top))
-        (set-frame-position (selected-frame) left top))))
+        (set-frame-position frame left top))))
 
 (defun wg-wconfig-restore-scroll-bars (wconfig)
   "Restore `selected-frame's scroll-bar settings from WCONFIG."
@@ -162,20 +163,22 @@ Return a scaled copy of WCONFIG."
                            (frame-parameter nil 'width)
                            (frame-parameter nil 'height)))
 
-(defun wg-frame-resize-and-position (wconfig)
-  "Resize and position a frame based on WCONFIG of current workgroup."
+(defun wg-frame-resize-and-position (wconfig &optional frame)
+  "Apply WCONFIG's size and position to a FRAME."
   (interactive)
+  (unless frame
+    (setq frame (selected-frame)))
   (let* ((params (wg-wconfig-parameters wconfig))
          fullscreen)
-    (set-frame-parameter nil 'fullscreen (if (assoc 'fullscreen params)
-                                             (cdr (assoc 'fullscreen params))
-                                           nil))
+    (set-frame-parameter frame 'fullscreen (if (assoc 'fullscreen params)
+                                               (cdr (assoc 'fullscreen params))
+                                             nil))
     (when (and wg-restore-frame-position
-               (not (frame-parameter nil 'fullscreen)))
-      (wg-wconfig-restore-frame-position wconfig))
+               (not (frame-parameter frame 'fullscreen)))
+      (wg-wconfig-restore-frame-position wconfig frame))
     ))
 
-(defun wg-restore-frame-size-position (wconfig)
+(defun wg-restore-frame-size-position (wconfig &optional fs)
   "Smart-restore of frame size and position.
 
 Depending on `wg-remember-frame-for-each-wg' frame parameters may
@@ -195,9 +198,10 @@ ignored.
     (setq fullscreen (if (assoc 'fullscreen params)
                          (cdr (assoc 'fullscreen params))
                        nil))
-    (when (and fullscreen
-             (or wg-remember-frame-for-each-wg
-                 (null (wg-current-workgroup t))))
+    (when (and fs
+               fullscreen
+               (or wg-remember-frame-for-each-wg
+                   (null (wg-current-workgroup t))))
       (set-frame-parameter nil 'fullscreen fullscreen)
       ;; I had bugs restoring maximized frame:
       ;; Frame could be maximized but buffers are not scaled to fit it.
@@ -213,17 +217,33 @@ ignored.
       (wg-wconfig-restore-frame-position wconfig))
     ))
 
-;; FIXME: throw a specific error if the restoration was unsuccessful
-(defun wg-restore-wconfig (wconfig)
-  "Restore a workgroup configuration WCONFIG in `selected-frame'.
+(defun wg-restore-frames ()
+  "Try to recreate opened frames, take info from session's 'frame-list parameter."
+  (interactive)
+  (delete-other-frames)
+  (when (wg-current-session t)
+    (let ((fl (wg-session-parameter (wg-current-session t) 'frame-list nil))
+          (frame (selected-frame)))
+      (mapc (lambda (wconfig)
+              (with-selected-frame (make-frame)
+                ;;(wg-frame-resize-and-position wconfig)
+                ;;(wg-restore-frame-size-position wconfig)
+                ;;(wg-wconfig-restore-frame-position wconfig)
+                (wg-restore-wconfig wconfig)
+                )) fl)
+      (select-frame-set-input-focus frame))))
 
+;; FIXME: throw a specific error if the restoration was unsuccessful
+(defun wg-restore-wconfig (wconfig &optional frame)
+  "Restore a workgroup configuration WCONFIG in a FRAME.
 Runs each time you're switching workgroups."
+  (unless frame
+    (setq frame (selected-frame)))
   (let ((wg-record-incorrectly-restored-bufs t)
         (wg-incorrectly-restored-bufs nil)
         (params (wg-wconfig-parameters wconfig))
         fullscreen wtree)
     (wg-barf-on-active-minibuffer)
-    (wg-restore-frame-size-position wconfig)
     (when wg-restore-scroll-bars
       (wg-wconfig-restore-scroll-bars wconfig))
     (setq wtree (wg-scale-wconfig-to-frame wconfig))  ; scale wtree to frame size
@@ -235,7 +255,7 @@ Runs each time you're switching workgroups."
     (when (and wg-restore-frame-position
                (not (frame-parameter nil 'fullscreen))
                (null (wg-current-workgroup t)))
-      (wg-wconfig-restore-frame-position wconfig))
+      (wg-wconfig-restore-frame-position wconfig frame))
 
     (when wg-incorrectly-restored-bufs
       (message "Unable to restore these buffers: %S\

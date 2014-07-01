@@ -61,10 +61,7 @@
   (height)
   (vertical-scroll-bars)
   (scroll-bar-width)
-  (wtree)
-  ;;(fullscreen)
-  )
-;; wg-wconfig
+  (wtree))
 
 (wg-defstruct wg workgroup
   (uid (wg-generate-uid))

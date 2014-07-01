@@ -75,6 +75,7 @@
     (v . wg-pickel-deserialize-vector)
     (h . wg-pickel-deserialize-hash-table)
     (b . wg-pickel-deserialize-buffer))
+  ;; (f . wg-pickel-deserialize-frame))
   "Alist mapping type keys to object deserialization functions.")
 
 (defvar wg-pickel-link-deserializers

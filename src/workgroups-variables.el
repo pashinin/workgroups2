@@ -29,6 +29,11 @@
   :group 'workgroups
   :type 'boolean)
 
+(defcustom wg-control-frames t
+  "Save/restore frames."
+  :group 'workgroups
+  :type 'boolean)
+
 
 ;; keybinding customization
 
