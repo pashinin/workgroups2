@@ -171,6 +171,14 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
                                 (switch-to-buffer "*prolog*")
                                 (goto-char (point-max))))))
 
+;; ensime-inf
+(wg-support 'ensime-inf-mode 'ensime
+            `((deserialize . ,(lambda (buffer vars)
+                                (save-window-excursion
+                                  (ensime-inf-switch))
+                                (switch-to-buffer ensime-inf-buffer-name)
+                                (goto-char (point-max))))))
+
 ;; compilation-mode
 ;;
 ;; I think it's not a good idea to compile a program just to switch
