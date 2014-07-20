@@ -24,6 +24,11 @@
   :type 'string
   :group 'workgroups)
 
+(defcustom wg-modeline-string " wg"
+  "Appears in modeline."
+  :type 'string
+  :group 'workgroups)
+
 (defcustom wg-load-last-workgroup t
   "Load last active (not first) workgroup from all your workgroups if it exists."
   :group 'workgroups

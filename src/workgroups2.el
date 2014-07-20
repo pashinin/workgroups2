@@ -216,7 +216,7 @@ Called when `workgroups-mode' is turned off."
 Adds entries to `minor-mode-list', `minor-mode-alist' and
 `minor-mode-map-alist'."
   (cl-pushnew 'workgroups-mode minor-mode-list)
-  (cl-pushnew '(workgroups-mode " wg") minor-mode-alist :test 'equal)
+  (cl-pushnew '(workgroups-mode wg-modeline-string) minor-mode-alist :test 'equal)
   (setq minor-mode-map-alist
         (cons (cons 'workgroups-mode (wg-make-workgroups-mode-map))
               (delete (assoc 'workgroups-mode minor-mode-map-alist)
