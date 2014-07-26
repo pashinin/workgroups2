@@ -136,8 +136,6 @@
    (kbd "E")          'wg-echo-current-workgroup
    (kbd "C-e")        'wg-echo-all-workgroups
    (kbd "e")          'wg-echo-all-workgroups
-   (kbd "C-m")        'wg-echo-last-message
-   (kbd "m")          'wg-echo-last-message
 
    ;; misc
 

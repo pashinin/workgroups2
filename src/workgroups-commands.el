@@ -825,13 +825,6 @@ http://stackoverflow.com/questions/21151992/why-emacs-as-daemon-gives-1-more-fra
     (:cmd "Workgroups: ")
     (wg-workgroup-list-display)))
 
-(defun wg-echo-last-message ()
-  "Echo the last message Workgroups sent to the echo area.
-The string is passed through a format arg to escape %'s."
-  (interactive)
-  (message "%s" wg-last-message))
-
-
 
 ;;; help commands
 
