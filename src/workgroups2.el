@@ -196,20 +196,21 @@ Called when `workgroups-mode' is turned off."
   "Add or remove all of Workgroups' hooks, depending on REMOVE."
   (wg-add-or-remove-hooks
    remove
-   'kill-emacs-query-functions 'wg-save-session-on-emacs-exit
-   'delete-frame-hook 'wg-update-working-wconfig-on-delete-frame
+   'kill-emacs-query-functions       'wg-save-session-on-emacs-exit
+   'delete-frame-hook                'wg-update-working-wconfig-on-delete-frame
    'wg-pre-window-configuration-change-hook 'wg-update-working-wconfig-hook
    'window-configuration-change-hook 'wg-flag-window-configuration-changed
-   'post-command-hook 'wg-undoify-window-configuration-change
-   'minibuffer-setup-hook 'wg-turn-on-minibuffer-mode
-   'minibuffer-exit-hook 'wg-flag-just-exited-minibuffer
-   'minibuffer-exit-hook 'wg-turn-off-minibuffer-mode
-   'ido-make-buffer-list-hook 'wg-set-ido-buffer-list
-   'iswitchb-make-buflist-hook 'wg-set-iswitchb-buffer-list
-   'kill-buffer-hook 'wg-auto-dissociate-buffer-hook
-   'kill-buffer-hook 'wg-update-buffer-in-buf-list
-   'window-configuration-change-hook 'wg-associate-frame-buffers
-   'after-make-frame-functions 'wg-after-make-frame))
+   'post-command-hook                'wg-undoify-window-configuration-change
+   'minibuffer-setup-hook            'wg-turn-on-minibuffer-mode
+   'minibuffer-exit-hook             'wg-flag-just-exited-minibuffer
+   'minibuffer-exit-hook             'wg-turn-off-minibuffer-mode
+   'ido-make-buffer-list-hook        'wg-set-ido-buffer-list
+   'iswitchb-make-buflist-hook       'wg-set-iswitchb-buffer-list
+   'kill-buffer-hook                 'wg-auto-dissociate-buffer-hook
+   'kill-buffer-hook                 'wg-update-buffer-in-buf-list
+   ;;'window-configuration-change-hook 'wg-associate-frame-buffers
+   'after-make-frame-functions       'wg-after-make-frame
+   ))
 
 (defun wg-add-workgroups-mode-minor-mode-entries ()
   "Add Workgroups' minor-mode entries.
