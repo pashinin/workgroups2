@@ -89,8 +89,7 @@ Before selecting a new frame."
   ;; switch-to-buffer
   ;; (ad-define-subr-args 'switch-to-buffer '(buffer-or-name &optional norecord))
   (ad-enable-advice 'switch-to-buffer 'after 'wg-auto-associate-buffer)
-  (ad-enable-advice
-   'switch-to-buffer 'before 'wg-pre-window-configuration-change-hook)
+  (ad-enable-advice 'switch-to-buffer 'before 'wg-pre-window-configuration-change-hook)
   (ad-activate 'switch-to-buffer)
 
   ;; set-window-buffer
@@ -143,8 +142,7 @@ Before selecting a new frame."
 
   ;; switch-to-buffer
   (ad-disable-advice 'switch-to-buffer 'after 'wg-auto-associate-buffer)
-  (ad-disable-advice
-   'switch-to-buffer 'before 'wg-pre-window-configuration-change-hook)
+  (ad-disable-advice 'switch-to-buffer 'before 'wg-pre-window-configuration-change-hook)
   (ad-deactivate 'switch-to-buffer)
 
   ;; set-window-buffer
