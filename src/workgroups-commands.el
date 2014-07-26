@@ -808,24 +808,6 @@ http://stackoverflow.com/questions/21151992/why-emacs-as-daemon-gives-1-more-fra
   (wg-toggle-and-message 'wg-mode-line-display-on))
 
 
-
-;;; echo commands
-
-(defun wg-echo-current-workgroup ()
-  "Display the name of the current workgroup in the echo area."
-  (interactive)
-  (wg-fontified-message
-    (:cmd "Current: ")
-    (:cur (wg-workgroup-name (wg-current-workgroup)))))
-
-(defun wg-echo-all-workgroups ()
-  "Display the names of all workgroups in the echo area."
-  (interactive)
-  (wg-fontified-message
-    (:cmd "Workgroups: ")
-    (wg-workgroup-list-display)))
-
-
 ;;; help commands
 
 (defun wg-help ()

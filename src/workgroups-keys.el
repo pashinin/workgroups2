@@ -130,13 +130,6 @@
    (kbd "C-t C-d")    'wg-toggle-window-dedicated-p
 
 
-   ;; echoing
-
-   (kbd "S-C-e")      'wg-echo-current-workgroup
-   (kbd "E")          'wg-echo-current-workgroup
-   (kbd "C-e")        'wg-echo-all-workgroups
-   (kbd "e")          'wg-echo-all-workgroups
-
    ;; misc
 
    (kbd "A")          'wg-rename-workgroup
