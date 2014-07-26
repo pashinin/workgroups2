@@ -243,7 +243,6 @@ If ARG is anything else, turn on `workgroups-mode'."
     (wg-add-workgroups-mode-minor-mode-entries)
     (wg-enable-all-advice)
     (wg-add-or-remove-workgroups-hooks nil)
-    ;;(mapcar 'wg-after-make-frame (frame-list))
     (mapc 'wg-after-make-frame (frame-list))
     (wg-add-mode-line-display)
     (wg-find-session-file-on-workgroups-mode-entry)
