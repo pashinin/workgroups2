@@ -357,6 +357,9 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
                                 (wg-dbind (url) vars
                                   (w3m-goto-url url))))))
 
+;; notmuch
+(wg-support 'notmuch-hello-mode 'notmuch
+            `((deserialize . ,(lambda (buffer vars) (notmuch)))))
 
 ;; Wanderlust modes:
 ;; WL - folders
