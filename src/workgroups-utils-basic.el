@@ -629,8 +629,7 @@ Anything else is formatted with %s to produce a string."
 (defun wg-barf-on-active-minibuffer ()
   "Throw an error when the minibuffer is active."
   (when (wg-minibuffer-active-p)
-    (error "Workgroup operations aren't permitted while the \
-minibuffer is active")))
+    (error "Exit minibuffer to use workgroups functions!")))
 
 (defmacro wg-set-parameter (place parameter value)
   "Set PARAMETER to VALUE at PLACE.
@@ -641,7 +640,6 @@ This needs to be a macro to allow specification of a setf'able place."
        (wg-pickelable-or-error ,v)
        (setf ,place (wg-aput ,place ,p ,v))
        ,v)))
-
 
 
 ;;; uid utils
