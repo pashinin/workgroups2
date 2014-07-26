@@ -825,23 +825,6 @@ http://stackoverflow.com/questions/21151992/why-emacs-as-daemon-gives-1-more-fra
     (:cmd "Workgroups: ")
     (wg-workgroup-list-display)))
 
-(defun wg-echo-time ()
-  "Echo the current time.  Optionally includes `battery' info."
-  (interactive)
-  (wg-message ;; Pass through format to escape the % in `battery'
-   "%s" (wg-fontify
-          (:cmd "Current time: ")
-          (:msg (format-time-string wg-time-format))
-          (when (and wg-display-battery (fboundp 'battery))
-            (wg-fontify "\n" (:cmd "Battery: ") (:msg (battery)))))))
-
-(defun wg-echo-version ()
-  "Echo Workgroups' current version number."
-  (interactive)
-  (wg-fontified-message
-    (:cmd "Workgroups version: ")
-    (:msg wg-version)))
-
 (defun wg-echo-last-message ()
   "Echo the last message Workgroups sent to the echo area.
 The string is passed through a format arg to escape %'s."

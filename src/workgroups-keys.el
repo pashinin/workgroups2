@@ -136,12 +136,8 @@
    (kbd "E")          'wg-echo-current-workgroup
    (kbd "C-e")        'wg-echo-all-workgroups
    (kbd "e")          'wg-echo-all-workgroups
-   ;; FIXME: possibly get rid of the time stuff
-   (kbd "T")          'wg-echo-time
-   (kbd "V")          'wg-echo-version
    (kbd "C-m")        'wg-echo-last-message
    (kbd "m")          'wg-echo-last-message
-
 
    ;; misc
 
