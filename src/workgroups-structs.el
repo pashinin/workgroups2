@@ -1,22 +1,22 @@
 ;;; workgroups-structs.el --- Data structures for WG
 ;;; Commentary:
 ;;
-;; Copyright (C) Sergey Pashinin
-;; Author: Sergey Pashinin <sergey@pashinin.com>
+;; `wg-defstruct' - it creates functions named like "wg-buf-...",
+;; "wg-session-...", "wg-make-win" and so on (to manipulate the
+;; structures)
 ;;
-;; `wg-defstruct'
-;;
-;; It creates some functions named like "wg-buf-...", "wg-session-..."
+;; So if you have "(wg-defstruct wg session ...)" - then you have
+;; `wg-session-file-name' and other defined fields.
 ;;
 ;; To get a value you can use:
-;; (wg-session-... (wg-current-session))
-;; Like:
-;; (wg-session-file-name (wg-current-session))
-;; (wg-workgroup-parameters (wg-current-workgroup))
+;;   (wg-session-... (wg-current-session))
 ;;
-;; To set a value (in `wg-write-session-file'):
+;; Example:
+;;   (wg-session-file-name (wg-current-session))
+;;   (wg-workgroup-parameters (wg-current-workgroup))
 ;;
-;; (setf (wg-session-file-name (wg-current-session)) filename)
+;; To set a value (code used in `wg-write-session-file'):
+;;   (setf (wg-session-file-name (wg-current-session)) filename)
 ;;
 ;;; Code:
 
