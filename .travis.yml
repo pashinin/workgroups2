@@ -4,7 +4,6 @@ env:
   global:
     - CURL=curl -fsSkL --retry 9 --retry-delay 9
   matrix:
-    - EMACS=emacs AKA=emacs23
     - EMACS=emacs24
     - EMACS=emacs-snapshot
 
@@ -13,10 +12,6 @@ before_install:
   - sudo apt-get update -qq
   - sudo apt-get install -qq $EMACS
 install:
-  - if test $EMACS = emacs; then
-    sudo apt-get install -qq emacs23-el;
-    $CURL http://elpa.gnu.org/packages/cl-lib-0.4.el -o src/cl-lib.el;
-    fi
   - if [ "$EMACS" = "emacs24" ]; then
       sudo apt-get install -qq emacs24-el;
     fi

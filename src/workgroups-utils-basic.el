@@ -1,27 +1,4 @@
 ;;; workgroups-utils.el --- Utilities used by Workgroups
-;;
-;; Copyright (C) 2010, 2011 tlh
-;;
-;; Author: tlh <thunkout at gmail dot com>
-;; Keywords: session management window-configuration persistence
-;; Homepage: https://github.com/tlh/workgroups.el
-;; Version   1.0.0
-
-;; This program is free software; you can redistribute it and/or
-;; modify it under the terms of the GNU General Public License as
-;; published by the Free Software Foundation; either version 2 of
-;; the License, or (at your option) any later version.
-
-;; This program is distributed in the hope that it will be
-;; useful, but WITHOUT ANY WARRANTY; without even the implied
-;; warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;; PURPOSE.  See the GNU General Public License for more details.
-
-;; You should have received a copy of the GNU General Public
-;; License along with this program; if not, write to the Free
-;; Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
-;; MA 02111-1307 USA
-
 ;;; Commentary:
 ;;
 ;; A bunch of general purpose-ish utilities used by Workgroups.
@@ -31,6 +8,7 @@
 ;;; utils used in macros
 
 (require 'cl-lib)
+(require 'workgroups-faces)
 
 (defmacro wg-with-gensyms (syms &rest body)
   "Bind all symbols in SYMS to `gensym's, and eval BODY."
@@ -44,7 +22,7 @@ Abbreviation of `destructuring-bind'."
   `(cl-destructuring-bind ,args ,expr ,@body))
 
 (defun wg-partition (list &optional n step)
-  "Return list of N-length sublists of LIST, offset by STEP.
+  "Take LIST, return a list of N length sublists, offset by STEP.
 N defaults to 2, and STEP defaults to N.
 Iterative to prevent stack overflow."
   (let* ((n (or n 2)) (step (or step n)) acc)
@@ -123,19 +101,6 @@ Else do ELSE...
   (declare (indent 1))
   `(wg-aif ,test (progn ,@body)))
 
-(defmacro wg-acond (&rest clauses)
-  "Anaphoric `cond'."
-  (when clauses
-    (wg-dbind ((condition . body) . rest) clauses
-      `(wg-aif ,condition (progn ,@body)
-         (wg-acond ,@rest)))))
-
-(defmacro wg-aand (&rest args)
-  "Anaphoric `and'."
-  (cond ((null args) t)
-        ((null (cdr args)) (car args))
-        (t `(wg-aif ,(car args) (aand ,@(cdr args))))))
-
 (defmacro wg-asetf (&rest places-and-values)
   "Anaphoric `setf'."
   `(progn ,@(mapcar (lambda (pv) `(let ((it ,(car pv))) (setf ,@pv)))
@@ -144,11 +109,6 @@ Else do ELSE...
 
 
 ;;; other control structures
-
-(defmacro wg-until (test &rest body)
-  "`while' not."
-  (declare (indent 1))
-  `(while (not ,test) ,@body))
 
 (defmacro wg-destructuring-dolist (spec &rest body)
   "Loop over a list.
@@ -168,24 +128,6 @@ into a var, like so: (a (b c) . rest)
                ,@body
                (setq ,list-sym ,rest)))
            ,result)))))
-
-
-
-;;; boolean operators
-
-(defmacro wg-eager-or (&rest conditions)
-  "Evaluate all CONDITIONS.  Return the first non-nil return value."
-  (let ((syms (mapcar (lambda (x) (cl-gensym)) conditions)))
-    `(let ,(cl-mapcar 'list syms conditions)
-       (or ,@syms))))
-
-(defmacro wg-eager-and (&rest conditions)
-  "Evaluate all conditions.  If any return nil, return nil.
-Otherwise return the return value of the last condition."
-  (let ((syms (mapcar (lambda (x) (cl-gensym)) conditions)))
-    `(let ,(cl-mapcar 'list syms conditions)
-       (and ,@syms))))
-
 
 
 ;;; numbers
@@ -386,32 +328,6 @@ If PARAM is not found, return DEFAULT which defaults to nil."
   "`remove' KEY's key-value-pair from ALIST."
   (remove (assoc key alist) alist))
 
-(defmacro wg-abind (alist binds &rest body)
-  "Bind values in ALIST to symbols in BINDS, then eval BODY.
-If an elt of BINDS is a symbol, use it as both the bound variable
-and the key in ALIST.  If it is a cons, use the car as the bound
-variable, and the cadr as the key."
-  (declare (indent 2))
-  (wg-with-gensyms (asym)
-    `(let* ((,asym ,alist)
-            ,@(wg-docar (bind binds)
-                (let ((c (consp bind)))
-                  `(,(if c (car bind) bind)
-                    (wg-aget ,asym ',(if c (cadr bind) bind))))))
-       ,@body)))
-
-
-
-;;; hash-tables
-
-(defun wg-fill-hash-table (table &rest key-value-pairs)
-  "Fill TABLE with KEY-VALUE-PAIRS and return TABLE."
-  (while key-value-pairs
-    (puthash (car key-value-pairs) (cadr key-value-pairs) table)
-    (setq key-value-pairs (cddr key-value-pairs)))
-  table)
-
-
 
 ;;; symbols and strings
 
@@ -546,13 +462,6 @@ the cadr as the accessor function."
 
 ;;; misc
 
-(defun wg-minibuffer-inactive-p ()
-  "Return t when `minibuffer-depth' returns zero, nil otherwise."
-  (zerop (minibuffer-depth)))
-
-(defun wg-minibuffer-active-p ()
-  "Return t when `minibuffer-depth' does not return zero, nil otherwise."
-  (not (wg-minibuffer-inactive-p)))
 
 (defun wg-fill-keymap (keymap &rest binds)
   "Return KEYMAP after defining in it all keybindings in BINDS."
@@ -568,68 +477,6 @@ the cadr as the accessor function."
              (car pair) (cadr pair))))
 
 
-(defun wg-read-object (prompt test warning &optional initial-contents keymap
-                              read hist default-value inherit-input-method)
-  "PROMPT for an object that satisfies TEST, WARNING if necessary.
-ARGS are `read-from-minibuffer's args, after PROMPT."
-  (cl-labels ((read () (read-from-minibuffer
-                      prompt initial-contents keymap read hist
-                      default-value inherit-input-method)))
-    (let ((obj (read)))
-      (when (and (equal obj "") default-value) (setq obj default-value))
-      (while (not (funcall test obj))
-        (message warning)
-        (sit-for wg-minibuffer-message-timeout)
-        (setq obj (read)))
-      obj)))
-
-(defvar wg-readable-types
-  '(integer float cons symbol vector string char-table bool-vector)
-  "List of types with readable printed representations.")
-
-(defun wg-is-readable-p (obj)
-  "Return non-nil if OBJ's printed representation is readable."
-  (memq (type-of obj) wg-readable-types))
-
-(defun wg-take-until-unreadable (list)
-  "Return a new list of elements of LIST up to the first unreadable element."
-  (wg-take-until-fail 'wg-is-readable-p list))
-
-(defun wg-add-face (facekey string)
-  "Return a copy of STRING fontified according to FACEKEY.
-FACEKEY must be a key in `wg-face-abbrevs'."
-  (let ((face (wg-aget wg-face-abbrevs facekey))
-        (string  (copy-sequence string)))
-    (unless face (error "No face with key %s" facekey))
-    (if (not wg-use-faces) string
-      (put-text-property 0 (length string) 'face face string)
-      string)))
-
-(defmacro wg-fontify (&rest specs)
-  "A small fontification DSL.
-The results of all SPECS are `concat'd together.
-If a spec is a cons with a keyword car, apply `wg-add-face' to it.
-Other conses get evaluated, and should produce a strings.
-If a spec is a string it is used unmodified.
-Anything else is formatted with %s to produce a string."
-  (declare (indent defun))
-  `(concat
-    ,@(wg-docar (spec specs)
-        (cond ((and (consp spec)
-                    (keywordp (car spec)))
-               `(wg-add-face ,@spec))
-              ;;((listp spec) (cdr (eval spec)))
-              ;;((listp spec)
-              ;; ;;(prin1-to-string (nth 1 (eval spec)))
-              ;; )
-              ((consp spec) spec)
-              ((stringp spec) spec)
-              (t `(format "%s" ,spec))))))
-
-(defun wg-barf-on-active-minibuffer ()
-  "Throw an error when the minibuffer is active."
-  (when (wg-minibuffer-active-p)
-    (error "Exit minibuffer to use workgroups functions!")))
 
 (defmacro wg-set-parameter (place parameter value)
   "Set PARAMETER to VALUE at PLACE.
@@ -644,29 +491,79 @@ This needs to be a macro to allow specification of a setf'able place."
 
 ;;; uid utils
 
-(defun wg-time-to-b36 (&optional time)
+(defun wg-time-to-b36 ()
   "Convert `current-time' into a b36 string."
-  (apply 'concat (wg-docar (time (or time (current-time)))
+  (apply 'concat (wg-docar (time (current-time))
                    (wg-int-to-b36 time 4))))
 
 (defun wg-b36-to-time (b36)
-  "Parse the time from UID."
+  "Parse the time in B36 string from UID."
   (cl-loop for i from 0 to 8 by 4
            collect (wg-b36-to-int (cl-subseq b36 i (+ i 4)))))
-
-
 (defalias 'wg-uid-to-time 'wg-b36-to-time)
 
 (defun wg-generate-uid (&optional prefix)
   "Return a new uid, optionally prefixed by PREFIX."
-  (concat prefix
-          (wg-time-to-b36)
-          "-"
-          (wg-int-to-b36 string-chars-consed)))
+  (concat prefix (wg-time-to-b36) "-" (wg-int-to-b36 string-chars-consed)))
 
 (defun wg-uid-to-seconds (uid)
   "Return the `float-time' parsed from UID with `wg-uid-to-time'."
   (float-time (wg-uid-to-time uid)))
+
+
+(defun wg-get-value (arg)
+  "Get a value of ARG if it exists."
+  (if (boundp `,arg) (eval arg)))
+
+(defmacro wg-support (mode pkg params)
+  "Macro to create (de)serialization functions for a buffer.
+You need to save/restore a specific MODE which is loaded from a
+package PKG.  In PARAMS you give local variables to save and a
+deserialization function."
+  `(let ((mode-str (symbol-name ,mode))
+         (args ,params))
+
+     (eval `(defun ,(intern (format "wg-deserialize-%s-buffer" mode-str)) (buffer)
+              "DeSerialization function created with `wg-support'.
+Gets saved variables and runs code to restore a BUFFER."
+              (when (require ',,pkg nil 'noerror)
+                (wg-dbind (this-function variables) (wg-buf-special-data buffer)
+                  (let ((default-directory (car variables))
+                        (df (cdr (assoc 'deserialize ',,params)))
+                        (user-vars (car (cdr variables))))
+                    (if df (funcall df buffer user-vars))
+                    (current-buffer)
+                    )))))
+
+     (eval `(defun ,(intern (format "wg-serialize-%s-buffer" mode-str)) (buffer)
+              "Serialization function created with `wg-support'.
+Saves some variables to restore a BUFFER later."
+              (when (get-buffer buffer)
+                (with-current-buffer buffer
+                  (when (eq major-mode ',,mode)
+                    (let ((sf (cdr (assoc 'serialize ',,params)))
+                          (save (cdr (assoc 'save ',,params))))
+                      (list ',(intern (format "wg-deserialize-%s-buffer" mode-str))
+                            (list default-directory
+                                  (if sf (funcall sf buffer)
+                                    (if save (mapcar 'wg-get-value save)))
+                                  ))))))))
+     ;; Maybe change a docstring for functions
+     ;;(put (intern (format "wg-serialize-%s-buffer" (symbol-name mode)))
+     ;;     'function-documentation
+     ;;     (format "A function created by `wg-support'."))
+
+     ;; Add function to `wg-special-buffer-serdes-functions' variable
+     (eval `(add-to-list 'wg-special-buffer-serdes-functions
+                         ',(intern (format "wg-serialize-%s-buffer" mode-str)) t))
+     ))
+
+(defvar wg-current-session nil "Current session object.")
+(defun wg-current-session (&optional noerror)
+  "Return `wg-current-session' or scream unless NOERROR."
+  (or wg-current-session
+      (unless noerror
+        (error "No session is defined"))))
 
 
 (provide 'workgroups-utils-basic)

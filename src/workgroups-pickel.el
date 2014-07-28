@@ -1,36 +1,18 @@
 ;;; workgroups-pickel.el --- Elisp object serdes used by Workgroups
-;;
-;; Copyright (C) 2010, 2011 tlh
-;;
-;; Author: tlh <thunkout at gmail dot com>
-;; Keywords: serialization deserialization serdes
-;; Homepage: https://github.com/tlh/workgroups.el
-;; Version   1.0.0
-
-;; This program is free software; you can redistribute it and/or modify
-;; it under the terms of the GNU General Public License as published by
-;; the Free Software Foundation; either version 2 of the License, or (at
-;; your option) any later version.
-
-;; This program is distributed in the hope that it will be useful, but
-;; WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-;; General Public License for more details.
-
-;; You should have received a copy of the GNU General Public License
-;; along with this program; if not, write to the Free Software
-;; Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
-;; USA
-
 ;;; Commentary:
+;;
+;; Workgroups allows you to serialize some objects, even such as buffers
+;; (that are displayed as #<object>). The only trick is to write
+;; functions that extract enough information about an object and
+;; functions that can recreate an object.
+;;
+;; Main functions are: `wg-pickel', `wg-pickel-to-string', `wg-pickel-to-file'
+;; What objects are supported? See `wg-pickel-pickelable-types'
 ;;
 ;;; Code:
 
 (require 'cl-lib)
 (require 'workgroups-utils-basic)
-
-
-;;; vars
 
 (defvar wg-pickel-identifier '~pickel!~
   "Symbol identifying a stream as a pickel.")
@@ -44,6 +26,7 @@
     vector
     hash-table
     buffer
+    marker
     ;;window-configuration
     ;;frame
     ;;window
@@ -59,25 +42,27 @@
     (cons       . wg-pickel-cons-serializer)
     (vector     . wg-pickel-vector-serializer)
     (hash-table . wg-pickel-hash-table-serializer)
+    (buffer     . wg-pickel-buffer-serializer)
+    (marker     . wg-pickel-marker-serializer)
     ;;(window-configuration   . wg-pickel-window-configuration-serializer)
-    (buffer     . wg-pickel-buffer-serializer))
+    )
   "Alist mapping types to object serialization functions.")
+(defvar wg-pickel-object-deserializers
+  '((s . wg-pickel-deserialize-uninterned-symbol)
+    (c . wg-pickel-deserialize-cons)
+    (v . wg-pickel-deserialize-vector)
+    (h . wg-pickel-deserialize-hash-table)
+    (b . wg-pickel-deserialize-buffer)
+    (m . wg-pickel-deserialize-marker)
+    ;;(f . wg-pickel-deserialize-frame)
+    )
+  "Alist mapping type keys to object deserialization functions.")
 
 (defvar wg-pickel-link-serializers
   '((cons       . wg-pickel-cons-link-serializer)
     (vector     . wg-pickel-vector-link-serializer)
     (hash-table . wg-pickel-hash-table-link-serializer))
   "Alist mapping types to link serialization functions.")
-
-(defvar wg-pickel-object-deserializers
-  '((s . wg-pickel-deserialize-uninterned-symbol)
-    (c . wg-pickel-deserialize-cons)
-    (v . wg-pickel-deserialize-vector)
-    (h . wg-pickel-deserialize-hash-table)
-    (b . wg-pickel-deserialize-buffer))
-  ;; (f . wg-pickel-deserialize-frame))
-  "Alist mapping type keys to object deserialization functions.")
-
 (defvar wg-pickel-link-deserializers
   `((c . wg-pickel-cons-link-deserializer)
     (v . wg-pickel-vector-link-deserializer)
@@ -172,60 +157,76 @@
 
 
 
-;;; object serialization
+;;; Objects
 
+;; symbol
+;; (wg-unpickel (wg-pickel 123))
+;; (wg-unpickel (wg-pickel "table"))
+;; (wg-unpickel (wg-pickel 'test))
 (defun wg-pickel-symbol-serializer (symbol)
   "Return SYMBOL's serialization."
   (cond ((eq symbol t) t)
         ((eq symbol nil) nil)
         ((intern-soft symbol) symbol)
         (t (list 's (symbol-name symbol)))))
+(defun wg-pickel-deserialize-uninterned-symbol (name)
+  "Return a new uninterned symbol from NAME."
+  (make-symbol name))
 
-(defun wg-pickel-cons-serializer (cons)
-  "Return CONS's serialization."
-  (list 'c))
 
-(defun wg-pickel-vector-serializer (vector)
-  "Return VECTOR's serialization."
-  (list 'v (length vector)))
-
-(defun wg-pickel-hash-table-serializer (table)
-  "Return HASH-TABLE's serialization."
-  (list 'h
-        (hash-table-test table)
-        (hash-table-size table)
-        (hash-table-rehash-size table)
-        (hash-table-rehash-threshold table)
-        (hash-table-weakness table)))
-
-(defun wg-pickel-window-configuration-serializer (wc)
-  "Return Window configuration WC's serialization."
-  (list 'wc
-        1))
-
+;; buffer
+;; (wg-unpickel (wg-pickel (current-buffer)))
 (defun wg-pickel-buffer-serializer (buffer)
   "Return BUFFER's UID in workgroups buffer list."
   (list 'b (wg-add-buffer-to-buf-list buffer)))
-
-(defun wg-pickel-serialize-objects (binds)
-  "Return a list of serializations of the objects in BINDS."
-  (let (result)
-    (wg-dohash (obj id binds result)
-      (setq result
-            (nconc (list id (funcall (wg-pickel-object-serializer obj) obj))
-                   result)))))
+(defun wg-pickel-deserialize-buffer (uid)
+  "Return a restored buffer from it's UID."
+  (save-window-excursion
+    (wg-restore-buffer (wg-find-buf-by-uid uid))))
 
 
+;; marker
+;; (wg-unpickel (wg-pickel (point-marker)))
+(defun wg-pickel-marker-serializer (marker)
+  "Return MARKERS's data."
+  (list 'm (list (marker-position marker)
+                 (wg-add-buffer-to-buf-list (marker-buffer marker)))))
+(defun wg-pickel-deserialize-marker (data)
+  "Return marker from it's data."
+  (let ((m (make-marker)))
+    (set-marker m (car data) (wg-pickel-deserialize-buffer (car (cdr data))))))
 
-;;; link serialization
 
+;; cons - http://www.gnu.org/software/emacs/manual/html_node/eintr/cons.html
+(defun wg-pickel-cons-serializer (cons)
+  "Return CONS's serialization."
+  (list 'c))
+(defun wg-pickel-deserialize-cons ()
+  "Return a new cons cell initialized to nil."
+  (cons nil nil))
 (defun wg-pickel-cons-link-serializer (cons binds)
   "Return the serialization of CONS's links in BINDS."
   (list 'c
         (gethash cons binds)
         (gethash (car cons) binds)
         (gethash (cdr cons) binds)))
+(defun wg-pickel-cons-link-deserializer (cons-id car-id cdr-id binds)
+  "Relink a cons cell with its car and cdr in BINDS."
+  (let ((cons (gethash cons-id binds)))
+    (setcar cons (gethash car-id binds))
+    (setcdr cons (gethash cdr-id binds))))
 
+
+
+;; vector - http://www.gnu.org/software/emacs/manual/html_node/elisp/Vector-Functions.html
+;; (wg-unpickel (wg-pickel (make-vector 9 'Z)))
+;;
+(defun wg-pickel-vector-serializer (vector)
+  "Return VECTOR's serialization."
+  (list 'v (length vector)))
+(defun wg-pickel-deserialize-vector (length)
+  "Return a new vector of length LENGTH."
+  (make-vector length nil))
 (defun wg-pickel-vector-link-serializer (vector binds)
   "Return the serialization of VECTOR's links in BINDS."
   (let (result)
@@ -236,7 +237,24 @@
                          i
                          (gethash (aref vector i) binds))
                    result)))))
+(defun wg-pickel-vector-link-deserializer (vector-id index value-id binds)
+  "Relink a vector with its elements in BINDS."
+  (aset (gethash vector-id binds) index (gethash value-id binds)))
 
+
+;; hash table - http://www.gnu.org/software/emacs/manual/html_node/elisp/Hash-Tables.html
+(defun wg-pickel-hash-table-serializer (table)
+  "Return HASH-TABLE's serialization."
+  (list 'h
+        (hash-table-test table)
+        (hash-table-size table)
+        (hash-table-rehash-size table)
+        (hash-table-rehash-threshold table)
+        (hash-table-weakness table)))
+(defun wg-pickel-deserialize-hash-table (test size rsize rthresh weakness)
+  "Return a new hash-table with the specified properties."
+  (make-hash-table :test test :size size :rehash-size rsize
+                   :rehash-threshold rthresh :weakness weakness))
 (defun wg-pickel-hash-table-link-serializer (table binds)
   "Return the serialization of TABLE's links in BINDS."
   (let (result)
@@ -247,39 +265,30 @@
                          (gethash value binds)
                          (gethash table binds))
                    result)))))
+(defun wg-pickel-hash-table-link-deserializer (key-id value-id table-id binds)
+  "Relink a hash-table with its keys and values in BINDS."
+  (puthash (gethash key-id binds)
+           (gethash value-id binds)
+           (gethash table-id binds)))
 
-(defun wg-pickel-serialize-links (binds)
-  "Return a list of serializations of the links between objects in BINDS."
+
+
+;; TODO
+(defun wg-pickel-window-configuration-serializer (wc)
+  "Return Window configuration WC's serialization."
+  (list 'wc 1))
+
+
+
+
+
+(defun wg-pickel-serialize-objects (binds)
+  "Return a list of serializations of the objects in BINDS."
   (let (result)
     (wg-dohash (obj id binds result)
-      (wg-awhen (wg-pickel-link-serializer obj)
-        (setq result (nconc (funcall it obj binds) result))))))
-
-
-
-;;; object deserialization
-
-(defun wg-pickel-deserialize-uninterned-symbol (name)
-  "Return a new uninterned symbol from NAME."
-  (make-symbol name))
-
-(defun wg-pickel-deserialize-cons ()
-  "Return a new cons cell initialized to nil."
-  (cons nil nil))
-
-(defun wg-pickel-deserialize-vector (length)
-  "Return a new vector of length LENGTH."
-  (make-vector length nil))
-
-(defun wg-pickel-deserialize-hash-table (test size rsize rthresh weakness)
-  "Return a new hash-table with the specified properties."
-  (make-hash-table :test test :size size :rehash-size rsize
-                   :rehash-threshold rthresh :weakness weakness))
-
-(defun wg-pickel-deserialize-buffer (uid)
-  "Return a restored buffer from it's UID."
-  (wg-restore-buffer (wg-find-buf-by-uid uid)))
-
+      (setq result
+            (nconc (list id (funcall (wg-pickel-object-serializer obj) obj))
+                   result)))))
 (defun wg-pickel-deserialize-objects (serial-objects)
   "Return a hash-table of objects deserialized from SERIAL-OBJECTS."
   (let ((binds (make-hash-table)))
@@ -292,24 +301,12 @@
 
 
 
-;;; link deserialization
-
-(defun wg-pickel-cons-link-deserializer (cons-id car-id cdr-id binds)
-  "Relink a cons cell with its car and cdr in BINDS."
-  (let ((cons (gethash cons-id binds)))
-    (setcar cons (gethash car-id binds))
-    (setcdr cons (gethash cdr-id binds))))
-
-(defun wg-pickel-vector-link-deserializer (vector-id index value-id binds)
-  "Relink a vector with its elements in BINDS."
-  (aset (gethash vector-id binds) index (gethash value-id binds)))
-
-(defun wg-pickel-hash-table-link-deserializer (key-id value-id table-id binds)
-  "Relink a hash-table with its keys and values in BINDS."
-  (puthash (gethash key-id binds)
-           (gethash value-id binds)
-           (gethash table-id binds)))
-
+(defun wg-pickel-serialize-links (binds)
+  "Return a list of serializations of the links between objects in BINDS."
+  (let (result)
+    (wg-dohash (obj id binds result)
+      (wg-awhen (wg-pickel-link-serializer obj)
+        (setq result (nconc (funcall it obj binds) result))))))
 (defun wg-pickel-deserialize-links (serial-links binds)
   "Return BINDS after relinking all its objects according to SERIAL-LINKS."
   (wg-destructuring-dolist ((key arg1 arg2 arg3 . rest) serial-links binds)
@@ -358,50 +355,6 @@
 (defun wg-unpickel-string (str)
   "`unpickel' and object directly from STR."
   (wg-unpickel (read str)))
-
-
-
-
-
-;;; parameter pickeling
-
-  (defun wg-pickel-workgroup-parameters (workgroup)
-    "If WORKGROUP's parameters are non-nil, return a copy of
-WORKGROUP after pickeling its parameters. Otherwise return
-WORKGROUP."
-    (if (not (wg-workgroup-parameters workgroup)) workgroup
-      (let ((copy (wg-copy-workgroup workgroup)))
-        (wg-asetf (wg-workgroup-parameters copy) (wg-pickel it))
-        copy)))
-
-  (defun wg-unpickel-workgroup-parameters (workgroup)
-    "If WORKGROUP's parameters are non-nil, return a copy of
-WORKGROUP after unpickeling its parameters. Otherwise return
-WORKGROUP."
-    (if (not (wg-workgroup-parameters workgroup)) workgroup
-      (let ((copy (wg-copy-workgroup workgroup)))
-        (wg-asetf (wg-workgroup-parameters copy) (wg-unpickel it))
-        copy)))
-
-  (defun wg-pickel-all-session-parameters (session)
-    "Return a copy of SESSION after pickeling its
-parameters and the parameters of all its workgroups."
-    (let ((copy (wg-copy-session session)))
-      (when (wg-session-parameters copy)
-        (wg-asetf (wg-session-parameters copy) (wg-pickel it)))
-      (wg-asetf (wg-session-workgroup-list copy)
-                (cl-mapcar 'wg-pickel-workgroup-parameters it))
-      copy))
-
-  (defun wg-unpickel-session-parameters (session)
-    "Return a copy of SESSION after unpickeling its
-parameters and the parameters of all its workgroups."
-    (let ((copy (wg-copy-session session)))
-      (when (wg-session-parameters copy)
-        (wg-asetf (wg-session-parameters copy) (wg-unpickel it)))
-      (wg-asetf (wg-session-workgroup-list copy)
-                (cl-mapcar 'wg-unpickel-workgroup-parameters it))
-      copy))
 
 (provide 'workgroups-pickel)
 ;;; workgroups-pickel.el ends here

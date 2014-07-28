@@ -19,7 +19,7 @@ test: clean
 	${EMACS} -L src $(BATCHFLAGS) -f batch-byte-compile $(TEST_DIR)/*.el
 
 # wg-mode-line-string
-	${EMACS} -L src -batch -l workgroups-functions.el --eval '(message (wg-mode-line-string))'
+	${EMACS} -L src -batch -l workgroups-modeline.el --eval '(message (wg-mode-line-string))'
 
 # desktop-save-mode
 	${EMACS} $(FLAGS) --eval "(desktop-save-mode 1)" --eval "(workgroups-mode 1)"

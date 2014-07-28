@@ -1,55 +1,32 @@
-;;; workgroups-structs.el --- Data structures for WG
+;;; workgroups-structs.el --- Define Elisp objects
 ;;; Commentary:
-;;
-;; `wg-defstruct' - it creates functions named like "wg-buf-...",
-;; "wg-session-...", "wg-make-win" and so on (to manipulate the
-;; structures)
-;;
-;; So if you have "(wg-defstruct wg session ...)" - then you have
-;; `wg-session-file-name' and other defined fields.
-;;
-;; To get a value you can use:
-;;   (wg-session-... (wg-current-session))
-;;
-;; Example:
-;;   (wg-session-file-name (wg-current-session))
-;;   (wg-workgroup-parameters (wg-current-workgroup))
-;;
-;; To set a value (code used in `wg-write-session-file'):
-;;   (setf (wg-session-file-name (wg-current-session)) filename)
-;;
 ;;; Code:
-
 (require 'workgroups-utils-basic)
 
-(wg-defstruct wg buf
+(wg-defstruct wg session
   (uid (wg-generate-uid))
   (name)
-  (file-name)
-  (point)
-  (mark)
-  (local-vars)
-  (special-data)
-  ;; This may be used later:
-  (gc))
-
-(wg-defstruct wg win
-  (uid)
+  (modified)
   (parameters)
-  (edges)
-  (point)
-  (start)
-  (hscroll)
-  (dedicated)
-  (selected)
-  (minibuffer-scroll)
-  (buf-uid))
+  (file-name)
+  (version wg-version)
+  (workgroup-list)
+  (buf-list))
 
-(wg-defstruct wg wtree
-  (uid)
-  (dir)
-  (edges)
-  (wlist))
+(wg-defstruct wg workgroup
+  (uid (wg-generate-uid))
+  (name)
+  (modified)
+  (parameters)
+  (base-wconfig)
+  (selected-frame-wconfig)
+  (saved-wconfigs)
+  (strong-buf-uids)
+  (weak-buf-uids))
+
+(wg-defstruct wg workgroup-state
+  (undo-pointer)
+  (undo-list))
 
 (wg-defstruct wg wconfig
   (uid (wg-generate-uid))
@@ -63,30 +40,38 @@
   (scroll-bar-width)
   (wtree))
 
-(wg-defstruct wg workgroup
-  (uid (wg-generate-uid))
-  (name)
-  (modified)
-  (parameters)
-  (base-wconfig)
-  (selected-frame-wconfig)
-  (saved-wconfigs)
-  (strong-buf-uids)
-  (weak-buf-uids))
+(wg-defstruct wg wtree
+  (uid)
+  (dir)
+  (edges)
+  (wlist))
 
-(wg-defstruct wg session
+(wg-defstruct wg win
+  (uid)
+  (parameters)
+  (edges)
+  (point)
+  (start)
+  (hscroll)
+  (dedicated)
+  (selected)
+  (minibuffer-scroll)
+  (buf-uid))
+
+(wg-defstruct wg buf
   (uid (wg-generate-uid))
   (name)
-  (modified)
-  (parameters)
   (file-name)
-  (version wg-version)
-  (workgroup-list)
-  (buf-list))
+  (point)
+  (mark)
+  (local-vars)
+  (special-data)
+  ;; This may be used later:
+  (gc))
 
-(wg-defstruct wg workgroup-state
-  (undo-pointer)
-  (undo-list))
+(defmacro wg-workgroup-list ()
+  "Setf'able `wg-current-session' modified slot accessor."
+  `(wg-session-workgroup-list (wg-current-session)))
 
 (provide 'workgroups-structs)
 ;;; workgroups-structs.el ends here

@@ -3,42 +3,10 @@
 ;;; Code:
 
 (require 'workgroups-utils-basic)
-(require 'workgroups-functions)
-
-;; buffer auto-association advice
-
-(defun wg-auto-associate-buffer-helper (workgroup buffer assoc)
-  "Associate BUFFER with WORKGROUP based on ASSOC.
-See `wg-buffer-auto-association' for allowable values of ASSOC."
-  (cond ((memq assoc '(weak strong))
-         (wg-workgroup-associate-bufobj workgroup buffer (eq assoc 'weak)))
-        ((functionp assoc)
-         (wg-auto-associate-buffer-helper
-          workgroup buffer (funcall assoc workgroup buffer)))
-        (t nil)))
-
-(defun wg-auto-associate-buffer (buffer &optional frame)
-  "Conditionally associate BUFFER with the current workgroup in FRAME.
-Frame defaults to `selected-frame'.  See `wg-buffer-auto-association'."
-  (when wg-buffer-auto-association-on
-    (wg-when-let ((wg (wg-current-workgroup t frame)))
-      (unless (wg-workgroup-bufobj-association-type wg buffer)
-        (wg-auto-associate-buffer-helper
-         wg buffer (wg-local-value 'wg-buffer-auto-association wg))))))
-
-(defadvice switch-to-buffer (after wg-auto-associate-buffer)
-  "Automatically associate the buffer with the current workgroup."
-  (wg-auto-associate-buffer ad-return-value))
-
-(defadvice set-window-buffer (after wg-auto-associate-buffer)
-  "Automatically associate the buffer with the current workgroup."
-  (wg-auto-associate-buffer
-   (ad-get-arg 1)
-   (window-frame (or (ad-get-arg 0) (selected-window)))))
+(require 'workgroups-session)
 
 
 ;; `wg-pre-window-configuration-change-hook' implementation advice
-
 (cl-macrolet ((define-p-w-c-c-h-advice
              (fn)
              `(defadvice ,fn (before wg-pre-window-configuration-change-hook)
@@ -88,13 +56,11 @@ Before selecting a new frame."
 
   ;; switch-to-buffer
   ;; (ad-define-subr-args 'switch-to-buffer '(buffer-or-name &optional norecord))
-  (ad-enable-advice 'switch-to-buffer 'after 'wg-auto-associate-buffer)
   (ad-enable-advice 'switch-to-buffer 'before 'wg-pre-window-configuration-change-hook)
   (ad-activate 'switch-to-buffer)
 
   ;; set-window-buffer
   ;; (ad-define-subr-args 'set-window-buffer '(window buffer-or-name &optional keep-margins))
-  (ad-enable-advice 'set-window-buffer 'after 'wg-auto-associate-buffer)
   (ad-enable-advice
    'set-window-buffer 'before 'wg-pre-window-configuration-change-hook)
   (ad-activate 'set-window-buffer)
@@ -141,12 +107,10 @@ Before selecting a new frame."
   "Disable and deactivate all of Workgroups' advice."
 
   ;; switch-to-buffer
-  (ad-disable-advice 'switch-to-buffer 'after 'wg-auto-associate-buffer)
   (ad-disable-advice 'switch-to-buffer 'before 'wg-pre-window-configuration-change-hook)
   (ad-deactivate 'switch-to-buffer)
 
   ;; set-window-buffer
-  (ad-disable-advice 'set-window-buffer 'after 'wg-auto-associate-buffer)
   (ad-disable-advice
    'set-window-buffer 'before 'wg-pre-window-configuration-change-hook)
   (ad-deactivate 'set-window-buffer)

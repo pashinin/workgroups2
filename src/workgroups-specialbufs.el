@@ -8,7 +8,38 @@
 ;;; Code:
 
 (require 'workgroups-variables)
-(require 'workgroups-support-macro)
+
+(defcustom wg-special-buffer-serdes-functions
+  '(wg-serialize-comint-buffer
+    wg-serialize-speedbar-buffer)
+  "Functions providing serialization/deserialization for complex buffers.
+
+Use `wg-support' macro and this variable will be filled
+automatically.
+
+An entry should be either a function symbol or a lambda, and should
+accept a single Emacs buffer object as an argument.
+
+When a buffer is to be serialized, it is passed to each of these
+functions in turn until one returns non-nil, or the list ends.  A
+return value of nil indicates that the function can't handle
+buffers of that type.  A non-nil return value indicates that it
+can.  The first non-nil return value becomes the buffer's special
+serialization data.  The return value should be a cons, with a
+deserialization function (a function symbol or a lambda) as the car,
+and any other serialization data as the cdr.
+
+When it comes time to deserialize the buffer, the deserialization
+function (the car of the cons mentioned above) is passed the
+wg-buf object, from which it should restore the buffer.  The
+special serialization data itself can be accessed
+with (cdr (wg-buf-special-data <wg-buf>)).  The deserialization
+function must return the restored Emacs buffer object.
+
+See the definitions of the functions in this list for examples of
+how to write your own."
+  :type 'alist
+  :group 'workgroups)
 
 ;; Dired
 (wg-support 'dired-mode 'dired
@@ -176,8 +207,9 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
             `((deserialize . ,(lambda (buffer vars)
                                 (save-window-excursion
                                   (ensime-inf-switch))
-                                (switch-to-buffer ensime-inf-buffer-name)
-                                (goto-char (point-max))))))
+                                (when (boundp 'ensime-inf-buffer-name)
+                                  (switch-to-buffer ensime-inf-buffer-name)
+                                  (goto-char (point-max)))))))
 
 ;; compilation-mode
 ;;
@@ -247,7 +279,7 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
     (if (fboundp 'speedbar-mode)
         (when (eq major-mode 'speedbar-mode)
           (list 'wg-deserialize-speedbar-buffer
-                (wg-take-until-unreadable (list default-directory))
+                (list default-directory)
                 )))))
 
 
@@ -281,8 +313,7 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
           (when (and (boundp 'slime-inferior-lisp-args)
                      slime-inferior-lisp-args)
             (list 'wg-deserialize-slime-buffer
-                  (wg-take-until-unreadable (list default-directory
-                                                  slime-inferior-lisp-args))
+                  (list default-directory slime-inferior-lisp-args)
                 ))))))
 
 ;; inf-mongo

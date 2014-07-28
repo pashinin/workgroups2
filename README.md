@@ -42,14 +42,13 @@ If you want to change some settings - here is an example:
     ;; Your settings here
 
     ;; autoload/autosave:
-    ;; if you start Emacs as "emacs --daemon" - turn off autoloading of workgroups:
-    ;;(setq wg-use-default-session-file nil)
+    ;;(setq wg-session-load-on-start nil)
 
     ;; Change prefix key (before activating WG)
     (setq wg-prefix-key (kbd "C-c z"))
 
     ;; Change workgroups session file
-    (setq wg-default-session-file "~/.emacs.d/.emacs_workgroups")
+    (setq wg-session-file "~/.emacs.d/.emacs_workgroups")
 
     ;; Set your own keyboard shortcuts to reload/save/switch WG:
     (global-set-key (kbd "<pause>")     'wg-reload-session)
