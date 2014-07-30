@@ -176,10 +176,10 @@ Return value."
              :minibuffer-scroll  (eq window minibuffer-scroll-window)
              :dedicated          (window-dedicated-p window)
              :buf-uid            (wg-buffer-uid-or-add (window-buffer window))))
-      (wg-set-win-parameter win 'next-buffers
-                            (wg-pickel (remove nil (subseq (window-next-buffers window) 0 4))))
-      (wg-set-win-parameter win 'prev-buffers
-                            (wg-pickel (remove nil (subseq (window-prev-buffers window) 0 4))))
+      (wg-set-win-parameter
+       win 'next-buffers (wg-pickel (remove nil (cl-subseq (window-next-buffers window) 0 4))))
+      (wg-set-win-parameter
+       win 'prev-buffers (wg-pickel (remove nil (cl-subseq (window-prev-buffers window) 0 4))))
       )
     win))
 
