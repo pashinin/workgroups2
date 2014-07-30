@@ -131,6 +131,10 @@ as Workgroups' command remappings."
     ;;      (wg-remap-bury-buffer
     ;;       (define-key map [remap bury-buffer]
     ;;         'wg-bury-buffer)))
+    (when (and (fboundp 'winner-undo)
+               (fboundp 'winner-redo))
+      (define-key map [remap winner-undo] 'wg-undo-wconfig-change)
+      (define-key map [remap winner-redo] 'wg-redo-wconfig-change))
     (setq workgroups-mode-map map)))
 
 
