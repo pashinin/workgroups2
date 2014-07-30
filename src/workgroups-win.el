@@ -177,9 +177,9 @@ Return value."
              :dedicated          (window-dedicated-p window)
              :buf-uid            (wg-buffer-uid-or-add (window-buffer window))))
       (wg-set-win-parameter win 'next-buffers
-                            (wg-pickel (window-next-buffers window)))
+                            (wg-pickel (remove nil (subseq (window-next-buffers window) 0 4))))
       (wg-set-win-parameter win 'prev-buffers
-                            (wg-pickel (window-prev-buffers window)))
+                            (wg-pickel (remove nil (subseq (window-prev-buffers window) 0 4))))
       )
     win))
 
