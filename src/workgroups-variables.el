@@ -420,8 +420,8 @@ working wconfig before `select-frame' selects a new frame.
 let-bind this to nil around forms in which you don't want this to
 happen.")
 
-
-
+;; Remove after some time
+(defalias 'wg-switch-to-buffer 'switch-to-buffer)
 
 (provide 'workgroups-variables)
 ;;; workgroups-variables.el ends here
