@@ -124,7 +124,7 @@
         (buf (wg-find-buf-by-uid (wg-win-buf-uid win))))
     (if (not buf)
         (wg-restore-default-buffer)
-      (when (wg-restore-buffer buf)
+      (when (wg-restore-buffer buf t)
         (wg-restore-window-positions win selwin)
         (when wg-restore-window-dedicated-p
           (set-window-dedicated-p selwin (wg-win-dedicated win)))))
