@@ -125,12 +125,6 @@ as Workgroups' command remappings."
   (let ((map (make-sparse-keymap)))
     (define-key map wg-prefix-key
       wg-prefixed-map)
-    ;;(cond ((eq wg-remap-bury-buffer 'banish)
-    ;;       (define-key map [remap bury-buffer]
-    ;;         'wg-banish-buffer))
-    ;;      (wg-remap-bury-buffer
-    ;;       (define-key map [remap bury-buffer]
-    ;;         'wg-bury-buffer)))
     (when (and (fboundp 'winner-undo)
                (fboundp 'winner-redo))
       (define-key map [remap winner-undo] 'wg-undo-wconfig-change)

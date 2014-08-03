@@ -114,7 +114,6 @@
    'window-configuration-change-hook 'wg-flag-window-configuration-changed
    'post-command-hook                'wg-undoify-window-configuration-change
    'minibuffer-exit-hook             'wg-flag-just-exited-minibuffer
-   'ido-make-buffer-list-hook        'wg-set-ido-buffer-list
    'kill-buffer-hook                 'wg-update-buffer-in-buf-list
    ))
 

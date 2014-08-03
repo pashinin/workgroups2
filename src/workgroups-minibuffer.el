@@ -3,7 +3,6 @@
 ;;; Code:
 
 (require 'workgroups-utils-basic)
-(require 'workgroups-ido)
 (require 'workgroups-buf)
 
 (defvar wg-just-exited-minibuffer nil

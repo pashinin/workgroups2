@@ -9,6 +9,7 @@
 
 (require 'cl-lib)
 (require 'workgroups-faces)
+(require 'workgroups-variables)
 
 (defmacro wg-with-gensyms (syms &rest body)
   "Bind all symbols in SYMS to `gensym's, and eval BODY."
@@ -565,6 +566,32 @@ Saves some variables to restore a BUFFER later."
       (unless noerror
         (error "No session is defined"))))
 
+
+(defun wg-read-buffer-mode ()
+  "Return the buffer switching package (ido or iswitchb) to use, or nil."
+  (if (eq wg-current-buffer-list-filter-id 'fallback) 'fallback
+    (cl-case (let (workgroups-mode) (command-remapping 'switch-to-buffer))
+      (ido-switch-buffer 'ido)
+      (otherwise 'fallback))))
+
+(defun wg-read-buffer-function (&optional mode)
+  "Return MODE's or `wg-read-buffer-mode's `read-buffer' function."
+  (cl-case (or mode (wg-read-buffer-mode))
+    (ido 'ido-read-buffer)
+    (fallback (lambda (prompt &optional default require-match)
+                (let (read-buffer-function)
+                  (read-buffer prompt default require-match))))))
+
+(defun wg-completing-read
+    (prompt choices &optional pred require-match initial-input history default)
+  "Do a completing read.  The function called depends on what's on."
+  (cl-ecase (wg-read-buffer-mode)
+    (ido
+     (ido-completing-read prompt choices pred require-match
+                          initial-input history default))
+    (fallback
+     (completing-read prompt choices pred require-match
+                      initial-input history default))))
 
 (provide 'workgroups-utils-basic)
 ;;; workgroups-utils-basic.el ends here
