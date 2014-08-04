@@ -282,29 +282,6 @@ will take you."
         (wg-awhen (wg-filtered-buffer-list) (wg-next-buffer-internal it prev))
         (wg-message (wg-buffer-command-display))))))
 
-(defun wg-previous-buffer ()
-  "Switch to the next buffer in Workgroups' filtered buffer list."
-  (interactive)
-  (wg-next-buffer t))
-
-(defun wg-bury-buffer (&optional buffer-or-name)
-  "Remove BUFFER-OR-NAME from the current workgroup, bury it,
-and switch to the next buffer in the buffer-list-filter."
-  (interactive (list (current-buffer)))
-  (if (not (wg-filter-buffer-list-p))
-      (call-interactively (wg-prior-mapping workgroups-mode 'bury-buffer))
-    (wg-with-buffer-list-filters 'bury-buffer
-      (wg-next-buffer-internal (wg-filtered-buffer-list))
-      (bury-buffer buffer-or-name)
-      (wg-message (wg-buffer-command-display)))))
-
-(defun wg-banish-buffer (&optional buffer-or-name)
-  "Bury BUFFER-OR-NAME."
-  (interactive)
-  (let ((buffer (or buffer-or-name (current-buffer))))
-    (wg-bury-buffer buffer)))
-
-
 (defun wg-update-buffer-in-buf-list (&optional buffer)
   "Update BUFFER's corresponding buf in `wg-buf-list'.
 BUFFER nil defaults to `current-buffer'."

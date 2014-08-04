@@ -88,11 +88,6 @@ off and then on again to take effect."
    (kbd "C-d C-k")    'wg-kill-saved-wconfig
 
 
-   ;; buffer-list
-   (kbd "(")          'wg-next-buffer
-   (kbd ")")          'wg-previous-buffer
-
-
    ;; workgroup movement
    (kbd "C-x")        'wg-swap-workgroups
    (kbd "C-,")        'wg-offset-workgroup-left

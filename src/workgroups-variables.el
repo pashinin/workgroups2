@@ -55,15 +55,6 @@
   :type 'hook
   :group 'workgroups)
 
-(defcustom wg-buffer-list-finalization-hook nil
-  "Functions in this hook can modify `wg-temp-buffer-list'
-arbitrarily, provided its final value is still a list of the
-names of live buffer.  Any final adjustments the user wishes to
-make to the filtered buffer list before ido/iswitchb get ahold of
-it should be made here."
-  :type 'hook
-  :group 'workgroups)
-
 (defcustom wg-pre-window-configuration-change-hook nil
   "Hook run before any function that triggers
 `window-configuration-change-hook'."
@@ -303,14 +294,6 @@ to wrap in the miniwindow."
   :type 'boolean
   :group 'workgroups)
 
-(defcustom wg-remap-bury-buffer nil
-  "Non-nil means remap `bury-buffer'.
-`banish' means remap `bury-buffer' to `wg-banish-buffer'.
-`bury' or other non-nil means remap `bury-buffer' to
-`wg-bury-buffer'.  Otherwise, don't remap."
-  :type 'boolean
-  :group 'workgroups)
-
 
 ;;; vars
 
@@ -381,11 +364,6 @@ the buffer-list-filter is cycled.")
 (defvar wg-buffer-internal-default-buffer nil
   "Bound to `wg-buffer-internal's optional DEFAULT argument for
 use by buffer list filtration hooks.")
-
-(defvar wg-temp-buffer-list nil
-  "Dynamically bound to the filtered buffer list in
-`wg-finalize-buffer-list'.  Functions in
-`wg-buffer-list-finalization-hook' should modify this variable.")
 
 
 ;; wconfig restoration
