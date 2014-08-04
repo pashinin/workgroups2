@@ -94,7 +94,7 @@ If BUF's file doesn't exist, call `wg-restore-default-buffer'"
                    (error (message "Error deserializing %S: %S"
                                    (wg-buf-name buf) err)
                           nil)))))
-    (if switch (switch-to-buffer it t))
+    (if switch (switch-to-buffer buffer t))
     (wg-set-buffer-uid-or-error (wg-buf-uid buf))
     buffer))
 
