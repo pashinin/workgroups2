@@ -394,7 +394,9 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
 
 ;; notmuch
 (wg-support 'notmuch-hello-mode 'notmuch
-            `((deserialize . ,(lambda (buffer vars) (notmuch)))))
+            `((deserialize . ,(lambda (buffer vars)
+                                (notmuch)
+                                (get-buffer (wg-buf-name buffer))))))
 
 ;; Wanderlust modes:
 ;; WL - folders
