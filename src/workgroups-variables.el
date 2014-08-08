@@ -401,5 +401,50 @@ happen.")
 ;; Remove after some time
 (defalias 'wg-switch-to-buffer 'switch-to-buffer)
 
+
+;;
+;; Crazy stuff...
+;;
+(defcustom wg-associate-blacklist (list "*helm mini*" "*Messages*" "*scratch*"
+                                        "*helm action*")
+  "Do not autoassociate these buffers."
+  :type 'list
+  :group 'workgroups)
+
+(defconst wg-buffer-list-original (symbol-function 'buffer-list))
+
+(defun buffer-list (&optional frame)
+  "Redefinition of `buffer-list'.
+Pass FRAME to it.
+Remove file and dired buffers that are not associated with workgroup."
+  (let ((lst (list))
+        (res (wg-buffer-list-emacs frame))
+        (wg-buffers (wg-workgroup-associated-buffers (wg-current-workgroup))))
+    (dolist (b res res)
+      (when (and (or (buffer-file-name b)
+                     (eq (buffer-local-value 'major-mode b) 'dired-mode))
+                 (not (member b wg-buffers)))
+        (delq b res)))))
+
+(defconst wg-buffer-list-function (symbol-function 'buffer-list))
+(fset 'buffer-list wg-buffer-list-original)
+(fset 'wg-buffer-list-emacs wg-buffer-list-original)
+
+
+;; locate-dominating-file
+(defcustom wg-mess-with-buffer-list nil
+  "Redefine `buffer-list' to show buffers for each workgroup.
+
+Crazy stuff that allows to reduce amount of code, gives new
+features but is fucking unstable, so disabled by default"
+  :type 'boolean
+  :group 'workgroups
+  :set (lambda (sym val)
+         (custom-set-default sym val)
+         (if (and workgroups-mode val)
+             (fset 'buffer-list wg-buffer-list-function)
+           (fset 'buffer-list wg-buffer-list-original))))
+(fset 'buffer-list wg-buffer-list-original)
+
 (provide 'workgroups-variables)
 ;;; workgroups-variables.el ends here

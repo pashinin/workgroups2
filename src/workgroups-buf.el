@@ -50,38 +50,46 @@ When a buffer can't be restored, when creating a blank wg."
 
 (defun wg-restore-existing-buffer (buf &optional switch)
   "Return existing buffer from BUF and maybe SWITCH to it."
-  (wg-awhen (wg-find-buf-in-buffer-list buf (wg-buffer-list-emacs))
-    (if switch (switch-to-buffer it t))
-    (wg-set-buffer-uid-or-error (wg-buf-uid buf))
-    it))
+  (wg-when-let ((b (wg-find-buf-in-buffer-list buf (wg-buffer-list-emacs))))
+    (if switch (switch-to-buffer b t))
+    (with-current-buffer b
+      (wg-set-buffer-uid-or-error (wg-buf-uid buf))
+      b)))
 
 (defun wg-restore-file-buffer (buf &optional switch)
   "Restore BUF by finding its file and maybe SWITCH to it.
 Return the created buffer.
 If BUF's file doesn't exist, call `wg-restore-default-buffer'"
-  (wg-when-let ((file-name (wg-buf-file-name buf)))
-    (when (or wg-restore-remote-buffers
-              (not (file-remote-p file-name)))
+  ;;(wg-when-let ((file-name (wg-buf-file-name buf)))
+  (let ((file-name (wg-buf-file-name buf)))
+    (when (and file-name
+               (or wg-restore-remote-buffers
+                   (not (file-remote-p file-name))))
       (cond ((file-exists-p file-name)
-             (find-file file-name)
-             (rename-buffer (wg-buf-name buf) t)
-             (wg-set-buffer-uid-or-error (wg-buf-uid buf))
-             (when wg-restore-mark
-               (set-mark (wg-buf-mark buf))
-               (deactivate-mark))
-             (wg-deserialize-buffer-local-variables buf)
-             (current-buffer))
+             ;; jit ignore errors
+             ;;(ignore-errors
+             (condition-case err
+                 (let ((b (find-file-noselect file-name nil nil nil)))
+                   (with-current-buffer b
+                     (rename-buffer (wg-buf-name buf) t)
+                     (wg-set-buffer-uid-or-error (wg-buf-uid buf))
+                     (when wg-restore-mark
+                       (set-mark (wg-buf-mark buf))
+                       (deactivate-mark))
+                     (wg-deserialize-buffer-local-variables buf)
+                     )
+                   (if switch (switch-to-buffer b))
+                   b)
+               (error
+                (message "Error while restoring a file %s:\n  %s" file-name (error-message-string err))
+                nil)))
             (t
              ;; try directory
-             (if (not (file-remote-p file-name))
-                 (if (file-directory-p (file-name-directory file-name))
-                     (progn
-                       (dired (file-name-directory file-name))
-                       (current-buffer))
-                   (progn
-                     (message "Attempt to restore nonexistent file: %S" file-name)
-                     nil))
-               nil)
+             (if (file-directory-p (file-name-directory file-name))
+                 (dired (file-name-directory file-name))
+               (progn
+                 (message "Attempt to restore nonexistent file: %S" file-name)
+                 nil))
              )))))
 
 (defun wg-restore-special-buffer (buf &optional switch)
@@ -91,19 +99,24 @@ If BUF's file doesn't exist, call `wg-restore-default-buffer'"
        (buffer (save-window-excursion
                  (condition-case err
                      (funcall (car special-data) buf)
-                   (error (message "Error deserializing %S: %S"
-                                   (wg-buf-name buf) err)
+                   (error (message "Error deserializing %S: %S" (wg-buf-name buf) err)
                           nil)))))
     (if switch (switch-to-buffer buffer t))
-    (wg-set-buffer-uid-or-error (wg-buf-uid buf))
+    (with-current-buffer buffer
+      (wg-set-buffer-uid-or-error (wg-buf-uid buf)))
     buffer))
 
 (defun wg-restore-buffer (buf &optional switch)
   "Restore BUF, return it and maybe SWITCH to it."
-  (or (wg-restore-existing-buffer buf switch)
-      (wg-restore-special-buffer buf switch)
-      (wg-restore-file-buffer buf switch)
-      (progn (wg-restore-default-buffer switch) nil)))
+  (fset 'buffer-list wg-buffer-list-original)
+  (prog1
+      (or (wg-restore-existing-buffer buf switch)
+          (wg-restore-special-buffer buf switch)  ;; non existent dired problem
+          (wg-restore-file-buffer buf switch)
+          (progn (wg-restore-default-buffer switch) nil))
+    (if wg-mess-with-buffer-list
+        (fset 'buffer-list wg-buffer-list-function))))
+
 
 
 ;;; buffer object utils
@@ -294,7 +307,7 @@ BUFFER nil defaults to `current-buffer'."
 
 (defun wg-update-buf-list (&optional buffer-list)
   "Update all bufs in `wg-buf-list' corresponding to buffers in BUFFER-LIST."
-  (mapc 'wg-update-buffer-in-buf-list (or buffer-list (buffer-list))))
+  (mapc 'wg-update-buffer-in-buf-list (or buffer-list (wg-buffer-list-emacs))))
 
 
 

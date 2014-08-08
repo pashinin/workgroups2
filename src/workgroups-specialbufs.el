@@ -8,6 +8,7 @@
 ;;; Code:
 
 (require 'workgroups-variables)
+(require 'workgroups-utils-basic)
 
 (defcustom wg-special-buffer-serdes-functions
   '(wg-serialize-comint-buffer
@@ -44,22 +45,24 @@ how to write your own."
 ;; Dired
 (wg-support 'dired-mode 'dired
             `((deserialize . ,(lambda (buffer vars)
-                                (if (or wg-restore-remote-buffers
-                                        (not (file-remote-p default-directory)))
-                                    ;; TODO: try to restore parent dir if not exist
-                                    (if (file-directory-p default-directory)
-                                        (dired default-directory)))))))
+                                (when (or wg-restore-remote-buffers
+                                          (not (file-remote-p default-directory)))
+                                  (let ((d (wg-get-first-existing-dir)))
+                                    (if (file-directory-p d) (dired d))))))))
 
-;; Info-mode
+;; `Info-mode'     C-h i
 (wg-support 'Info-mode 'info
             `((save . (Info-current-file Info-current-node))
               (deserialize . ,(lambda (buffer vars)
+                                ;;(with-current-buffer
+                                ;;    (get-buffer-create (wg-buf-name buffer))
                                 (wg-aif vars
                                     (if (fboundp 'Info-find-node)
                                         (apply #'Info-find-node it))
-                                  (info))))))
+                                  (info)
+                                  (get-buffer (wg-buf-name buffer)))))))
 
-;; help-mode
+;; `help-mode'
 ;; Bug: https://github.com/pashinin/workgroups2/issues/29
 (if nil
 (wg-support 'help-mode 'help-mode
@@ -78,13 +81,16 @@ how to write your own."
 
 ;; ielm
 (wg-support 'inferior-emacs-lisp-mode 'ielm
-            `((deserialize . ,(lambda (buffer vars) (ielm)))))
+            `((deserialize . ,(lambda (buffer vars)
+                                (ielm) (get-buffer "*ielm*")))))
 
 ;; Magit status
 (wg-support 'magit-status-mode 'magit
             `((deserialize . ,(lambda (buffer vars)
-                                (when (file-directory-p default-directory)
-                                  (magit-status default-directory))))))
+                                (if (file-directory-p default-directory)
+                                    (magit-status default-directory)
+                                  (let ((d (wg-get-first-existing-dir)))
+                                    (if (file-directory-p d) (dired d))))))))
 
 ;; Shell
 (wg-support 'shell-mode 'shell
@@ -124,9 +130,9 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
               (deserialize . (lambda (buffer vars)
                                (org-agenda-list)
                                (wg-awhen (get-buffer org-agenda-buffer-name)
-                                 (set-buffer it)
-                                 (wg-run-agenda-cmd vars))
-                               ))))
+                                 (with-current-buffer it
+                                   (wg-run-agenda-cmd vars))
+                                 it)))))
 
 ;; eshell
 (wg-support 'eshell-mode 'esh-mode
@@ -156,15 +162,14 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
             `((save . (python-shell-interpreter python-shell-interpreter-args))
               (deserialize . ,(lambda (buffer vars)
                                 (wg-dbind (pythoncmd pythonargs) vars
-                                  (save-window-excursion
-                                    (run-python (concat pythoncmd " " pythonargs)))
-                                  (wg-awhen (get-buffer (process-buffer (python-shell-get-or-create-process)))
-                                    (set-buffer it)
-                                    (switch-to-buffer (process-buffer (python-shell-get-or-create-process)))
-                                    (goto-char (point-max)))
-                                  )))))
+                                  (run-python (concat pythoncmd " " pythonargs))
+                                  (wg-awhen (get-buffer (process-buffer
+                                                         (python-shell-get-or-create-process)))
+                                    (with-current-buffer it (goto-char (point-max)))
+                                    it))))))
 
-;; Sage shell
+
+;; Sage shell ;;
 (wg-support 'inferior-sage-mode 'sage-mode
             `((deserialize . ,(lambda (buffer vars)
                                 (save-window-excursion
@@ -177,8 +182,7 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
                                       (switch-to-buffer sage-buffer)
                                       (goto-char (point-max))))))))
 
-;; inferior-ess-mode   (ess-inf.el)
-;; R shell, M-x R
+;; `inferior-ess-mode'     M-x R
 (wg-support 'inferior-ess-mode 'ess-inf
             `((save . (inferior-ess-program))
               (deserialize . ,(lambda (buffer vars)
@@ -186,15 +190,16 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
                                   (let ((ess-ask-about-transfile nil)
                                         (ess-ask-for-ess-directory nil)
                                         (ess-history-file nil))
-                                    (R)))))))
+                                    (R)
+                                    (get-buffer (wg-buf-name buffer))))))))
 
-;; inferior-octave-mode
+;; `inferior-octave-mode'
 (wg-support 'inferior-octave-mode 'octave
             `((deserialize . ,(lambda (buffer vars)
                                 (prog1 (run-octave)
                                   (rename-buffer (wg-buf-name buffer) t))))))
 
-;; Prolog shell
+;; `prolog-inferior-mode'
 (wg-support 'prolog-inferior-mode 'prolog
             `((deserialize . ,(lambda (buffer vars)
                                 (save-window-excursion
@@ -202,7 +207,7 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
                                 (switch-to-buffer "*prolog*")
                                 (goto-char (point-max))))))
 
-;; ensime-inf
+;; `ensime-inf-mode'
 (wg-support 'ensime-inf-mode 'ensime
             `((deserialize . ,(lambda (buffer vars)
                                 (save-window-excursion
@@ -374,11 +379,10 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
 (wg-support 'geiser-repl-mode 'geiser
             `((save . (geiser-impl--implementation))
               (deserialize . ,(lambda (buffer vars)
-                                (save-window-excursion
-                                  (when (fboundp 'run-geiser)
-                                    (wg-dbind (impl) vars
-                                      (run-geiser impl)
-                                      (goto-char (point-max)))))
+                                (when (fboundp 'run-geiser)
+                                  (wg-dbind (impl) vars
+                                    (run-geiser impl)
+                                    (goto-char (point-max))))
                                 (switch-to-buffer (wg-buf-name buffer))))))
 
 ;; w3m-mode

@@ -176,13 +176,13 @@
 
 ;; buffer
 ;; (wg-unpickel (wg-pickel (current-buffer)))
+;; (wg-unpickel (wg-pickel (get-buffer org-agenda-buffer-name)))
 (defun wg-pickel-buffer-serializer (buffer)
   "Return BUFFER's UID in workgroups buffer list."
   (list 'b (wg-add-buffer-to-buf-list buffer)))
 (defun wg-pickel-deserialize-buffer (uid)
   "Return a restored buffer from it's UID."
-  (save-window-excursion
-    (wg-restore-buffer (wg-find-buf-by-uid uid))))
+  (wg-restore-buffer (wg-find-buf-by-uid uid)))
 
 
 ;; marker

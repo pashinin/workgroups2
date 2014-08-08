@@ -20,8 +20,7 @@ promts while Emacs is being started as daemon."
   :group 'workgroups)
 (defvaralias 'wg-use-default-session-file 'wg-session-load-on-start)
 
-(defcustom wg-session-file
-  "~/.emacs_workgroups"
+(defcustom wg-session-file "~/.emacs_workgroups"
   "Default filename to be used to save workgroups."
   :type 'file
   :group 'workgroups)
@@ -158,7 +157,7 @@ Resets all frame parameters, buffer-local vars, current
 Workgroups session object, etc.  SESSION nil defaults to a new,
 blank session object."
   (mapc 'wg-reset-frame (frame-list))
-  (mapc 'wg-reset-buffer (buffer-list))
+  (mapc 'wg-reset-buffer (wg-buffer-list-emacs))
   (setq wg-wconfig-kill-ring nil)
   (setq wg-current-session (or session (wg-make-session))))
 
@@ -175,7 +174,7 @@ SESSION nil defaults to `wg-current-session'."
   "Return a list of the uids of all buffers in BUFFER-LIST in
 which `wg-buffer-uid' is locally bound.
 BUFFER-LIST nil defaults to `buffer-list'."
-  (delq nil (mapcar 'wg-buffer-uid (or buffer-list (buffer-list)))))
+  (delq nil (mapcar 'wg-buffer-uid (or buffer-list (wg-buffer-list-emacs)))))
 
 (defun wg-all-buf-uids (&optional session buffer-list)
   "Return the union of `wg-session-all-buf-uids' and `wg-buffer-list-all-uids'."

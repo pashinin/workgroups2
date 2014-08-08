@@ -454,6 +454,9 @@ safe -- don't mutate them."
   "Switch to WORKGROUP.
 NOERROR means fail silently."
   (interactive (list (wg-read-workgroup-name)))
+
+  (fset 'buffer-list wg-buffer-list-original)
+
   ;; Mark if ECB is active
   (if (wg-current-workgroup t)
       (wg-set-workgroup-parameter (wg-current-workgroup t) 'ecb (and (boundp 'ecb-minor-mode)
@@ -505,6 +508,9 @@ NOERROR means fail silently."
           ;; (wg-workgroup-parameter (wg-current-workgroup t) 'ecb-win-config nil)))
 
           (run-hooks 'wg-switch-to-workgroup-hook)
+
+          (if wg-mess-with-buffer-list
+              (fset 'buffer-list wg-buffer-list-function))
           (wg-fontified-message
             (:cmd "Switched: ")
             (wg-workgroup-name (wg-current-workgroup t))

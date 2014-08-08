@@ -378,12 +378,12 @@ Note that this won't make VAR buffer-local if it isn't already."
 (defun wg-interesting-buffers ()
   "Return a list of only the interesting buffers in `buffer-list'."
   (cl-remove-if (lambda (bname) (string-match "^ " bname))
-                (buffer-list) :key 'buffer-name))
+                (wg-buffer-list-emacs) :key 'buffer-name))
 
 (defun wg-get-first-buffer-matching-regexp (regexp &optional buffer-list)
   "Return the first buffer in BUFFER-LIST with a name matching REGEXP.
 BUFFER-LIST should contain buffer objects and/or buffer names."
-  (cl-find regexp (or buffer-list (buffer-list))
+  (cl-find regexp (or buffer-list (wg-buffer-list-emacs))
            :test 'string-match :key 'wg-buffer-name))
 
 
@@ -532,8 +532,9 @@ Gets saved variables and runs code to restore a BUFFER."
                   (let ((default-directory (car variables))
                         (df (cdr (assoc 'deserialize ',,params)))
                         (user-vars (car (cdr variables))))
-                    (if df (funcall df buffer user-vars))
-                    (current-buffer)
+                    (if df
+                        (funcall df buffer user-vars)
+                      (get-buffer-create wg-default-buffer))
                     )))))
 
      (eval `(defun ,(intern (format "wg-serialize-%s-buffer" mode-str)) (buffer)
@@ -592,6 +593,20 @@ Saves some variables to restore a BUFFER later."
     (fallback
      (completing-read prompt choices pred require-match
                       initial-input history default))))
+
+;; locate-dominating-file
+(defun wg-get-first-existing-dir (&optional dir)
+  "Test if DIR exists and return it.
+If not - try to go to the parent dir and do the same."
+  (let* ((d (or dir default-directory)))
+    (if (file-directory-p d) d
+      (let* ((cur d) (parent (file-name-directory (directory-file-name cur))))
+        (while (and (> (length cur) (length parent))
+                    (not (file-directory-p parent)))
+          (message "Test %s" parent)
+          (setq cur parent)
+          (setq parent (file-name-directory (directory-file-name cur))))
+        parent))))
 
 (provide 'workgroups-utils-basic)
 ;;; workgroups-utils-basic.el ends here

@@ -89,6 +89,7 @@
 (require 'workgroups-modeline)
 (require 'workgroups-keys)
 (require 'workgroups-session)
+(require 'workgroups-association)
 
 
 (define-minor-mode workgroups-everywhere
@@ -115,6 +116,8 @@
    'post-command-hook                'wg-undoify-window-configuration-change
    'minibuffer-exit-hook             'wg-flag-just-exited-minibuffer
    'kill-buffer-hook                 'wg-update-buffer-in-buf-list
+   'kill-buffer-hook                 'wg-auto-dissociate-buffer-hook
+   ;;'window-configuration-change-hook 'wg-associate-frame-buffers
    ))
 
 
