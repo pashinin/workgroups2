@@ -4,7 +4,7 @@
 
 (require 'workgroups-structs)
 (require 'workgroups-variables)
-(require 'workgroups-utils-basic)
+(require 'workgroups-session)
 
 (defvar wg-buffer-workgroup nil
   "Associating each buffer with the workgroup.
