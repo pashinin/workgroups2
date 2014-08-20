@@ -243,26 +243,6 @@ Or scream unless NOERROR."
   (cl-every (lambda (existing-name) (not (equal new-name existing-name)))
             (wg-workgroup-names t)))
 
-(defun wg-read-new-workgroup-name (&optional prompt)
-  "Read a non-empty name string from the minibuffer."
-  (let ((default (wg-new-default-workgroup-name)))
-    (wg-read-object
-     (or prompt (format "Name (default: %S): " default))
-     (lambda (new) (and (stringp new)
-                        (not (equal new ""))
-                        (wg-unique-workgroup-name-p new)))
-     "Please enter a unique, non-empty name"
-     nil nil nil nil default)))
-
-(defun wg-read-workgroup-index ()
-  "Prompt for the index of a workgroup."
-  (let ((max (1- (length (wg-workgroup-list-or-error)))))
-    (wg-read-object
-     (format "%s\n\nEnter [0-%d]: " (wg-workgroup-list-display) max)
-     (lambda (obj) (and (integerp obj) (wg-within obj 0 max t)))
-     (format "Please enter an integer [%d-%d]" 0 max)
-     nil nil t)))
-
 (defun wg-read-saved-wconfig-name (workgroup &optional prompt require-match)
   "Read the name of a saved wconfig, completing on the names of
 WORKGROUP's saved wconfigs."
