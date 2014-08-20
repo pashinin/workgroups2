@@ -26,11 +26,6 @@ promts while Emacs is being started as daemon."
   :group 'workgroups)
 (defvaralias 'wg-default-session-file 'wg-session-file)
 
-(defvar wg-deactivation-list nil
-  "A stack of workgroups that are currently being switched away from.
-Used to avoid associating the old workgroup's buffers with the
-new workgroup during a switch.")
-
 (defvar wg-incorrectly-restored-bufs nil
   "FIXME: docstring this.")
 ;; TODO: check it on switching WG

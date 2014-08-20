@@ -9,6 +9,10 @@
 ;;
 ;; Variables
 ;;
+(defvar wg-deactivation-list nil
+  "A stack of workgroups that are currently being switched away from.
+Used to avoid associating the old workgroup's buffers with the
+new workgroup during a switch.")
 
 (defcustom wg-confirm-on-get-workgroup-create nil
   "Non-nil means request confirmation before creating a new
