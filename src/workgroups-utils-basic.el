@@ -37,15 +37,6 @@ Iterative to prevent stack overflow."
 
 ;;; bindings
 
-(defmacro wg-if-let (cond-form then &rest else)
-  "Bind VAR to the return value of COND.  If VAR is non-nil, do THEN.
-Else do ELSE...
-
-\(fn ((VAR COND) THEN ELSE...)"
-  (declare (indent 2))
-  `(let (,cond-form)
-     (if ,(car cond-form) ,then ,@else)))
-
 (defmacro wg-when-let (binds &rest body)
   "Like `let*' but when all BINDS are non-nil - eval BODY."
   (declare (indent 1))
