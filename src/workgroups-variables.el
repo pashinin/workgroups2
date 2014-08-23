@@ -334,37 +334,7 @@ temporarily disable flagging `modified'.")
   "Flag unset when changes to the window config shouldn't cause
 workgroups' undo info to be updated.")
 
-
-
-
-;; buffer-list-filter vars
-
-(defvar wg-current-workgroup nil
-  "Bound to the current workgroup in `wg-with-buffer-list-filters'.")
-
-;; (defvar wg-current-buffer-command nil
-;;   "Bound to the current buffer command in `wg-with-buffer-list-filters'.")
-
-(defvar wg-current-buffer-list-filter-id nil
-  "Bound to the current buffer-list-filter symbol in `wg-with-buffer-list-filters'.")
-
-(defvar wg-previous-minibuffer-contents nil
-  "Holds the previous minibuffer contents for re-insertion when
-the buffer-list-filter is cycled.")
-
-(defvar wg-ido-method-translations
-  `((switch-to-buffer              . selected-window)
-    (switch-to-buffer-other-window . other-window)
-    (switch-to-buffer-other-frame  . other-frame)
-    (kill-buffer                   . kill)
-    (insert-buffer                 . insert)
-    (display-buffer                . display))
-  "Alist mapping buffer commands to ido buffer methods.")
-
-(defvar wg-buffer-internal-default-buffer nil
-  "Bound to `wg-buffer-internal's optional DEFAULT argument for
-use by buffer list filtration hooks.")
-
+(defvar wg-current-workgroup nil "Bound to the current workgroup.")
 
 ;; wconfig restoration
 
@@ -386,8 +356,7 @@ use by buffer list filtration hooks.")
 (defvar wg-min-edges `(0 0 ,wg-actual-min-width ,wg-actual-min-height)
   "Smallest allowable edge list of windows created by Workgroups.")
 
-(defvar wg-null-edges '(0 0 0 0)
-  "Null edge list.")
+(defvar wg-null-edges '(0 0 0 0) "Null edge list.")
 
 (defvar wg-window-tree-selected-window nil
   "Used during wconfig restoration to hold the selected window.")

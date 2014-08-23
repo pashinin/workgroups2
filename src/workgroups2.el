@@ -96,19 +96,6 @@
 (require 'workgroups-association)
 
 
-(define-minor-mode workgroups-everywhere
-  "Use Workgroups' buffer list filters everywhere `read-buffer' is used."
-  :global t
-  :group 'workgroups
-  (awhen (get 'workgroups-everywhere 'read-buffer-fn)
-    (when (eq read-buffer-function 'wg-read-buffer)
-      (setq read-buffer-function it))
-    (put 'workgroups-everywhere 'read-buffer-fn nil))
-  (when workgroups-everywhere
-    (put 'workgroups-everywhere 'read-buffer-fn read-buffer-function)
-    (setq read-buffer-function 'wg-read-buffer)))
-
-
 (defun wg-add-or-remove-workgroups-hooks (remove)
   "Add or remove all of Workgroups' hooks, depending on REMOVE."
   (wg-add-or-remove-hooks

@@ -109,7 +109,6 @@ off and then on again to take effect."
 
    ;; toggling
    (kbd "C-t C-m")    'wg-toggle-mode-line-display
-   (kbd "C-t C-b")    'wg-toggle-buffer-list-filtration
    (kbd "C-t C-d")    'wg-toggle-window-dedicated-p
 
 

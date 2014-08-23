@@ -286,8 +286,6 @@ BUFFER nil defaults to `current-buffer'."
   (mapc 'wg-update-buffer-in-buf-list (or buffer-list (wg-buffer-list-emacs))))
 
 
-
-
 (defun wg-buffer-list-display (buffer-list)
   "Return the BUFFER-LIST display string."
   (wg-display-internal
@@ -295,118 +293,11 @@ BUFFER nil defaults to `current-buffer'."
    (if wg-center-rotate-buffer-list-display
        (wg-center-rotate-list buffer-list) buffer-list)))
 
-(defun wg-buffer-list-filter-display (&optional workgroup blf-id)
-  "Return a buffer-list-filter display string from WORKGROUP and BLF-ID."
-  (wg-fontify
-    "("
-    (wg-workgroup-name (wg-get-workgroup workgroup))
-    ":"
-    (wg-get-buffer-list-filter-val blf-id 'indicator)
-    ")"))
-
-(defun wg-buffer-list-filter-prompt (prompt &optional workgroup blf-id)
-  "Return a prompt string from PROMPT indicating WORKGROUP and BLF-ID."
-  (wg-fontify
-    prompt " "
-    (wg-buffer-list-filter-display workgroup blf-id)
-    ": "))
-
-(defun wg-buffer-command-display (&optional buffer-list)
-  "Return the buffer command display string."
-  (concat
-   (wg-buffer-list-filter-display) ": "
-   (wg-buffer-list-display (or buffer-list (wg-filtered-buffer-list)))))
-
-
-(defun wg-read-buffer (prompt &optional default require-match)
-  "Workgroups' version of `read-buffer'.
-Read with PROMT DEFAULT REQUIRE-MATCH."
-  (if (not (wg-filter-buffer-list-p))
-      (funcall (wg-read-buffer-function) prompt default require-match)
-    (wg-with-buffer-list-filters 'read-buffer
-      (funcall (wg-read-buffer-function)
-               (wg-buffer-list-filter-prompt
-                (aif (string-match ": *$" prompt)
-                    (substring prompt 0 it) prompt))
-               default require-match))))
-
-
-
-;;; filtered buffer-list construction
-
-(defun wg-get-buffer-list-filter-id-flexibly (blf-id)
-  "Return a buffer-list-filter-id one way or another."
-  (or blf-id wg-current-buffer-list-filter-id 'all))
-
-(defun wg-get-buffer-list-filter-val (id key &optional noerror)
-  "Return ID's KEY's value in `wg-buffer-list-filter-definitions'.
-Lots of possible errors here because
-`wg-buffer-list-filter-definitions' can be modified by the user."
-  (let ((slot-num (cl-case key (symbol 0) (indicator 1) (constructor 2))))
-    (if (not slot-num)
-        (unless noerror
-          (error "`%S' is not a valid buffer-list-filter definition slot" key))
-      (let* ((id (wg-get-buffer-list-filter-id-flexibly id))
-             (entry (assq id (wg-local-value
-                              'wg-buffer-list-filter-definitions))))
-        (if (not entry)
-            (unless noerror
-              (error "`%S' is an undefined buffer-list-filter" id))
-          (or (nth slot-num entry)
-              (unless noerror
-                (error "Slot `%S' is undefined in `%S's definition"
-                       key id))))))))
-
-(defun wg-filtered-buffer-list (&optional names workgroup bfl-id initial)
-  "Return a filtered buffer-list from NAMES, WORKGROUP, BLF-ID and INITIAL.
-NAMES non-nil means return a list of buffer-names instead of buffer objects.
-WORKGROUP non-nil should be any workgroup identifier accepted by
-`wg-get-workgroup'.
-BLF-ID non-nil should be the identifier of a defined buffer-list-filter.
-It defaults to `wg-get-buffer-list-filter-val'.
-INITIAL non-nil should be an initial buffer-list to filter.  It defaults to
-`wg-interesting-buffers'."
-  (let ((buffer-list (funcall (wg-get-buffer-list-filter-val
-                               (wg-get-buffer-list-filter-id-flexibly bfl-id)
-                               'constructor)
-                              (wg-get-workgroup workgroup)
-                              (or initial (wg-interesting-buffers)))))
-    (if names (mapcar 'wg-buffer-name buffer-list) buffer-list)))
-
-
 ;; buffer-list filters
 
 (defun wg-buffer-list-filter-all (workgroup initial)
   "Return all buffers in INITIAL."
   initial)
-
-(defun wg-filter-buffer-list-by-regexp (regexp buffer-list)
-  "Return only those buffers in BUFFER-LIST with names matching REGEXP."
-  (cl-remove-if-not (lambda (bname) (string-match regexp bname))
-                    buffer-list :key 'buffer-name))
-
-(defun wg-filter-buffer-list-by-root-dir (root-dir buffer-list)
-  "Return only those buffers in BUFFER-LIST visiting files undo ROOT-DIR."
-  (cl-remove-if-not (lambda (f) (when f (wg-file-under-root-path-p root-dir f)))
-                    buffer-list :key 'buffer-file-name))
-
-(defun wg-filter-buffer-list-by-major-mode (major-mode buffer-list)
-  "Return only those buffers in BUFFER-LIST in major-mode MAJOR-MODE."
-  (cl-remove-if-not (lambda (mm) (eq mm major-mode))
-                    buffer-list :key 'wg-buffer-major-mode))
-
-
-;; Example custom buffer-list-filters
-
-(defun wg-buffer-list-filter-irc (workgroup buffer-list)
-  "Return only those buffers in BUFFER-LIST with names starting in \"#\"."
-  (wg-filter-buffer-list-by-regexp "^#" buffer-list))
-
-(defun wg-buffer-list-filter-home-dir (workgroup buffer-list)
-  "Return only those buffers in BUFFER-LIST visiting files under ~/."
-  (wg-filter-buffer-list-by-root-dir "~/" buffer-list))
-
-
 
 ;; buffer-list-filter context
 
@@ -422,31 +313,6 @@ INITIAL non-nil should be an initial buffer-list to filter.  It defaults to
 (defun wg-filter-buffer-list-p ()
   "Return the current workgroup when buffer-list-filters are on."
   (and workgroups-mode wg-buffer-list-filtration-on (wg-current-workgroup t)))
-
-(defmacro wg-with-buffer-list-filters (command &rest body)
-  "Create buffer-list filter context for COMMAND, and eval BODY.
-Binds `wg-current-buffer-list-filter-id' in BODY."
-  (declare (indent 1))
-  (wg-with-gensyms (order status)
-    `(let* ((wg-previous-minibuffer-contents nil)
-            (,order (wg-buffer-list-filter-order ,command)))
-       (catch 'wg-result
-         (while 'your-mom
-           (let* ((wg-current-buffer-list-filter-id (car ,order))
-                  (,status (catch 'wg-action (list 'done (progn ,@body)))))
-             (cl-case (car ,status)
-               (done (throw 'wg-result (cadr ,status)))
-               (next (setq ,order (wg-rotate-list ,order 1))
-                     (setq wg-previous-minibuffer-contents (cadr ,status)))
-               (prev (setq ,order (wg-rotate-list ,order -1))
-                     (setq wg-previous-minibuffer-contents
-                           (cadr ,status))))))))))
-
-(defun wg-toggle-buffer-list-filtration ()
-  "Toggle `wg-buffer-list-filtration-on'."
-  (interactive)
-  (wg-toggle-and-message 'wg-buffer-list-filtration-on))
-
 
 (provide 'workgroups-buf)
 ;;; workgroups-buf.el ends here

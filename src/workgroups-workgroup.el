@@ -227,9 +227,9 @@ Or scream unless NOERROR."
 
 
 (defun wg-read-workgroup-name (&optional require-match)
-  "Read a workgroup with `wg-completing-read'."
-  (wg-completing-read
-   "Workgroup: " (wg-workgroup-names) nil require-match nil nil
+  "Read a workgroup name from `wg-workgroup-names'.
+REQUIRE-MATCH to match."
+  (ido-completing-read "Workgroup: " (wg-workgroup-names) nil require-match nil nil
    (awhen (wg-current-workgroup t) (wg-workgroup-name it))))
 
 (defun wg-new-default-workgroup-name ()
@@ -249,10 +249,9 @@ Or scream unless NOERROR."
 (defun wg-read-saved-wconfig-name (workgroup &optional prompt require-match)
   "Read the name of a saved wconfig, completing on the names of
 WORKGROUP's saved wconfigs."
-  (wg-completing-read
-   (or prompt "Saved wconfig name: ")
-   (wg-workgroup-saved-wconfig-names workgroup)
-   nil require-match))
+  (ido-completing-read (or prompt "Saved wconfig name: ")
+                       (wg-workgroup-saved-wconfig-names workgroup)
+                       nil require-match))
 
 (defun wg-read-saved-wconfig (workgroup)
   "Read the name of and return one of WORKGROUP's saved wconfigs."

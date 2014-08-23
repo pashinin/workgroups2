@@ -244,10 +244,9 @@ If you want, restore them manually and try again."
     (wg-restore-wconfig-undoably
      (wg-workgroup-get-saved-wconfig
       workgroup
-      (wg-completing-read
-       "Saved wconfig: "
-       (mapcar 'wg-wconfig-name (wg-workgroup-saved-wconfigs workgroup))
-       nil t)))))
+      (ido-completing-read "Saved wconfig: "
+                           (mapcar 'wg-wconfig-name (wg-workgroup-saved-wconfigs workgroup))
+                           nil t)))))
 
 (defun wg-kill-saved-wconfig ()
   "Kill one of the current workgroup's saved wconfigs.

@@ -359,12 +359,6 @@ BUFFER-LIST should contain buffer objects and/or buffer names."
       (insert (format "%S" sexp)))
     (write-file file)))
 
-(defun wg-file-under-root-path-p (root-path file-path)
-  "Return t when FILE-PATH is under ROOT-PATH, nil otherwise."
-  (string-match (concat "^" (regexp-quote (expand-file-name root-path)))
-                (expand-file-name file-path)))
-
-
 
 ;;; frames
 
@@ -510,33 +504,6 @@ Saves some variables to restore a BUFFER later."
   (or wg-current-session
       (unless noerror
         (error "No session is defined"))))
-
-
-(defun wg-read-buffer-mode ()
-  "Return the buffer switching package (ido or iswitchb) to use, or nil."
-  (if (eq wg-current-buffer-list-filter-id 'fallback) 'fallback
-    (cl-case (let (workgroups-mode) (command-remapping 'switch-to-buffer))
-      (ido-switch-buffer 'ido)
-      (otherwise 'fallback))))
-
-(defun wg-read-buffer-function (&optional mode)
-  "Return MODE's or `wg-read-buffer-mode's `read-buffer' function."
-  (cl-case (or mode (wg-read-buffer-mode))
-    (ido 'ido-read-buffer)
-    (fallback (lambda (prompt &optional default require-match)
-                (let (read-buffer-function)
-                  (read-buffer prompt default require-match))))))
-
-(defun wg-completing-read
-    (prompt choices &optional pred require-match initial-input history default)
-  "Do a completing read.  The function called depends on what's on."
-  (cl-ecase (wg-read-buffer-mode)
-    (ido
-     (ido-completing-read prompt choices pred require-match
-                          initial-input history default))
-    (fallback
-     (completing-read prompt choices pred require-match
-                      initial-input history default))))
 
 ;; locate-dominating-file
 (defun wg-get-first-existing-dir (&optional dir)
