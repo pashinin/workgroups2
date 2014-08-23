@@ -147,7 +147,7 @@ ARG is anything else, turn on `workgroups-mode'."
     (when (and wg-session-load-on-start
                (file-exists-p wg-session-file))
       (condition-case err
-          (wg-find-session-file wg-session-file)
+          (wg-open-session wg-session-file)
         (error (message "Error finding `wg-session-file': %s" err))))
     (run-hooks 'workgroups-mode-hook))
    (t
