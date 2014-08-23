@@ -445,21 +445,11 @@ the cadr as the accessor function."
 
 ;;; misc
 
-
-(defun wg-fill-keymap (keymap &rest binds)
-  "Return KEYMAP after defining in it all keybindings in BINDS."
-  (while binds
-    (define-key keymap (car binds) (cadr binds))
-    (setq binds (cddr binds)))
-  keymap)
-
 (defun wg-add-or-remove-hooks (remove &rest pairs)
   "Add FUNCTION to or remove it from HOOK, depending on REMOVE."
   (dolist (pair (wg-partition pairs 2))
     (funcall (if remove 'remove-hook 'add-hook)
              (car pair) (cadr pair))))
-
-
 
 (defmacro wg-set-parameter (place parameter value)
   "Set PARAMETER to VALUE at PLACE.

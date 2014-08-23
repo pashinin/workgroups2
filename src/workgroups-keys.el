@@ -16,6 +16,13 @@ off and then on again to take effect."
 (defvar workgroups-mode-map nil
   "Workgroups Mode's keymap.")
 
+(defun wg-fill-keymap (keymap &rest binds)
+  "Return KEYMAP after defining in it all keybindings in BINDS."
+  (while binds
+    (define-key keymap (car binds) (cadr binds))
+    (setq binds (cddr binds)))
+  keymap)
+
 (defvar wg-prefixed-map
   (wg-fill-keymap
    (make-sparse-keymap)
