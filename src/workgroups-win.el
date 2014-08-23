@@ -100,24 +100,6 @@
        (hscale (height) (truncate (* height height-scale))))
     (wg-adjust-w-size w #'wscale #'hscale)))
 
-
-
-(defun wg-restore-window-positions (win &optional window)
-  "Restore various positions in WINDOW from their values in WIN."
-  (let ((window (or window (selected-window))))
-    (wg-with-slots win
-        ((win-point wg-win-point)
-         (win-start wg-win-start)
-         (win-hscroll wg-win-hscroll))
-      (set-window-start window win-start t)
-      (set-window-hscroll window win-hscroll)
-      (set-window-point
-       window
-       (cond ((not wg-restore-point) win-start)
-             ((eq win-point :max) (point-max))
-             (t win-point)))
-      (when (>= win-start (point-max)) (recenter)))))
-
 (defun wg-restore-window (win)
   "Restore WIN in `selected-window'."
   (let ((selwin (selected-window))
@@ -125,7 +107,23 @@
     (if (not buf)
         (wg-restore-default-buffer)
       (when (wg-restore-buffer buf t)
-        (wg-restore-window-positions win selwin)
+
+        ;; Restore various positions in WINDOW from their values in WIN
+        ;; (wg-restore-window-positions win selwin)
+        (let ((window (or selwin (selected-window))))
+          (wg-with-slots win
+              ((win-point wg-win-point)
+               (win-start wg-win-start)
+               (win-hscroll wg-win-hscroll))
+            (set-window-start window win-start t)
+            (set-window-hscroll window win-hscroll)
+            (set-window-point
+             window
+             (cond ((not wg-restore-point) win-start)
+                   ((eq win-point :max) (point-max))
+                   (t win-point)))
+            (when (>= win-start (point-max)) (recenter))))
+
         (when wg-restore-window-dedicated-p
           (set-window-dedicated-p selwin (wg-win-dedicated win)))))
     (ignore-errors
