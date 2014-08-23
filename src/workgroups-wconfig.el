@@ -111,9 +111,6 @@ WCONFIG's height."
     (wg-wconfig-wtree wconfig)
     (/ (float new-width)  (wg-wconfig-width wconfig))
     (/ (float new-height) (wg-wconfig-height wconfig)))))
-;; (wg-wconfig-width (wg-current-wconfig))
-;; (wg-wconfig-wtree (wg-current-wconfig))
-
 
 (defun wg-scale-wconfig-to-frame (wconfig)
   "Scale WCONFIG buffers to fit current frame size.
@@ -122,13 +119,11 @@ Return a scaled copy of WCONFIG."
   (wg-scale-wconfigs-wtree wconfig
                            (frame-parameter nil 'width)
                            (frame-parameter nil 'height)))
-;; (wg-scale-wconfig-to-frame (wg-current-wconfig))
 
 (defun wg-frame-resize-and-position (wconfig &optional frame)
   "Apply WCONFIG's size and position to a FRAME."
   (interactive)
-  (unless frame
-    (setq frame (selected-frame)))
+  (unless frame (setq frame (selected-frame)))
   (let* ((params (wg-wconfig-parameters wconfig))
          fullscreen)
     (set-frame-parameter frame 'fullscreen (if (assoc 'fullscreen params)
