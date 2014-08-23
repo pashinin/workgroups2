@@ -76,14 +76,6 @@ If nil - nothing happens."
   :type 'string
   :group 'workgroups)
 
-(defcustom wg-switch-to-first-workgroup-on-find-session-file t
-  "Non-nil means switch to the first workgroup in a session file
-when it's found with `wg-find-session-file'."
-  :type 'boolean
-  :group 'workgroups)
-
-
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;

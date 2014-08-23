@@ -71,8 +71,11 @@ nil otherwise."
              (error "%S is not a Workgroups session file." filename))
            (setf (wg-session-file-name session) filename)
            (wg-reset-internal (wg-unpickel-session-parameters session)))
-         (wg-awhen (and wg-switch-to-first-workgroup-on-find-session-file
-                        (wg-workgroup-list))
+
+         (if wg-control-frames
+             (wg-restore-frames))
+
+         (wg-awhen (wg-workgroup-list)
            (if (and wg-open-this-wg
                     (member wg-open-this-wg (wg-workgroup-names)))
                (wg-switch-to-workgroup wg-open-this-wg)
@@ -83,8 +86,6 @@ nil otherwise."
                   (wg-session-parameter (wg-current-session t) 'last-workgroup))
                (wg-switch-to-workgroup (car it)))
              ))
-         (if wg-control-frames
-             (wg-restore-frames))
          (wg-fontified-message (:cmd "Loaded: ") (:file filename)))
         (t
          (wg-query-and-save-if-modified)
