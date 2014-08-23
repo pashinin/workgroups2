@@ -185,10 +185,6 @@ Otherwise return nil.  KEYS can be any keyword args accepted by `pushnew'."
   "Return a list of the first N elts in LIST."
   (butlast list (- (length list) n)))
 
-(defun wg-leave (list n)
-  "Return a list of the last N elts in LIST."
-  (nthcdr (- (length list) n) list))
-
 (defun wg-rnth (n list)
   "Return the Nth element of LIST, counting from the end."
   (nth (- (length list) n 1) list))
