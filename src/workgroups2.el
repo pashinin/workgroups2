@@ -7,7 +7,7 @@
 ;; Keywords: session management window-configuration persistence
 ;; Homepage: https://github.com/pashinin/workgroups2
 ;; Version: 1.2.0
-;; Package-Requires: ((cl-lib "0.4") (dash "2.8.0") (anaphora "1.0.0"))
+;; Package-Requires: ((cl-lib "0.4") (dash "2.8.0") (anaphora "1.0.0") (f "0.17"))
 ;;
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -83,6 +83,9 @@
 ;; See also: https://github.com/pashinin/workgroups2/wiki
 ;;
 ;;; Code:
+
+(require 'f)
+(require 'dash)
 
 (require 'workgroups-pickel)
 (require 'workgroups-faces)
