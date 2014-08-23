@@ -181,10 +181,6 @@ Otherwise return nil.  KEYS can be any keyword args accepted by `pushnew'."
   `(< (length ,seq-place)
       (length (cl-pushnew ,item ,seq-place ,@keys))))
 
-(defun wg-last1 (list)
-  "Return the last element of LIST."
-  (car (last list)))
-
 (defun wg-take (list n)
   "Return a list of the first N elts in LIST."
   (butlast list (- (length list) n)))

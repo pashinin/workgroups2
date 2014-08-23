@@ -149,7 +149,7 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
 (wg-support 'term-mode 'term
             `((serialize . ,(lambda (buffer)
                               (if (get-buffer-process buffer)
-                                  (wg-last1 (process-command (get-buffer-process buffer)))
+                                  (-last-item (process-command (get-buffer-process buffer)))
                                 "/bin/bash")))
               (deserialize . ,(lambda (buffer vars)
                                 (cl-labels ((term-window-width () 80)

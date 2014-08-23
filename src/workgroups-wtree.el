@@ -50,7 +50,7 @@ new wlist, return it instead of a new wtree."
       (wg-with-bounds wtree dir (ls1 hs1 lb1 hb1)
         (let* ((min-size (wg-min-size dir))
                (max (- hb1 1 min-size))
-               (lastw (wg-last1 wlist)))
+               (lastw (-last-item wlist)))
           (cl-labels
               ((mapwl
                 (wl)
@@ -162,11 +162,6 @@ KEY non-nil returns a list of the results of calling KEY on each win."
       ((inner (w) (if (wg-win-p w) (list (if key (funcall key w) w))
                     (cl-mapcan #'inner (wg-wtree-wlist w)))))
     (inner wtree)))
-
-(defun wg-win-list (wtree)
-  "Construct and return a list of all wg-wins in WTREE."
-  (wg-flatten-wtree wtree))
-
 
 (defun wg-reverse-wlist (w &optional dir)
   "Reverse W's wlist and those of all its sub-wtrees in direction DIR.

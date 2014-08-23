@@ -162,8 +162,6 @@ blank session object."
   (setq wg-wconfig-kill-ring nil)
   (setq wg-current-session (or session (wg-make-session))))
 
-
-
 (defun wg-session-all-buf-uids (&optional session)
   "Return a new list of all unique buf uids in SESSION.
 SESSION nil defaults to `wg-current-session'."

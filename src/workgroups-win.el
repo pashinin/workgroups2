@@ -63,7 +63,7 @@
 (defun wg-last-win (w)
   "Return the last actual window in W."
   (if (wg-win-p w) w
-    (wg-last-win (wg-last1 (wg-wtree-wlist w)))))
+    (wg-last-win (-last-item (wg-wtree-wlist w)))))
 
 (defun wg-minify-win (w)
   "Set W's edges to the smallest allowable."
