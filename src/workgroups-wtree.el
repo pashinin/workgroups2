@@ -193,7 +193,7 @@ Otherwise, reverse WTREE vertically."
                       (wg-make-wtree
                        :dir (wg-wtree-dir w)
                        :edges (wg-wtree-edges w)
-                       :wlist (wg-aif (cl-find t wlist :key 'wg-win-selected)
+                       :wlist (aif (cl-find t wlist :key 'wg-win-selected)
                                   (wg-cyclic-offset-elt it wlist offset)
                                 (mapcar #'inner wlist)))))))
     (wg-normalize-wtree (inner wtree))))

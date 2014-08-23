@@ -56,7 +56,7 @@ how to write your own."
               (deserialize . ,(lambda (buffer vars)
                                 ;;(with-current-buffer
                                 ;;    (get-buffer-create (wg-buf-name buffer))
-                                (wg-aif vars
+                                (aif vars
                                     (if (fboundp 'Info-find-node)
                                         (apply #'Info-find-node it))
                                   (info)

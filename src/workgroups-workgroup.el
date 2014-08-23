@@ -27,17 +27,16 @@ that doesn't name an existing workgroup."
     (setf (wg-workgroup-modified workgroup) t)
     (setf (wg-session-modified (wg-current-session)) t)))
 
-
 (defun wg-current-workgroup (&optional noerror frame)
   "Return the current workgroup in FRAME, or error unless NOERROR."
   (or wg-current-workgroup
-      (wg-aif (frame-parameter frame 'wg-current-workgroup-uid)
+      (aif (frame-parameter frame 'wg-current-workgroup-uid)
           (wg-find-workgroup-by :uid it noerror)
         (unless noerror (error "No current workgroup in this frame")))))
 
 (defun wg-previous-workgroup (&optional noerror frame)
   "Return the previous workgroup in FRAME, or error unless NOERROR."
-  (wg-aif (frame-parameter frame 'wg-previous-workgroup-uid)
+  (aif (frame-parameter frame 'wg-previous-workgroup-uid)
       (wg-find-workgroup-by :uid it noerror)
     (unless noerror (error "No previous workgroup in this frame"))))
 

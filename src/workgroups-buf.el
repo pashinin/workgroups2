@@ -187,7 +187,7 @@ This is only here for completeness."
 
 (defun wg-find-buffer-in-buf-list (buffer-or-name buf-list)
   "Find BUFFER-OR-NAME in BUF-LIST."
-  (wg-aif (wg-buffer-uid buffer-or-name)
+  (aif (wg-buffer-uid buffer-or-name)
       (wg-find-bufobj-by-uid it buf-list)
     (wg-find-bufobj buffer-or-name buf-list)))
 
@@ -241,7 +241,7 @@ If there isn't already a buf corresponding to BUFFER in
 in either case."
   (with-current-buffer buffer
     (setq wg-buffer-uid
-          (wg-aif (wg-find-buffer-in-buf-list buffer (wg-buf-list))
+          (aif (wg-find-buffer-in-buf-list buffer (wg-buf-list))
               (wg-buf-uid it)
             (let ((buf (wg-buffer-to-buf buffer)))
               (push buf (wg-buf-list))
@@ -350,7 +350,7 @@ Read with PROMT DEFAULT REQUIRE-MATCH."
     (wg-with-buffer-list-filters 'read-buffer
       (funcall (wg-read-buffer-function)
                (wg-buffer-list-filter-prompt
-                (wg-aif (string-match ": *$" prompt)
+                (aif (string-match ": *$" prompt)
                     (substring prompt 0 it) prompt))
                default require-match))))
 

@@ -130,7 +130,7 @@ associate them."
 WINDOW-OR-EMACS-WINDOW-TREE with the given WORKGROUP.
 WINDOW-OR-EMACS-WINDOW-TREE must be either a window or a tree of
 the form produced by `(car (window-tree))'."
-  (wg-aif (windowp window-or-emacs-window-tree)
+  (if (windowp window-or-emacs-window-tree)
       (with-current-buffer (window-buffer window-or-emacs-window-tree)
         (setq wg-buffer-workgroup workgroup))
     (dolist (w (cddr window-or-emacs-window-tree))

@@ -8,6 +8,7 @@
 ;;; utils used in macros
 
 (require 'cl-lib)
+(require 'anaphora)
 (require 'workgroups-faces)
 (require 'workgroups-variables)
 
@@ -92,15 +93,10 @@ Else do ELSE...
 
 ;;; anaphora
 
-(defmacro wg-aif (test then &rest else)
-  "Anaphoric `if'."
-  (declare (indent 2))
-  `(let ((it ,test)) (if it ,then ,@else)))
-
 (defmacro wg-awhen (test &rest body)
   "Anaphoric `when'."
   (declare (indent 1))
-  `(wg-aif ,test (progn ,@body)))
+  `(aif ,test (progn ,@body)))
 
 (defmacro wg-asetf (&rest places-and-values)
   "Anaphoric `setf'."
@@ -311,7 +307,7 @@ This only exists to get rid of duplicate lambdas in a few reductions."
 (defun wg-aget (alist key &optional default)
   "Return the value of KEY in ALIST. Uses `assq'.
 If PARAM is not found, return DEFAULT which defaults to nil."
-  (wg-aif (assq key alist) (cdr it) default))
+  (aif (assq key alist) (cdr it) default))
 
 (defun wg-acopy (alist)
   "Return a copy of ALIST's toplevel list structure."
