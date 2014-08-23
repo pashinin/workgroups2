@@ -80,8 +80,8 @@ FRAME is deleted, so we don't lose its state."
 (defun wg-wconfig-restore-frame-position (wconfig &optional frame)
   "Use WCONFIG to restore FRAME's position.
 If frame is nil then `selected-frame'."
-  (wg-when-let ((left (wg-wconfig-left wconfig))
-                (top (wg-wconfig-top wconfig)))
+  (-when-let* ((left (wg-wconfig-left wconfig))
+               (top (wg-wconfig-top wconfig)))
     ;; Check that arguments are integers
     ;; Problem: https://github.com/pashinin/workgroups2/issues/15
     (if (and (integerp left)

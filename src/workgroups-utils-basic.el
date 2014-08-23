@@ -7,6 +7,7 @@
 
 ;;; utils used in macros
 
+(require 'dash)
 (require 'cl-lib)
 (require 'anaphora)
 (require 'workgroups-faces)
@@ -36,16 +37,6 @@ Iterative to prevent stack overflow."
 
 
 ;;; bindings
-
-(defmacro wg-when-let (binds &rest body)
-  "Like `let*' but when all BINDS are non-nil - eval BODY."
-  (declare (indent 1))
-  (wg-dbind (bind . binds) binds
-    (when (consp bind)
-      `(let (,bind)
-         (when ,(car bind)
-           ,(if (not binds) `(progn ,@body)
-              `(wg-when-let ,binds ,@body)))))))
 
 (defmacro wg-when-boundp (symbols &rest body)
   "When all SYMBOLS are bound, `eval' BODY."
@@ -187,17 +178,6 @@ Otherwise return nil.  KEYS can be any keyword args accepted by `pushnew'."
     (dotimes (i (- end start) (nreverse accum))
       (push (+ start i) accum))))
 
-(defun wg-rotate-list (list &optional offset)
-  "Rotate LIST by OFFSET.  Positive OFFSET rotates left, negative right."
-  (when list
-    (let ((split (mod (or offset 1) (length list))))
-      (append (nthcdr split list) (-take split list)))))
-
-(defun wg-center-rotate-list (list)
-  "Rotate LIST so it's first elt is in the center.  When LIST's
-length is even, the first elt is left nearer the front."
-  (wg-rotate-list list (- (/ (1- (length list)) 2))))
-
 (defun wg-insert-after (elt list index)
   "Insert ELT into LIST after INDEX."
   (let ((new-list (cl-copy-list list)))
@@ -220,21 +200,21 @@ KEYS is passed to `remove*'."
 
 (defun wg-cyclic-offset-elt (elt list n)
   "Cyclically offset ELT's position in LIST by N."
-  (wg-when-let ((pos (cl-position elt list)))
+  (-when-let (pos (cl-position elt list))
     (wg-move-elt elt list (mod (+ n pos) (length list)))))
 
 (defun wg-cyclic-nth-from-elt (elt list n &rest keys)
   "Return the elt in LIST N places cyclically from ELT.
 If ELT is not present is LIST, return nil.
 KEYS is passed to `position'."
-  (wg-when-let ((pos (apply 'cl-position elt list keys)))
+  (-when-let (pos (apply 'cl-position elt list keys))
     (wg-cyclic-nth list (+ pos n))))
 
 (defun wg-util-swap (elt1 elt2 list)
   "Return a copy of LIST with ELT1 and ELT2 swapped.
 Return nil when ELT1 and ELT2 aren't both present."
-  (wg-when-let ((p1 (cl-position elt1 list))
-                (p2 (cl-position elt2 list)))
+  (-when-let* ((p1 (cl-position elt1 list))
+               (p2 (cl-position elt2 list)))
     (wg-move-elt elt1 (wg-move-elt elt2 list p1) p2)))
 
 (defun wg-dups-p (list &rest keys)

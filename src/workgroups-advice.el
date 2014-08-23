@@ -190,8 +190,8 @@ See `wg-buffer-auto-association' for allowable values of ASSOC."
   "Conditionally associate BUFFER with the current workgroup in FRAME.
 Frame defaults to `selected-frame'.  See `wg-buffer-auto-association'."
   (when wg-buffer-auto-association-on
-    (wg-when-let ((wg (wg-current-workgroup t frame))
-                  (b (get-buffer buffer)))
+    (-when-let* ((wg (wg-current-workgroup t frame))
+                 (b (get-buffer buffer)))
       (unless (or (wg-workgroup-bufobj-association-type wg buffer)
                   (member wg wg-deactivation-list)
                   (member (buffer-name b) wg-associate-blacklist)

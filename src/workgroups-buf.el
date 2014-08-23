@@ -50,7 +50,7 @@ When a buffer can't be restored, when creating a blank wg."
 
 (defun wg-restore-existing-buffer (buf &optional switch)
   "Return existing buffer from BUF and maybe SWITCH to it."
-  (wg-when-let ((b (wg-find-buf-in-buffer-list buf (wg-buffer-list-emacs))))
+  (-when-let (b (wg-find-buf-in-buffer-list buf (wg-buffer-list-emacs)))
     (if switch (switch-to-buffer b t))
     (with-current-buffer b
       (wg-set-buffer-uid-or-error (wg-buf-uid buf))
@@ -60,7 +60,7 @@ When a buffer can't be restored, when creating a blank wg."
   "Restore BUF by finding its file and maybe SWITCH to it.
 Return the created buffer.
 If BUF's file doesn't exist, call `wg-restore-default-buffer'"
-  ;;(wg-when-let ((file-name (wg-buf-file-name buf)))
+  ;;(-when-let ((file-name (wg-buf-file-name buf)))
   (let ((file-name (wg-buf-file-name buf)))
     (when (and file-name
                (or wg-restore-remote-buffers
@@ -94,7 +94,7 @@ If BUF's file doesn't exist, call `wg-restore-default-buffer'"
 
 (defun wg-restore-special-buffer (buf &optional switch)
   "Restore a buffer BUF with DESERIALIZER-FN and maybe SWITCH to it."
-  (wg-when-let
+  (-when-let*
       ((special-data (wg-buf-special-data buf))
        (buffer (save-window-excursion
                  (condition-case err
@@ -275,9 +275,9 @@ Currently only sets BUFFER's `wg-buffer-uid' to nil."
   "Update BUFFER's corresponding buf in `wg-buf-list'.
 BUFFER nil defaults to `current-buffer'."
   (let ((buffer (or buffer (current-buffer))))
-    (wg-when-let ((uid (wg-buffer-uid buffer))
-                  (old-buf (wg-find-buf-by-uid uid))
-                  (new-buf (wg-buffer-to-buf buffer)))
+    (-when-let* ((uid (wg-buffer-uid buffer))
+                 (old-buf (wg-find-buf-by-uid uid))
+                 (new-buf (wg-buffer-to-buf buffer)))
       (setf (wg-buf-uid new-buf) (wg-buf-uid old-buf))
       (wg-asetf (wg-buf-list) (cons new-buf (remove old-buf it))))))
 

@@ -2,6 +2,7 @@
 ;;; Commentary:
 ;;; Code:
 
+(require 'dash)
 (require 'ring)
 (require 'workgroups-wconfig)
 (require 'workgroups-minibuffer)
@@ -161,8 +162,8 @@ WORKGROUP's saved wconfigs, replace it."
 (defun wg-workgroup-kill-saved-wconfig (workgroup wconfig-or-name)
   "Delete WCONFIG-OR-NAME from WORKGROUP's saved wconfigs.
 WCONFIG-OR-NAME is resolved with `wg-workgroup-get-saved-wconfig'."
-  (wg-when-let ((wconfig (wg-workgroup-get-saved-wconfig
-                          workgroup wconfig-or-name)))
+  (-when-let (wconfig (wg-workgroup-get-saved-wconfig
+                       workgroup wconfig-or-name))
     (wg-asetf (wg-workgroup-saved-wconfigs workgroup) (remq wconfig it)
               (wg-workgroup-modified workgroup) t)))
 
@@ -777,7 +778,7 @@ Added to `post-command-hook'."
          wg-window-configuration-changed         ;; When the window config has changed,
          wg-undoify-window-configuration-change  ;; and undoification is still on for the current command
          (wg-minibuffer-inactive-p))             ;; and the change didn't occur while the minibuffer is active,
-    (wg-when-let ((workgroup (wg-current-workgroup t)))  ;; and there's a current workgroup,
+    (-when-let (workgroup (wg-current-workgroup t))  ;; and there's a current workgroup,
       ;; add the current wconfig to that workgroup's undo list:
       (wg-add-wconfig-to-undo-list workgroup (wg-current-wconfig))))
   ;; Reset all flags no matter what:
