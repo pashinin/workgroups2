@@ -285,13 +285,9 @@ BUFFER nil defaults to `current-buffer'."
   "Update all bufs in `wg-buf-list' corresponding to buffers in BUFFER-LIST."
   (mapc 'wg-update-buffer-in-buf-list (or buffer-list (wg-buffer-list-emacs))))
 
-
 (defun wg-buffer-list-display (buffer-list)
   "Return the BUFFER-LIST display string."
-  (wg-display-internal
-   'wg-buffer-display
-   (if wg-center-rotate-buffer-list-display
-       (wg-center-rotate-list buffer-list) buffer-list)))
+  (wg-display-internal 'wg-buffer-display buffer-list))
 
 ;; buffer-list filters
 
@@ -301,18 +297,9 @@ BUFFER nil defaults to `current-buffer'."
 
 ;; buffer-list-filter context
 
-(defun wg-buffer-list-filter-order (command)
-  "Return WORKGROUP's buffer-list-filter order for COMMAND, or a default."
-  (let ((bfo (wg-local-value 'wg-buffer-list-filter-order-alist)))
-    (or (wg-aget bfo command) (wg-aget bfo 'default))))
-
 (defmacro wg-prior-mapping (mode command)
   "Return whatever COMMAND would call if MODE wasn't on."
   `(or (let (,mode) (command-remapping ,command)) ,command))
-
-(defun wg-filter-buffer-list-p ()
-  "Return the current workgroup when buffer-list-filters are on."
-  (and workgroups-mode wg-buffer-list-filtration-on (wg-current-workgroup t)))
 
 (provide 'workgroups-buf)
 ;;; workgroups-buf.el ends here
