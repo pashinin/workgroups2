@@ -29,7 +29,7 @@ N defaults to 2, and STEP defaults to N.
 Iterative to prevent stack overflow."
   (let* ((n (or n 2)) (step (or step n)) acc)
     (while list
-      (push (wg-take list n) acc)
+      (push (-take n list) acc)
       (setq list (nthcdr step list)))
     (nreverse acc)))
 
@@ -181,10 +181,6 @@ Otherwise return nil.  KEYS can be any keyword args accepted by `pushnew'."
   `(< (length ,seq-place)
       (length (cl-pushnew ,item ,seq-place ,@keys))))
 
-(defun wg-take (list n)
-  "Return a list of the first N elts in LIST."
-  (butlast list (- (length list) n)))
-
 (defun wg-range (start end)
   "Return a list of integers from START up to but not including END."
   (let (accum)
@@ -195,7 +191,7 @@ Otherwise return nil.  KEYS can be any keyword args accepted by `pushnew'."
   "Rotate LIST by OFFSET.  Positive OFFSET rotates left, negative right."
   (when list
     (let ((split (mod (or offset 1) (length list))))
-      (append (nthcdr split list) (wg-take list split)))))
+      (append (nthcdr split list) (-take split list)))))
 
 (defun wg-center-rotate-list (list)
   "Rotate LIST so it's first elt is in the center.  When LIST's
