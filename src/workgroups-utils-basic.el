@@ -185,18 +185,6 @@ Otherwise return nil.  KEYS can be any keyword args accepted by `pushnew'."
   "Return a list of the first N elts in LIST."
   (butlast list (- (length list) n)))
 
-(defun wg-rnth (n list)
-  "Return the Nth element of LIST, counting from the end."
-  (nth (- (length list) n 1) list))
-
-(defun wg-take-until-fail (pred list)
-  "Take elements from LIST up to the first element on which PRED fails."
-  (let (taken)
-    (catch 'result
-      (dolist (elt list (nreverse taken))
-        (if (funcall pred elt) (push elt taken)
-          (throw 'result (nreverse taken)))))))
-
 (defun wg-range (start end)
   "Return a list of integers from START up to but not including END."
   (let (accum)

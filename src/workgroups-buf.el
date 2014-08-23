@@ -271,30 +271,6 @@ Currently only sets BUFFER's `wg-buffer-uid' to nil."
 
 ;;; buffer-list-filter commands
 
-(defun wg-next-buffer-internal (buffer-list &optional prev noerror)
-  "Switch to the next buffer in Workgroups' filtered buffer list."
-  (when buffer-list
-    (let* ((cur (current-buffer))
-           (next (or (wg-cyclic-nth-from-elt cur buffer-list (if prev -1 1))
-                     (car buffer-list))))
-      (unless (eq cur next)
-        (switch-to-buffer next)
-        (unless prev (bury-buffer cur))
-        next))))
-
-(defun wg-next-buffer (&optional prev)
-  "Switch to the next buffer in Workgroups' filtered buffer list.
-In the post-command message the current buffer is rotated to the
-middle of the list to more easily see where `wg-previous-buffer'
-will take you."
-  (interactive)
-  (let ((command (if prev 'previous-buffer 'next-buffer)))
-    (if (not (wg-filter-buffer-list-p))
-        (call-interactively (wg-prior-mapping workgroups-mode command))
-      (wg-with-buffer-list-filters command
-        (awhen (wg-filtered-buffer-list) (wg-next-buffer-internal it prev))
-        (wg-message (wg-buffer-command-display))))))
-
 (defun wg-update-buffer-in-buf-list (&optional buffer)
   "Update BUFFER's corresponding buf in `wg-buf-list'.
 BUFFER nil defaults to `current-buffer'."
