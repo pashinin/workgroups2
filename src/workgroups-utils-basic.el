@@ -296,10 +296,6 @@ If PARAM is not found, return DEFAULT which defaults to nil."
   "Return BUFFER-OR-NAME's `buffer-name', or error."
   (buffer-name (wg-get-buffer buffer-or-name)))
 
-(defun wg-buffer-file-name (buffer-or-name)
-  "Return BUFFER-OR-NAME's `buffer-file-name', or error."
-  (buffer-file-name (wg-get-buffer buffer-or-name)))
-
 (defun wg-buffer-major-mode (buffer-or-name)
   "Return BUFFER's major-mode."
   (with-current-buffer buffer-or-name major-mode))
@@ -307,24 +303,6 @@ If PARAM is not found, return DEFAULT which defaults to nil."
 (defun wg-current-buffer-p (buffer-or-name)
   "Return t if BUFFER-OR-NAME is the current buffer, nil otherwise."
   (eq (wg-get-buffer buffer-or-name) (current-buffer)))
-
-(defmacro wg-buffer-local-setq (buffer var value)
-  "`setq' VAR to VALUE while BUFFER is current.
-Note that this won't make VAR buffer-local if it isn't already."
-  `(with-current-buffer ,buffer (setq ,var ,value)))
-
-(defun wg-interesting-buffers ()
-  "Return a list of only the interesting buffers in `buffer-list'."
-  (cl-remove-if (lambda (bname) (string-match "^ " bname))
-                (wg-buffer-list-emacs) :key 'buffer-name))
-
-(defun wg-get-first-buffer-matching-regexp (regexp &optional buffer-list)
-  "Return the first buffer in BUFFER-LIST with a name matching REGEXP.
-BUFFER-LIST should contain buffer objects and/or buffer names."
-  (cl-find regexp (or buffer-list (wg-buffer-list-emacs))
-           :test 'string-match :key 'wg-buffer-name))
-
-
 
 ;;; files
 
