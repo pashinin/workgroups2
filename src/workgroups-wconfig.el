@@ -198,20 +198,24 @@ Runs each time you're switching workgroups."
   (let ((wg-record-incorrectly-restored-bufs t)
         (wg-incorrectly-restored-bufs nil)
         (params (wg-wconfig-parameters wconfig))
-        fullscreen wtree)
+        fullscreen)
     (wg-barf-on-active-minibuffer)
     (when wg-restore-scroll-bars
       (wg-wconfig-restore-scroll-bars wconfig))
 
-    ;; Restore buffers
-    (wg-restore-window-tree
-     (wg-scale-wconfig-to-frame wconfig))
+    (when (null (wg-current-workgroup t))
+      (set-frame-parameter frame 'fullscreen (if (assoc 'fullscreen params)
+                                                 (cdr (assoc 'fullscreen params))
+                                               nil)))
 
     ;; Restore frame position
     (when (and wg-restore-frame-position
                (not (frame-parameter nil 'fullscreen))
                (null (wg-current-workgroup t)))
       (wg-wconfig-restore-frame-position wconfig frame))
+
+    ;; Restore buffers
+    (wg-restore-window-tree (wg-scale-wconfig-to-frame wconfig))
 
     (when wg-incorrectly-restored-bufs
       (message "Unable to restore these buffers: %S\
