@@ -292,7 +292,7 @@ will take you."
     (if (not (wg-filter-buffer-list-p))
         (call-interactively (wg-prior-mapping workgroups-mode command))
       (wg-with-buffer-list-filters command
-        (wg-awhen (wg-filtered-buffer-list) (wg-next-buffer-internal it prev))
+        (awhen (wg-filtered-buffer-list) (wg-next-buffer-internal it prev))
         (wg-message (wg-buffer-command-display))))))
 
 (defun wg-update-buffer-in-buf-list (&optional buffer)

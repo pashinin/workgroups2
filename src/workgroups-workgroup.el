@@ -54,12 +54,12 @@ WORKGROUP should be a workgroup or nil."
 
 (defun wg-current-workgroup-p (workgroup &optional frame)
   "Return t when WORKGROUP is the current workgroup, nil otherwise."
-  (wg-awhen (wg-current-workgroup t frame)
+  (awhen (wg-current-workgroup t frame)
     (eq workgroup it)))
 
 (defun wg-previous-workgroup-p (workgroup &optional frame)
   "Return t when WORKGROUP is the previous workgroup, nil otherwise."
-  (wg-awhen (wg-previous-workgroup t frame)
+  (awhen (wg-previous-workgroup t frame)
     (eq workgroup it)))
 
 (defmacro wg-with-current-workgroup (workgroup &rest body)
@@ -230,7 +230,7 @@ Or scream unless NOERROR."
   "Read a workgroup with `wg-completing-read'."
   (wg-completing-read
    "Workgroup: " (wg-workgroup-names) nil require-match nil nil
-   (wg-awhen (wg-current-workgroup t) (wg-workgroup-name it))))
+   (awhen (wg-current-workgroup t) (wg-workgroup-name it))))
 
 (defun wg-new-default-workgroup-name ()
   "Return a new, unique, default workgroup name."
@@ -732,7 +732,7 @@ current command."
   "Add WCONFIG to WORKGROUP's undo list, truncating its future if necessary."
   (wg-with-undo workgroup (state undo-pointer undo-list)
     (let ((undo-list (cons nil (nthcdr undo-pointer undo-list))))
-      (wg-awhen (nthcdr wg-wconfig-undo-list-max undo-list) (setcdr it nil))
+      (awhen (nthcdr wg-wconfig-undo-list-max undo-list) (setcdr it nil))
       (setf (wg-workgroup-state-undo-list state) undo-list))
     (setf (wg-workgroup-state-undo-pointer state) 0))
   (wg-set-workgroup-working-wconfig workgroup wconfig))
@@ -750,7 +750,7 @@ return WORKGROUP's current undo state."
 
 (defun wg-update-current-workgroup-working-wconfig ()
   "Update `selected-frame's current workgroup's working-wconfig with `wg-current-wconfig'."
-  (wg-awhen (wg-current-workgroup t)
+  (awhen (wg-current-workgroup t)
     (wg-set-workgroup-working-wconfig it (wg-current-wconfig))))
 
 (defun wg-restore-wconfig-undoably (wconfig &optional noundo)
@@ -876,7 +876,7 @@ Also delete all references to it by `wg-workgroup-state-table',
 (defun wg-add-workgroup (workgroup &optional index)
   "Add WORKGROUP to `wg-workgroup-list' at INDEX or the end.
 If a workgroup with the same name exists, overwrite it."
-  (wg-awhen (wg-find-workgroup-by :name (wg-workgroup-name workgroup) t)
+  (awhen (wg-find-workgroup-by :name (wg-workgroup-name workgroup) t)
     (unless index (setq index (cl-position it (wg-workgroup-list-or-error))))
     (wg-delete-workgroup it))
   (wg-asetf (wg-workgroup-list)

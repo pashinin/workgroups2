@@ -85,7 +85,7 @@ WEAK non-nil means weakly associate it.  Otherwise strongly associate it."
 (defun wg-auto-dissociate-buffer-hook ()
   "`kill-buffer-hook' that automatically dissociates buffers from workgroups."
   (when wg-dissociate-buffer-on-kill-buffer
-    (wg-awhen (wg-current-workgroup t)
+    (awhen (wg-current-workgroup t)
       (wg-workgroup-dissociate-bufobj it (current-buffer)))))
 
 (defun wg-associate-buffer-with-workgroup (&optional workgroup buffer weak)
@@ -145,7 +145,7 @@ the form produced by `(car (window-tree))'."
 (defun wg-associate-frame-buffers ()
   "Associate visible buffers with the current workgroup.
 Unless it is currently being deactivated."
-  (wg-awhen (wg-current-workgroup :noerror)
+  (awhen (wg-current-workgroup :noerror)
     (unless (member it wg-deactivation-list)
       (wg-associate-buffers it (car (window-tree))))))
 

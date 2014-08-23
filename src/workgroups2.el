@@ -97,7 +97,7 @@
   "Use Workgroups' buffer list filters everywhere `read-buffer' is used."
   :global t
   :group 'workgroups
-  (wg-awhen (get 'workgroups-everywhere 'read-buffer-fn)
+  (awhen (get 'workgroups-everywhere 'read-buffer-fn)
     (when (eq read-buffer-function 'wg-read-buffer)
       (setq read-buffer-function it))
     (put 'workgroups-everywhere 'read-buffer-fn nil))

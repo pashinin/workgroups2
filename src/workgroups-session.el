@@ -75,7 +75,7 @@ nil otherwise."
          (if wg-control-frames
              (wg-restore-frames))
 
-         (wg-awhen (wg-workgroup-list)
+         (awhen (wg-workgroup-list)
            (if (and wg-open-this-wg
                     (member wg-open-this-wg (wg-workgroup-names)))
                (wg-switch-to-workgroup wg-open-this-wg)
@@ -203,7 +203,7 @@ BUFFER-LIST nil defaults to `buffer-list'."
 
   ;; Update every workgroup's base wconfig with `wg-workgroup-update-base-wconfig'
   (dolist (workgroup (wg-workgroup-list))
-    (wg-awhen (wg-workgroup-selected-frame-wconfig workgroup)
+    (awhen (wg-workgroup-selected-frame-wconfig workgroup)
       (setf (wg-workgroup-base-wconfig workgroup) it
             (wg-workgroup-selected-frame-wconfig workgroup) nil)))
 

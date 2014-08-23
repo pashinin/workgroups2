@@ -93,11 +93,6 @@ Else do ELSE...
 
 ;;; anaphora
 
-(defmacro wg-awhen (test &rest body)
-  "Anaphoric `when'."
-  (declare (indent 1))
-  `(aif ,test (progn ,@body)))
-
 (defmacro wg-asetf (&rest places-and-values)
   "Anaphoric `setf'."
   `(progn ,@(mapcar (lambda (pv) `(let ((it ,(car pv))) (setf ,@pv)))

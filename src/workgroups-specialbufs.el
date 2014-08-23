@@ -72,7 +72,7 @@ how to write your own."
                                  (condition-case err
                                      (apply (car item) (cdr item))
                                    (error (message "%s" err)))
-                                 (wg-awhen (get-buffer "*Help*")
+                                 (awhen (get-buffer "*Help*")
                                    (set-buffer it)
                                    (wg-when-boundp (help-xref-stack help-xref-forward-stack)
                                      (setq help-xref-stack stack
@@ -129,7 +129,7 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
                              (wg-get-org-agenda-view-commands)))
               (deserialize . (lambda (buffer vars)
                                (org-agenda-list)
-                               (wg-awhen (get-buffer org-agenda-buffer-name)
+                               (awhen (get-buffer org-agenda-buffer-name)
                                  (with-current-buffer it
                                    (wg-run-agenda-cmd vars))
                                  it)))))
@@ -163,7 +163,7 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
               (deserialize . ,(lambda (buffer vars)
                                 (wg-dbind (pythoncmd pythonargs) vars
                                   (run-python (concat pythoncmd " " pythonargs))
-                                  (wg-awhen (get-buffer (process-buffer
+                                  (awhen (get-buffer (process-buffer
                                                          (python-shell-get-or-create-process)))
                                     (with-current-buffer it (goto-char (point-max)))
                                     it))))))
@@ -176,8 +176,7 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
                                   (if (boundp' sage-command)
                                       (run-sage t sage-command t)))
                                 (if (boundp 'sage-buffer)
-                                    (wg-awhen (and
-                                               sage-buffer)
+                                    (awhen sage-buffer
                                       (set-buffer it)
                                       (switch-to-buffer sage-buffer)
                                       (goto-char (point-max))))))))
@@ -525,7 +524,7 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
 (defun wg-deserialize-buffer-local-variables (buf)
   "Restore BUF's buffer local variables in `current-buffer'."
   (cl-loop for ((var . val) . rest) on (wg-buf-local-vars buf)
-           do (wg-awhen (assq var wg-buffer-local-variables-alist)
+           do (awhen (assq var wg-buffer-local-variables-alist)
                 (wg-dbind (var ser des) it
                   (if des (funcall des val)
                     (set var val))))))

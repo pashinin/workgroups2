@@ -134,7 +134,7 @@ a wtree."
         (wg-window-tree-selected-window nil))
     (wg-reset-window-tree)
     (wg-restore-window-tree-helper wtree)
-    (wg-awhen wg-window-tree-selected-window (select-window it))))
+    (awhen wg-window-tree-selected-window (select-window it))))
 
 
 ;; (wg-window-tree-to-wtree (window-tree))

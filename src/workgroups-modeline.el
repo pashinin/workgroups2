@@ -132,7 +132,7 @@ There are problems with powerline."
 
 (defun wg-remove-mode-line-display ()
   "Remove Workgroups' mode-line format from `mode-line-format'."
-  (wg-awhen (assq 'wg-mode-line-display-on mode-line-format)
+  (awhen (assq 'wg-mode-line-display-on mode-line-format)
     (set-default 'mode-line-format (remove it mode-line-format))
     (force-mode-line-update)))
 

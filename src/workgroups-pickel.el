@@ -305,7 +305,7 @@
   "Return a list of serializations of the links between objects in BINDS."
   (let (result)
     (wg-dohash (obj id binds result)
-      (wg-awhen (wg-pickel-link-serializer obj)
+      (awhen (wg-pickel-link-serializer obj)
         (setq result (nconc (funcall it obj binds) result))))))
 (defun wg-pickel-deserialize-links (serial-links binds)
   "Return BINDS after relinking all its objects according to SERIAL-LINKS."
