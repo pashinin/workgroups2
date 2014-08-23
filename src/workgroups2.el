@@ -132,7 +132,6 @@ ARG is anything else, turn on `workgroups-mode'."
         (cond ((not arg) (not workgroups-mode))
               ((integerp arg) (if (> arg 0) t nil))
               (t)))
-  (let (delayed)
   (cond
    (workgroups-mode
     (if (boundp 'desktop-restore-frames)
@@ -158,8 +157,8 @@ ARG is anything else, turn on `workgroups-mode'."
     (run-hooks 'workgroups-mode-exit-hook)))
   (wg-fontified-message
     (:cmd "Workgroups Mode: ") (:msg (if workgroups-mode "on" "off")))
-  (if (not delayed) (wg-create-first-wg))
-  workgroups-mode))
+  (wg-create-first-wg)
+  workgroups-mode)
 
 
 (defun wg-help ()
