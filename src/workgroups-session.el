@@ -66,7 +66,7 @@ nil otherwise."
   "Load a session visiting FILENAME, creating one if none already exists."
   (interactive "FFind session file: ")
   (cond ((file-exists-p filename)
-         (let ((session (wg-read-sexp-from-file filename)))
+         (let ((session (read (f-read-text filename))))
            (unless (wg-session-p session)
              (error "%S is not a Workgroups session file." filename))
            (setf (wg-session-file-name session) filename)
