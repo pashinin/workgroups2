@@ -253,14 +253,11 @@ resolved by Emacs."
     (if (not (eq value undefined)) value
       (symbol-value variable))))
 
-
 (defun wg-reset-frame (frame)
-  "Reset Workgroups' frame-parameters in FRAME to nil."
+  "Reset Workgroups' `frame-parameters' in FRAME to nil."
   (set-frame-parameter frame 'wg-workgroup-state-table nil)
   (set-frame-parameter frame 'wg-current-workgroup-uid nil)
   (set-frame-parameter frame 'wg-previous-workgroup-uid nil))
-
-
 
 (defun wg-save-session-on-exit (behavior)
   "Perform session-saving operations based on BEHAVIOR."
