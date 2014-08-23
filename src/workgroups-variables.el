@@ -339,7 +339,7 @@ workgroups' undo info to be updated.")
 ;; wconfig restoration
 
 (defvar wg-window-min-width 2
-  "Bound to `window-min-width' when restoring wtrees. ")
+  "Bound to `window-min-width' when restoring wtrees.")
 
 (defvar wg-window-min-height 1
   "Bound to `window-min-height' when restoring wtrees.")
