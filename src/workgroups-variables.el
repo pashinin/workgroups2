@@ -419,11 +419,14 @@ Pass FRAME to it.
 Remove file and dired buffers that are not associated with workgroup."
   (let ((lst (list))
         (res (wg-buffer-list-emacs frame))
-        (wg-buffers (wg-workgroup-associated-buffers (wg-current-workgroup))))
+        ;;(wg-buffers (wg-workgroup-associated-buffers (wg-current-workgroup)))
+        (wg-buf-uids (wg-workgroup-associated-buf-uids (wg-current-workgroup))))
+
     (dolist (b res res)
       (when (and (or (buffer-file-name b)
                      (eq (buffer-local-value 'major-mode b) 'dired-mode))
-                 (not (member b wg-buffers)))
+                 ;;(not (member b wg-buffers))
+                 (not (member (wg-buffer-uid-or-add b) wg-buf-uids)))
         (delq b res)))))
 
 (defconst wg-buffer-list-function (symbol-function 'buffer-list))
