@@ -132,18 +132,6 @@
      'wg-current-buffer-p)))
 
 
-;; (defun wg-display-internal (elt-fn list)
-;;   "Return display string built by calling ELT-FN on each element of LIST."
-;;   (let ((div (wg-add-face :div wg-list-display-decor-divider))
-;;         (i -1))
-;;     (wg-fontify
-;;       (:brace wg-list-display-decor-left-brace)
-;;       (if (not list) (funcall elt-fn nil nil)
-;;         (wg-doconcat (elt list div) (funcall elt-fn elt (cl-incf i))))
-;;       (:brace wg-list-display-decor-right-brace))))
-
-
-
 ;;; messaging
 
 (defun wg-message (format-string &rest args)
