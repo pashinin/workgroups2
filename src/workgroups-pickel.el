@@ -6,7 +6,7 @@
 ;; functions that extract enough information about an object and
 ;; functions that can recreate an object.
 ;;
-;; Main functions are: `wg-pickel', `wg-pickel-to-string', `wg-pickel-to-file'
+;; Main functions are: `wg-pickel', `wg-pickel-to-string',
 ;; What objects are supported? See `wg-pickel-pickelable-types'
 ;;
 ;;; Code:
@@ -329,14 +329,6 @@
   "Serialize OBJ to a string and return the string."
   (format "%S" (wg-pickel obj)))
 
-(defun wg-pickel-to-file (file obj)
-  "Serialize OBJ to FILE."
-  (wg-write-sexp-to-file (wg-pickel obj) file))
-
-
-
-;;; unpickeling
-
 (defun wg-unpickel (pickel)
   "Return the deserialization of PICKEL."
   (unless (wg-pickel-p pickel)
@@ -347,14 +339,6 @@
      (wg-pickel-deserialize-links
       serial-links
       (wg-pickel-deserialize-objects serial-objects)))))
-
-(defun wg-unpickel-file (file)
-  "`unpickel' an object directly from FILE."
-  (wg-unpickel (wg-lisp-object-from-file file)))
-
-(defun wg-unpickel-string (str)
-  "`unpickel' and object directly from STR."
-  (wg-unpickel (read str)))
 
 (provide 'workgroups-pickel)
 ;;; workgroups-pickel.el ends here
