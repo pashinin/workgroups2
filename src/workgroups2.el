@@ -6,6 +6,7 @@
 ;; Author: Sergey Pashinin <sergey at pashinin dot com>
 ;; Keywords: session management window-configuration persistence
 ;; Homepage: https://github.com/pashinin/workgroups2
+;; Version: 1.2.0
 ;; Package-Requires: ((cl-lib "0.4") (dash "2.8.0"))
 ;;
 ;; This program is free software; you can redistribute it and/or modify
