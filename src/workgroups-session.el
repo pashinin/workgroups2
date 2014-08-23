@@ -12,14 +12,6 @@
 ;; Variables
 ;;
 
-(defcustom wg-session-load-on-start (not (daemonp))
-  "Load a session file on Workgroups start.
-But only if Emacs is not started as daemon.  You don't want any
-promts while Emacs is being started as daemon."
-  :type 'boolean
-  :group 'workgroups)
-(defvaralias 'wg-use-default-session-file 'wg-session-load-on-start)
-
 (defcustom wg-session-file "~/.emacs_workgroups"
   "Default filename to be used to save workgroups."
   :type 'file

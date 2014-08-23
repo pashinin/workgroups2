@@ -6,6 +6,14 @@
 
 ;;; customization
 
+(defcustom wg-session-load-on-start (not (daemonp))
+  "Load a session file on Workgroups start.
+But only if Emacs is not started as daemon.  You don't want any
+promts while Emacs is being started as daemon."
+  :type 'boolean
+  :group 'workgroups)
+(defvaralias 'wg-use-default-session-file 'wg-session-load-on-start)
+
 (defgroup workgroups nil
   "Workgroups for Emacs -- Emacs session manager"
   :group 'convenience)
