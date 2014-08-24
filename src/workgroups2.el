@@ -426,8 +426,7 @@ unambiguously pair the two.")
 (make-variable-buffer-local 'wg-buffer-uid)
 
 (defvar wg-flag-modified t
-  "Dynamically bound to nil around destructive operations to
-temporarily disable flagging `modified'.")
+  "To set or not to set... `modified' flag when changing workgroups.")
 
 (defvar wg-window-configuration-changed nil
   "Flag set by `window-configuration-change-hook'.")
@@ -436,8 +435,8 @@ temporarily disable flagging `modified'.")
   "Flag set by `wg-update-working-wconfig-hook'.")
 
 (defvar wg-undoify-window-configuration-change t
-  "Flag unset when changes to the window config shouldn't cause
-workgroups' undo info to be updated.")
+  "Should windows undo info be updated or not.
+When you change window configuration.")
 
 (defvar wg-current-workgroup nil "Bound to the current workgroup.")
 
@@ -3330,6 +3329,12 @@ new workgroup during a switch.")
     (setf (wg-workgroup-modified workgroup) t)
     (setf (wg-session-modified (wg-current-session)) t)))
 
+(defun wg-flag-session-modified (&optional session)
+  "Set SESSION's modified flag."
+  (when wg-flag-modified
+    (-when-let (or session (wg-current-session t))
+      (setf (wg-session-modified it) t))))
+
 (defun wg-current-workgroup (&optional noerror frame)
   "Return current workgroup in frame.
 Error unless NOERROR, in FRAME if specified."
@@ -3714,8 +3719,9 @@ NOERROR means fail silently."
   (fset 'buffer-list wg-buffer-list-original)
 
   ;; Mark if ECB is active
-  (wg-set-workgroup-parameter 'ecb (and (boundp 'ecb-minor-mode)
-                                        ecb-minor-mode))
+  (let (wg-flag-modified)
+    (wg-set-workgroup-parameter 'ecb (and (boundp 'ecb-minor-mode)
+                                          ecb-minor-mode)))
   ;;(wg-set-workgroup-parameter (wg-current-workgroup t) 'ecb-win-config (ecb-current-window-configuration))
   ;; (type-of (ecb-current-window-configuration))
   ;; (type-of (car (ecb-current-window-configuration)))
@@ -3746,10 +3752,10 @@ NOERROR means fail silently."
           (wg-set-current-workgroup workgroup)
 
           ;; Save "last-workgroup" to the session params
-          (if (and (wg-current-session t)
-                   (wg-current-workgroup t))
-              (wg-set-session-parameter 'last-workgroup
-                                        (wg-workgroup-name (wg-current-workgroup))))
+          (let (wg-flag-modified)
+            (if (wg-current-workgroup t)
+                (wg-set-session-parameter 'last-workgroup
+                                          (wg-workgroup-name (wg-current-workgroup)))))
 
           ;; If a workgroup had ECB - turn it on
           (if (and (boundp 'ecb-minor-mode)
@@ -4112,7 +4118,7 @@ Also delete all references to it by `wg-workgroup-state-table',
     (when (wg-previous-workgroup-p workgroup frame)
       (wg-set-previous-workgroup nil frame)))
   (setf (wg-workgroup-list) (remove workgroup (wg-workgroup-list-or-error)))
-  (setf (wg-session-modified (wg-current-session)) t)
+  (wg-flag-session-modified)
   workgroup)
 
 (defun wg-add-workgroup (workgroup &optional index)
@@ -4123,7 +4129,7 @@ If a workgroup with the same name exists, overwrite it."
     (wg-delete-workgroup it))
   (wg-asetf (wg-workgroup-list)
             (wg-insert-before workgroup it (or index (length it))))
-  (setf (wg-session-modified (wg-current-session)) t)
+  (wg-flag-session-modified)
   workgroup)
 
 (defun wg-check-and-add-workgroup (workgroup)
@@ -4206,7 +4212,8 @@ nil otherwise."
                  (wg-switch-to-workgroup (wg-session-parameter 'last-workgroup))
                (wg-switch-to-workgroup (car it)))
              ))
-         (wg-fontified-message (:cmd "Loaded: ") (:file filename)))
+         (wg-fontified-message (:cmd "Loaded: ") (:file filename))
+         (wg-mark-everything-unmodified))
         (t
          (wg-query-and-save-if-modified)
          (wg-reset-internal (wg-make-session :file-name filename))
@@ -4268,8 +4275,9 @@ confirmation is required unless you supply a prefix argument."
                 (if (string-equal "initial_terminal" (terminal-name frame))
                     (delete frame fl))) fl)
         (setq fl (delete (selected-frame) fl))
-        (if (wg-current-session t)
-            (wg-set-session-parameter 'frame-list (mapcar 'wg-frame-to-wconfig fl)))))
+        (let (wg-flag-modified)
+          (if (wg-current-session t)
+              (wg-set-session-parameter 'frame-list (mapcar 'wg-frame-to-wconfig fl))))))
   (wg-write-sexp-to-file (wg-pickel-all-session-parameters) filename)
   (wg-mark-everything-unmodified)
   (wg-fontified-message (:cmd "Wrote: ") (:file filename)))
@@ -4332,7 +4340,7 @@ SESSION nil defaults to the current session."
 SESSION nil means use the current session.  Return value."
   (let ((session (or session (wg-current-session))))
     (wg-set-parameter (wg-session-parameters session) parameter value)
-    (setf (wg-session-modified session) t)
+    (wg-flag-session-modified session)
     value))
 
 (defun wg-remove-session-parameter (parameter &optional session)
