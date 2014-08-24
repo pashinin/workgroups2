@@ -3314,7 +3314,6 @@ Print PROMPT"
   "Return t when `minibuffer-depth' is zero, nil otherwise."
   (zerop (minibuffer-depth)))
 
-
 (defun wg-barf-on-active-minibuffer ()
   "Throw an error when the minibuffer is active."
   (when (not (wg-minibuffer-inactive-p))
@@ -3324,13 +3323,6 @@ Print PROMPT"
   "A stack of workgroups that are currently being switched away from.
 Used to avoid associating the old workgroup's buffers with the
 new workgroup during a switch.")
-
-(defcustom wg-confirm-on-get-workgroup-create nil
-  "Non-nil means request confirmation before creating a new
-workgroup when `wg-get-workgroup-create' is called with a string
-that doesn't name an existing workgroup."
-  :type 'boolean
-  :group 'workgroups)
 
 (defun wg-flag-workgroup-modified (workgroup)
   "Set WORKGROUP's and the current session's modified flags."
@@ -4165,12 +4157,8 @@ Otherwise, if WORKGROUP is a string, create a new workgroup with
 that name and return it.  Otherwise error."
   (or (wg-get-workgroup workgroup t)
       (if (stringp workgroup)
-          (when (or (not wg-confirm-on-get-workgroup-create)
-                    (y-or-n-p (format "%S doesn't exist.  Create it? "
-                                      workgroup)))
-            (wg-make-and-add-workgroup workgroup))
-        ;; Call this again for its error message
-        (wg-get-workgroup workgroup))))
+          (wg-make-and-add-workgroup workgroup)
+        (wg-get-workgroup workgroup))))  ; Call this again for its error message
 
 (defun wg-cyclic-offset-workgroup (workgroup n)
   "Offset WORKGROUP's position in `wg-workgroup-list' by N."
