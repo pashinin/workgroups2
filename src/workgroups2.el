@@ -2403,7 +2403,7 @@ ignored.
   (interactive)
   (delete-other-frames)
   (awhen (wg-current-session t)
-    (let ((fl (wg-session-parameter it 'frame-list nil))
+    (let ((fl (wg-session-parameter 'frame-list nil it))
           (frame (selected-frame)))
       (mapc (lambda (wconfig)
               (with-selected-frame (make-frame)
@@ -3757,8 +3757,7 @@ NOERROR means fail silently."
           ;; Save "last-workgroup" to the session params
           (if (and (wg-current-session t)
                    (wg-current-workgroup t))
-              (wg-set-session-parameter (wg-current-session t)
-                                        'last-workgroup
+              (wg-set-session-parameter 'last-workgroup
                                         (wg-workgroup-name (wg-current-workgroup))))
 
           ;; If a workgroup had ECB - turn it on
@@ -4216,10 +4215,8 @@ nil otherwise."
                     (member wg-open-this-wg (wg-workgroup-names)))
                (wg-switch-to-workgroup wg-open-this-wg)
              (if (and wg-load-last-workgroup
-                      (member (wg-session-parameter (wg-current-session t) 'last-workgroup)
-                              (wg-workgroup-names)))
-                 (wg-switch-to-workgroup
-                  (wg-session-parameter (wg-current-session t) 'last-workgroup))
+                      (member (wg-session-parameter 'last-workgroup) (wg-workgroup-names)))
+                 (wg-switch-to-workgroup (wg-session-parameter 'last-workgroup))
                (wg-switch-to-workgroup (car it)))
              ))
          (wg-fontified-message (:cmd "Loaded: ") (:file filename)))
@@ -4288,9 +4285,7 @@ Think of it as `write-file' for Workgroups sessions."
                     (delete frame fl))) fl)
         (setq fl (delete (selected-frame) fl))
         (if (wg-current-session t)
-            (wg-set-session-parameter (wg-current-session t)
-                                      'frame-list
-                                      (mapcar 'wg-frame-to-wconfig fl)))))
+            (wg-set-session-parameter 'frame-list (mapcar 'wg-frame-to-wconfig fl)))))
   (wg-write-sexp-to-file
    (wg-pickel-all-session-parameters (wg-current-session)) filename)
   (wg-mark-everything-unmodified)
@@ -4342,23 +4337,22 @@ object, etc.  SESSION nil defaults to a new, blank session."
   (dolist (workgroup (wg-workgroup-list))
     (setf (wg-workgroup-modified workgroup) nil)))
 
-(defun wg-session-parameter (session parameter &optional default)
-  "Return SESSION's value for PARAMETER.
+(defun wg-session-parameter (parameter &optional default session)
+  "Return session's value for PARAMETER.
 If PARAMETER is not found, return DEFAULT which defaults to nil.
 SESSION nil defaults to the current session."
   (wg-aget (wg-session-parameters (or session (wg-current-session)))
            parameter default))
 
-(defun wg-set-session-parameter (session parameter value)
-  "Set SESSION's value of PARAMETER to VALUE.
-SESSION nil means use the current session.
-Return value."
+(defun wg-set-session-parameter (parameter value &optional session)
+  "Set PARAMETER to VALUE in SESSION.
+SESSION nil means use the current session.  Return value."
   (let ((session (or session (wg-current-session))))
     (wg-set-parameter (wg-session-parameters session) parameter value)
     (setf (wg-session-modified session) t)
     value))
 
-(defun wg-remove-session-parameter (session parameter)
+(defun wg-remove-session-parameter (parameter &optional session)
   "Remove parameter PARAMETER from SESSION's parameters."
   (let ((session (or session (wg-current-session))))
     (wg-asetf (wg-session-parameters session) (wg-aremove it parameter))
@@ -4370,7 +4364,7 @@ SESSION nil defaults to the current session.  If VARIABLE does
 not have a session-local binding in SESSION, the value is
 resolved by Emacs."
   (let* ((undefined (cl-gensym))
-         (value (wg-session-parameter session variable undefined)))
+         (value (wg-session-parameter variable undefined session)))
     (if (not (eq value undefined)) value
       (symbol-value variable))))
 
