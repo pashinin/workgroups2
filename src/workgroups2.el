@@ -1160,10 +1160,9 @@ Saves some variables to restore a BUFFER later."
 
 (defvar wg-current-session nil "Current session object.")
 (defun wg-current-session (&optional noerror)
-  "Return `wg-current-session' or scream unless NOERROR."
+  "Return `wg-current-session' or error unless NOERROR."
   (or wg-current-session
-      (unless noerror
-        (error "No session is defined"))))
+      (unless noerror (error "No session is defined"))))
 
 ;; locate-dominating-file
 (defun wg-get-first-existing-dir (&optional dir)
@@ -2406,8 +2405,8 @@ ignored.
   "Try to recreate opened frames, take info from session's 'frame-list parameter."
   (interactive)
   (delete-other-frames)
-  (when (wg-current-session t)
-    (let ((fl (wg-session-parameter (wg-current-session t) 'frame-list nil))
+  (awhen (wg-current-session t)
+    (let ((fl (wg-session-parameter it 'frame-list nil))
           (frame (selected-frame)))
       (mapc (lambda (wconfig)
               (with-selected-frame (make-frame)
