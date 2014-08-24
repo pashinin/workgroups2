@@ -4336,8 +4336,9 @@ object, etc.  SESSION nil defaults to a new, blank session."
 
 (defun wg-modified-p ()
   "Return t when the current session or any of its workgroups are modified."
-  (or (wg-session-modified (wg-current-session))
-      (cl-some 'wg-workgroup-modified (wg-workgroup-list))))
+  (aif (wg-current-session t)
+      (or (wg-session-modified it)
+          (cl-some 'wg-workgroup-modified (wg-workgroup-list)))))
 
 (defun wg-mark-everything-unmodified ()
   "Mark the session and all workgroups as unmodified."
