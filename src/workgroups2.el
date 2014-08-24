@@ -4302,25 +4302,24 @@ Think of it as `write-file' for Workgroups sessions."
 
 (defun wg-determine-session-save-file-name ()
   "Return the filename in which to save the session."
-  (or (wg-session-file-name (wg-current-session))
-      (and wg-session-load-on-start wg-session-file)))
+  (aif (wg-current-session t)
+      (wg-session-file-name it)
+    wg-session-file))
+;;(read-file-name (format "Save session as [%s]: " wg-session-file))
 
 (defun wg-save-session (&optional force)
   "Save the current Workgroups session if it's been modified.
-Think of it as `save-buffer' for Workgroups sessions.  Optional
-argument FORCE non-nil, or interactively with a prefix arg, save
-the session regardless of whether it's been modified."
+Optional argument FORCE non-nil, or interactively with a prefix
+arg, save the session regardless of whether it's been modified."
   (interactive "P")
   (if (and (not (wg-modified-p)) (not force))
       (wg-message "(The session is unmodified)")
-    (wg-save-session-as (or (wg-determine-session-save-file-name)
-                            (read-file-name "Save session as: ")))))
+    (wg-save-session-as (wg-determine-session-save-file-name))))
 
 (defun wg-reset-internal (&optional session)
   "Reset Workgroups, setting `wg-current-session' to SESSION.
-Resets all frame parameters, buffer-local vars, current
-Workgroups session object, etc.  SESSION nil defaults to a new,
-blank session object."
+Resets all frame parameters, buffer-local vars, current session
+object, etc.  SESSION nil defaults to a new, blank session."
   (mapc 'wg-reset-frame (frame-list))
   (mapc 'wg-reset-buffer (wg-buffer-list-emacs))
   (setq wg-wconfig-kill-ring nil)
