@@ -4297,11 +4297,10 @@ Think of it as `write-file' for Workgroups sessions."
   (wg-fontified-message (:cmd "Wrote: ") (:file filename)))
 (defalias 'wg-save-session-as 'wg-write-session-file)
 
-(defun wg-determine-session-save-file-name ()
+(defun wg-get-session-file ()
   "Return the filename in which to save the session."
-  (aif (wg-current-session t)
-      (wg-session-file-name it)
-    wg-session-file))
+  (or (aif (wg-current-session t) (wg-session-file-name it))
+      wg-session-file))
 ;;(read-file-name (format "Save session as [%s]: " wg-session-file))
 
 (defun wg-save-session (&optional force)
@@ -4311,7 +4310,7 @@ arg, save the session regardless of whether it's been modified."
   (interactive "P")
   (if (and (not (wg-modified-p)) (not force))
       (wg-message "(The session is unmodified)")
-    (wg-save-session-as (wg-determine-session-save-file-name))))
+    (wg-save-session-as (wg-get-session-file))))
 
 (defun wg-reset-internal (&optional session)
   "Reset Workgroups, setting `wg-current-session' to SESSION.
@@ -4386,15 +4385,14 @@ resolved by Emacs."
   (cl-case behavior
     (ask (wg-query-and-save-if-modified))
     (save
-     (if (wg-determine-session-save-file-name)
+     (if (wg-get-session-file)
          (wg-save-session)
        (wg-query-and-save-if-modified)))))
 
 (defun wg-reload-session ()
   "Reload current workgroups session."
   (interactive)
-  (let ((file (or (wg-determine-session-save-file-name)
-                  wg-session-file)))
+  (let ((file (wg-get-session-file)))
     (when (file-exists-p file)
       (condition-case err
           (wg-open-session wg-session-file)
