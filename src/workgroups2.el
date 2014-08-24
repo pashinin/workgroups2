@@ -3404,9 +3404,9 @@ Return VALUE."
     (wg-flag-workgroup-modified workgroup)
     value))
 
-(defun wg-remove-workgroup-parameter (workgroup parameter)
+(defun wg-remove-workgroup-parameter (parameter &optional workgroup)
   "Remove PARAMETER from WORKGROUP's parameters."
-  (let ((workgroup (wg-get-workgroup workgroup)))
+  (-when-let (workgroup (wg-get-workgroup workgroup t))
     (wg-flag-workgroup-modified workgroup)
     (wg-asetf (wg-workgroup-parameters workgroup) (wg-aremove it parameter))))
 
