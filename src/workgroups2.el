@@ -4211,8 +4211,7 @@ nil otherwise."
         (t
          (wg-query-and-save-if-modified)
          (wg-reset-internal (wg-make-session :file-name filename))
-         (wg-fontified-message
-           (:cmd "(New Workgroups session file)")))))
+         (wg-fontified-message (:cmd "(New Workgroups session file)")))))
 (defalias 'wg-open-session 'wg-find-session-file)
 
 (defun wg-write-sexp-to-file (sexp file)
