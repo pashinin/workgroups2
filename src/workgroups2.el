@@ -4378,10 +4378,7 @@ resolved by Emacs."
   "Perform session-saving operations based on BEHAVIOR."
   (cl-case behavior
     (ask (wg-query-and-save-if-modified))
-    (save
-     (if (wg-get-session-file)
-         (wg-save-session)
-       (wg-query-and-save-if-modified)))))
+    (save (wg-save-session))))
 
 (defun wg-reload-session ()
   "Reload current workgroups session."
