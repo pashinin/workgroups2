@@ -499,8 +499,7 @@ When a buffer can't be restored, when creating a blank wg."
 Pass FRAME to it.
 Remove file and dired buffers that are not associated with workgroup."
   (let ((res (wg-buffer-list-emacs frame))
-        ;;(wg-buffers (wg-workgroup-associated-buffers (wg-current-workgroup)))
-        (wg-buf-uids (wg-workgroup-associated-buf-uids (wg-current-workgroup))))
+        (wg-buf-uids (wg-workgroup-associated-buf-uids)))
     (--remove (and (or (buffer-file-name it)
                        (eq (buffer-local-value 'major-mode it) 'dired-mode))
                    ;;(not (member b wg-buffers))
@@ -3340,7 +3339,8 @@ that doesn't name an existing workgroup."
     (setf (wg-session-modified (wg-current-session)) t)))
 
 (defun wg-current-workgroup (&optional noerror frame)
-  "Return the current workgroup in FRAME, or error unless NOERROR."
+  "Return current workgroup in frame.
+Error unless NOERROR, in FRAME if specified."
   (or wg-current-workgroup
       (aif (frame-parameter frame 'wg-current-workgroup-uid)
           (wg-find-workgroup-by :uid it noerror)
@@ -3353,13 +3353,13 @@ that doesn't name an existing workgroup."
     (unless noerror (error "No previous workgroup in this frame"))))
 
 (defun wg-set-current-workgroup (workgroup &optional frame)
-  "Set the current workgroup to WORKGROUP.
+  "Set the current workgroup to WORKGROUP in FRAME.
 WORKGROUP should be a workgroup or nil."
   (set-frame-parameter frame 'wg-current-workgroup-uid
                        (when workgroup (wg-workgroup-uid workgroup))))
 
 (defun wg-set-previous-workgroup (workgroup &optional frame)
-  "Set the previous workgroup to WORKGROUP.
+  "Set the previous workgroup to WORKGROUP in FRAME.
 WORKGROUP should be a workgroup or nil."
   (set-frame-parameter frame 'wg-previous-workgroup-uid
                        (when workgroup (wg-workgroup-uid workgroup))))
@@ -4426,10 +4426,11 @@ And the parameters of all its workgroups."
 In which it most recently appeared.")
 (make-variable-buffer-local 'wg-buffer-workgroup)
 
-(defun wg-workgroup-associated-buf-uids (workgroup)
+(defun wg-workgroup-associated-buf-uids (&optional workgroup)
   "Return a new list containing all of WORKGROUP's associated buf uids."
-  (append (wg-workgroup-strong-buf-uids workgroup)
-          (wg-workgroup-weak-buf-uids workgroup)))
+  (awhen (or workgroup (wg-current-workgroup t))
+    (append (wg-workgroup-strong-buf-uids it)
+            (wg-workgroup-weak-buf-uids it))))
 
 (defun wg-workgroup-associated-bufs (workgroup)
   "Return a new list containing all of WORKGROUP's associated bufs."
