@@ -3390,11 +3390,11 @@ WORKGROUP should be accepted by `wg-get-workgroup'."
   (wg-aget (wg-workgroup-parameters (wg-get-workgroup workgroup))
            parameter default))
 
-(defun wg-set-workgroup-parameter (workgroup parameter value)
-  "Set WORKGROUP's value of PARAMETER to VALUE.
+(defun wg-set-workgroup-parameter (parameter value &optional workgroup)
+  "Set PARAMETER to VALUE in a WORKGROUP.
 WORKGROUP should be a value accepted by `wg-get-workgroup'.
 Return VALUE."
-  (let ((workgroup (wg-get-workgroup workgroup)))
+  (-when-let (workgroup (wg-get-workgroup (or workgroup (wg-current-workgroup t)) t))
     (wg-set-parameter (wg-workgroup-parameters workgroup) parameter value)
     (wg-flag-workgroup-modified workgroup)
     value))
@@ -3714,9 +3714,8 @@ NOERROR means fail silently."
   (fset 'buffer-list wg-buffer-list-original)
 
   ;; Mark if ECB is active
-  (if (wg-current-workgroup t)
-      (wg-set-workgroup-parameter (wg-current-workgroup t) 'ecb (and (boundp 'ecb-minor-mode)
-                                                                     ecb-minor-mode)))
+  (wg-set-workgroup-parameter 'ecb (and (boundp 'ecb-minor-mode)
+                                        ecb-minor-mode))
   ;;(wg-set-workgroup-parameter (wg-current-workgroup t) 'ecb-win-config (ecb-current-window-configuration))
   ;; (type-of (ecb-current-window-configuration))
   ;; (type-of (car (ecb-current-window-configuration)))
