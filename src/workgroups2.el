@@ -4369,14 +4369,15 @@ resolved by Emacs."
 (defun wg-reload-session ()
   "Reload current workgroups session."
   (interactive)
-  (let ((file (wg-get-session-file)))
-    (when (file-exists-p file)
-      (condition-case err
-          (wg-open-session wg-session-file)
-        (progn
-          (wg-create-first-wg)
-          (error (message "Error finding session-file: %s" err)))))
-    (wg-create-first-wg)))
+  (let* ((file (wg-get-session-file))
+         (exists (file-exists-p file)))
+    (condition-case err
+        (wg-open-session file)
+      (progn
+        (wg-create-first-wg)
+        (message "Error loading session-file: %s" err))))
+        ;; TODO: print what exactly happened
+  (wg-create-first-wg))
 
 (defun wg-save-session-on-emacs-exit ()
   "Call `wg-save-session-on-exit' with `wg-emacs-exit-save-behavior'.
