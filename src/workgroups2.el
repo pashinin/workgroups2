@@ -4559,7 +4559,7 @@ Unless it is currently being deactivated."
    ;;'window-configuration-change-hook 'wg-associate-frame-buffers
    ))
 
-
+;;;###autoload
 (defun workgroups-mode (&optional arg)
   "Turn `workgroups-mode' on and off.
 ARG is nil - toggle
@@ -4599,6 +4599,7 @@ ARG is anything else, turn on `workgroups-mode'."
   (wg-create-first-wg)
   workgroups-mode)
 
+;;;###autoload
 (defun wg-help ()
   "Just call `apropos-command' on \"^wg-\".
 There used to be a bunch of help-buffer construction stuff here,
