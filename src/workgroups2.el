@@ -4286,8 +4286,7 @@ Think of it as `write-file' for Workgroups sessions."
         (setq fl (delete (selected-frame) fl))
         (if (wg-current-session t)
             (wg-set-session-parameter 'frame-list (mapcar 'wg-frame-to-wconfig fl)))))
-  (wg-write-sexp-to-file
-   (wg-pickel-all-session-parameters (wg-current-session)) filename)
+  (wg-write-sexp-to-file (wg-pickel-all-session-parameters) filename)
   (wg-mark-everything-unmodified)
   (wg-fontified-message (:cmd "Wrote: ") (:file filename)))
 (defalias 'wg-save-session-as 'wg-write-session-file)
@@ -4402,10 +4401,10 @@ Added to `kill-emacs-query-functions'."
 Called when `workgroups-mode' is turned off."
   (wg-save-session-on-exit wg-workgroups-mode-exit-save-behavior) t)
 
-(defun wg-pickel-all-session-parameters (session)
+(defun wg-pickel-all-session-parameters (&optional session)
   "Return a copy of SESSION after pickeling its parameters.
 And the parameters of all its workgroups."
-  (let ((copy (wg-copy-session session)))
+  (let ((copy (wg-copy-session (or session (wg-current-session)))))
     (when (wg-session-parameters copy)
       (wg-asetf (wg-session-parameters copy) (wg-pickel it)))
     (wg-asetf (wg-session-workgroup-list copy)
