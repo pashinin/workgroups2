@@ -4406,8 +4406,8 @@ Called when `workgroups-mode' is turned off."
   (wg-save-session-on-exit wg-workgroups-mode-exit-save-behavior) t)
 
 (defun wg-pickel-all-session-parameters (session)
-  "Return a copy of SESSION after pickeling its
-parameters and the parameters of all its workgroups."
+  "Return a copy of SESSION after pickeling its parameters.
+And the parameters of all its workgroups."
   (let ((copy (wg-copy-session session)))
     (when (wg-session-parameters copy)
       (wg-asetf (wg-session-parameters copy) (wg-pickel it)))
@@ -4416,8 +4416,8 @@ parameters and the parameters of all its workgroups."
     copy))
 
 (defun wg-unpickel-session-parameters (session)
-  "Return a copy of SESSION after unpickeling its
-parameters and the parameters of all its workgroups."
+  "Return a copy of SESSION after unpickeling its parameters.
+And the parameters of all its workgroups."
   (let ((copy (wg-copy-session session)))
     (when (wg-session-parameters copy)
       (wg-asetf (wg-session-parameters copy) (wg-unpickel it)))
