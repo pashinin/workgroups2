@@ -1699,9 +1699,6 @@ Frame defaults to `selected-frame'.  See `wg-buffer-auto-association'."
   (let ((wg (wg-current-workgroup t))
         (wg-use-faces wg-mode-line-use-faces))
     (cond (wg (wg-fontify " "
-                ;;(consp (cons :div wg-mode-line-decor-left-brace))
-                ;;(keywordp (car (cons :div wg-mode-line-decor-left-brace)))
-                ;;(:div wg-mode-line-decor-left-brace)
                 (:brace wg-mode-line-decor-left-brace)
                 (:mode (wg-workgroup-name wg))
                 (if (not wg-mode-line-only-name)
