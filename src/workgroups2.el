@@ -666,7 +666,6 @@ features but is fucking unstable, so disabled by default"
     (:cmd (format "%s: " symbol))
     (:msg (format "%s" (wg-toggle symbol)))))
 
-
 (defun wg-add-face (facekey string)
   "Return a copy of STRING fontified according to FACEKEY.
 FACEKEY must be a key in `wg-face-abbrevs'."
@@ -698,7 +697,6 @@ Anything else is formatted with %s to produce a string."
               ((stringp spec) spec)
               (t `(format "%s" ,spec))))))
 
-
 (defmacro wg-with-gensyms (syms &rest body)
   "Bind all symbols in SYMS to `gensym's, and eval BODY."
   (declare (indent 1))
@@ -720,19 +718,11 @@ Iterative to prevent stack overflow."
       (setq list (nthcdr step list)))
     (nreverse acc)))
 
-
-
-;;; bindings
-
 (defmacro wg-when-boundp (symbols &rest body)
   "When all SYMBOLS are bound, `eval' BODY."
   (declare (indent 1))
   `(when (and ,@(mapcar (lambda (sym) `(boundp ',sym)) symbols))
      ,@body))
-
-
-
-;;; do-style wrappers
 
 (defmacro wg-docar (spec &rest body)
   "do-style wrapper for `mapcar'.
@@ -756,10 +746,6 @@ Iterative to prevent stack overflow."
   (declare (indent 1))
   (wg-dbind (elt seq &optional sep) spec
     `(mapconcat (lambda (,elt) ,@body) ,seq (or ,sep ""))))
-
-
-
-;;; anaphora
 
 (defmacro wg-asetf (&rest places-and-values)
   "Anaphoric `setf'."
