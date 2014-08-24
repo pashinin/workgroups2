@@ -279,7 +279,7 @@ If nil - nothing happens."
 ;;
 ;; FIXME:
 ;;
-;; Only set `wg-workgroup-base-wconfig' on `wg-write-session-file' or
+;; Only set `wg-workgroup-base-wconfig' on `wg-save-session-as' or
 ;; `delete-frame' and only with the most recently changed working-wconfig.
 ;; Then, since it's not overwritten on every call to
 ;; `wg-workgroup-working-wconfig', its restoration can be retried after manually
@@ -4189,14 +4189,14 @@ nil otherwise."
   "Load a session visiting FILENAME, creating one if none already exists."
   (interactive "FFind session file: ")
   (cond ((file-exists-p filename)
+         ;; TODO: handle errors when reading object
          (let ((session (read (f-read-text filename))))
            (unless (wg-session-p session)
              (error "%S is not a Workgroups session file." filename))
            (setf (wg-session-file-name session) filename)
            (wg-reset-internal (wg-unpickel-session-parameters session)))
 
-         (if wg-control-frames
-             (wg-restore-frames))
+         (if wg-control-frames (wg-restore-frames))
 
          (awhen (wg-workgroup-list)
            (if (and wg-open-this-wg
@@ -4242,15 +4242,13 @@ nil otherwise."
   (mapc 'wg-workgroup-gc-buf-uids (wg-workgroup-list))  ; Remove buf uids that have no referent in `wg-buf-list'
   (mapc 'wg-update-buffer-in-buf-list (wg-buffer-list-emacs)))
 
-(defun wg-write-session-file (filename &optional confirm)
+(defun wg-save-session-as (filename &optional confirm)
   "Write the current session into file FILENAME.
 This makes the session visit that file, and marks it as not modified.
 
 If optional second arg CONFIRM is non-nil, this function asks for
 confirmation before overwriting an existing file.  Interactively,
-confirmation is required unless you supply a prefix argument.
-
-Think of it as `write-file' for Workgroups sessions."
+confirmation is required unless you supply a prefix argument."
   (interactive (list (read-file-name "Save session as: ")
                      (not current-prefix-arg)))
   (when (and confirm (file-exists-p filename))
@@ -4276,7 +4274,7 @@ Think of it as `write-file' for Workgroups sessions."
   (wg-write-sexp-to-file (wg-pickel-all-session-parameters) filename)
   (wg-mark-everything-unmodified)
   (wg-fontified-message (:cmd "Wrote: ") (:file filename)))
-(defalias 'wg-save-session-as 'wg-write-session-file)
+(defalias 'wg-write-session-file 'wg-save-session-as)
 
 (defun wg-get-session-file ()
   "Return the filename in which to save the session."
