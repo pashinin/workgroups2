@@ -18,7 +18,7 @@ install:
   - make deps
   - if [ "$EMACS" = "emacs23" ]; then
       $CURL https://raw.githubusercontent.com/ohler/ert/fb3c278d/lisp/emacs-lisp/ert.el -o ert.el;
-      $CURL https://raw.githubusercontent.com/emacsmirror/cl-lib/master/cl-lib.el -o cl-lib.el;
+      $CURL http://elpa.gnu.org/packages/cl-lib-0.5.el -o cl-lib.el;
     fi
   - if [ "$EMACS" = "emacs24" ]; then
       sudo apt-get install -qq emacs24-el;
