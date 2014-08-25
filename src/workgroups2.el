@@ -2013,10 +2013,11 @@ Return value."
              :minibuffer-scroll  (eq window minibuffer-scroll-window)
              :dedicated          (window-dedicated-p window)
              :buf-uid            (wg-buffer-uid-or-add (window-buffer window))))
-      (wg-set-win-parameter
-       win 'next-buffers (wg-pickel (remove nil (cl-subseq (window-next-buffers window) 0 4))))
-      (wg-set-win-parameter
-       win 'prev-buffers (wg-pickel (remove nil (cl-subseq (window-prev-buffers window) 0 4)))))
+      (unless (version< emacs-version "24")
+        (wg-set-win-parameter
+         win 'next-buffers (wg-pickel (remove nil (cl-subseq (window-next-buffers window) 0 4))))
+        (wg-set-win-parameter
+         win 'prev-buffers (wg-pickel (remove nil (cl-subseq (window-prev-buffers window) 0 4))))))
     win))
 
 (defun wg-toggle-window-dedicated-p ()
@@ -4255,6 +4256,7 @@ confirmation is required unless you supply a prefix argument."
   ;; http://stackoverflow.com/questions/21151992/why-emacs-as-daemon-gives-1-more-frame-than-is-opened
   (if wg-control-frames
       (let ((fl (frame-list)))
+        ;; TODO: remove using dash
         (mapc (lambda (frame)
                 (if (string-equal "initial_terminal" (terminal-name frame))
                     (delete frame fl))) fl)
