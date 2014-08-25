@@ -4067,10 +4067,11 @@ current and previous workgroups."
 
 (defun wg-create-first-wg ()
   "Create a first workgroup if needed."
-  (if (and workgroups-mode
-           wg-session-load-on-start
-           (= (length (wg-workgroup-list)) 0))
-      (wg-create-workgroup wg-first-wg-name)))
+  (when (and workgroups-mode
+             wg-session-load-on-start
+             (= (length (wg-workgroup-list)) 0))
+    (wg-create-workgroup wg-first-wg-name)
+    (wg-mark-everything-unmodified)))
 
 (defun wg-pickel-workgroup-parameters (workgroup)
   "Return a copy of WORKGROUP after pickeling its parameters.
