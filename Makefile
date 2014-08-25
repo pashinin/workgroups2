@@ -24,6 +24,7 @@ deps:
 test: $(ELCS)
 	@$(BATCHE) "(progn\
 	(require 'cl) \
+	(require 'ert) \
 	(put 'flet 'byte-obsolete-info nil))" \
 	-l tests/workgroups2-tests.el -f ert-run-tests-batch-and-exit
 
