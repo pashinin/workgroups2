@@ -1,11 +1,11 @@
 # -*- Makefile -*-
 
-EMACS = emacs
-
+EMACS ?= emacs
 TEST_DIR = src
 TRAVIS_FILE = .travis.yml
-
-# Compile with noninteractive and relatively clean environment.
+EFLAGS ?= -L ../cl-lib -L src -L .
+BATCH = $(EMACS) $(EFLAGS) -batch -Q
+BATCHE = $(BATCH) -eval
 BATCHFLAGS = -batch -q --no-site-file
 FLAGS =   -L src -batch -l workgroups2.el --eval "(ido-mode t)"
 FLAGSWG = -L src -batch -l workgroups2.el --eval "(ido-mode t)" --eval "(workgroups-mode 1)"
@@ -14,13 +14,20 @@ WGCMD = ${EMACS} $(FLAGSWG) --debug-init --eval
 clean:
 	find . -name '*.elc' -delete
 
-test: clean
-# just load all files
-	${EMACS} -L src $(BATCHFLAGS) -f batch-byte-compile $(TEST_DIR)/*.el
+deps:
+	curl https://raw.githubusercontent.com/rejeep/f.el/master/f.el -o f.el
+	curl https://raw.githubusercontent.com/magnars/s.el/master/s.el -o s.el
+	curl https://raw.githubusercontent.com/magnars/dash.el/master/dash.el -o dash.el
+	curl https://raw.githubusercontent.com/rolandwalker/anaphora/master/anaphora.el -o anaphora.el
 
-# wg-mode-line-string
-	${EMACS} -L src -batch -l workgroups-modeline.el --eval '(message (wg-mode-line-string))'
+.PHONY: test
+test: $(ELCS)
+	@$(BATCHE) "(progn\
+	(require 'cl) \
+	(put 'flet 'byte-obsolete-info nil))" \
+	-l tests/workgroups2-tests.el -f ert-run-tests-batch-and-exit
 
+test2:
 # desktop-save-mode
 	${EMACS} $(FLAGS) --eval "(desktop-save-mode 1)" --eval "(workgroups-mode 1)"
 
