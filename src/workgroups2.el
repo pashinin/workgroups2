@@ -2135,7 +2135,7 @@ a wtree."
   (set-window-dedicated-p nil nil))
 
 (defun wg-restore-window-tree-helper (w)
-  "Recursion helper for `wg-restore-window-tree'."
+  "Recursion helper for `wg-restore-window-tree' W."
   (if (wg-wtree-p w)
       (cl-loop with dir = (wg-wtree-dir w)
                for (win . rest) on (wg-wtree-wlist w)
@@ -2157,8 +2157,6 @@ a wtree."
     (wg-restore-window-tree-helper wtree)
     (awhen wg-window-tree-selected-window (select-window it))))
 
-
-;; (wg-window-tree-to-wtree (window-tree))
 (defun wg-window-tree-to-wtree (window-tree)
   "Return the serialization (a wg-wtree) of Emacs window tree WINDOW-TREE."
   (wg-barf-on-active-minibuffer)
@@ -3308,17 +3306,17 @@ Print PROMPT"
 Used to avoid associating the old workgroup's buffers with the
 new workgroup during a switch.")
 
-(defun wg-flag-workgroup-modified (workgroup)
+(defun wg-flag-session-modified (&optional session)
+  "Set SESSION's modified flag."
+  (when (and wg-flag-modified
+             (or session (wg-current-session t)))
+    (setf (wg-session-modified (or session (wg-current-session t))) t)))
+
+(defun wg-flag-workgroup-modified (&optional workgroup)
   "Set WORKGROUP's and the current session's modified flags."
   (when wg-flag-modified
     (setf (wg-workgroup-modified workgroup) t)
-    (setf (wg-session-modified (wg-current-session)) t)))
-
-(defun wg-flag-session-modified (&optional session)
-  "Set SESSION's modified flag."
-  (when wg-flag-modified
-    (-when-let (or session (wg-current-session t))
-      (setf (wg-session-modified it) t))))
+    (wg-flag-session-modified)))
 
 (defun wg-current-workgroup (&optional noerror frame)
   "Return current workgroup in frame.
@@ -4266,8 +4264,8 @@ confirmation is required unless you supply a prefix argument."
           (if (wg-current-session t)
               (wg-set-session-parameter 'frame-list (mapcar 'wg-frame-to-wconfig fl))))))
   (wg-write-sexp-to-file (wg-pickel-all-session-parameters) filename)
-  (wg-mark-everything-unmodified)
-  (wg-fontified-message (:cmd "Wrote: ") (:file filename)))
+  (wg-fontified-message (:cmd "Wrote: ") (:file filename))
+  (wg-mark-everything-unmodified))
 (defalias 'wg-write-session-file 'wg-save-session-as)
 
 (defun wg-get-session-file ()
@@ -4333,7 +4331,7 @@ SESSION nil means use the current session.  Return value."
   "Remove parameter PARAMETER from SESSION's parameters."
   (let ((session (or session (wg-current-session))))
     (wg-asetf (wg-session-parameters session) (wg-aremove it parameter))
-    (setf (wg-session-modified session) t)))
+    (wg-flag-session-modified session)))
 
 (defun wg-session-local-value (variable &optional session)
   "Return the value of VARIABLE in SESSION.
