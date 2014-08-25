@@ -3412,24 +3412,24 @@ binding in WORKGROUP, resolve VARIABLE with `wg-session-local-value'."
   "Return a new list of the names of all WORKGROUP's saved wconfigs."
   (mapcar 'wg-wconfig-name (wg-workgroup-saved-wconfigs workgroup)))
 
-(defun wg-workgroup-get-saved-wconfig (workgroup wconfig-or-name)
-  "Return the wconfig in WORKGROUP's saved wconfigs named WCONFIG-OR-NAME.
+(defun wg-workgroup-get-saved-wconfig (wconfig-or-name &optional workgroup)
+  "Return the wconfig by WCONFIG-OR-NAME from WORKGROUP's saved wconfigs.
 WCONFIG-OR-NAME must be either a string or a wconfig.  If
 WCONFIG-OR-NAME is a string and there is no saved wconfig with
 that name, return nil.  If WCONFIG-OR-NAME is a wconfig, and it
 is a member of WORKGROUP's saved wconfigs, return is as given.
 Otherwise return nil."
-  (let ((wconfigs (wg-workgroup-saved-wconfigs workgroup)))
+  (let ((wconfigs (wg-workgroup-saved-wconfigs (or workgroup (wg-current-workgroup)))))
     (cl-etypecase wconfig-or-name
       (wg-wconfig (car (memq wconfig-or-name wconfigs)))
       (string (cl-find wconfig-or-name wconfigs
                        :key 'wg-wconfig-name
                        :test 'string=)))))
 
-(defun wg-workgroup-save-wconfig (workgroup wconfig)
-  "Add WCONFIG to WORKGROUP's saved wconfigs.  WCONFIG must have
-a name.  If there's already a wconfig with the same name in
-WORKGROUP's saved wconfigs, replace it."
+(defun wg-workgroup-save-wconfig (wconfig &optional workgroup)
+  "Add WCONFIG to WORKGROUP's saved wconfigs.
+WCONFIG must have a name.  If there's already a wconfig with the
+same name in WORKGROUP's saved wconfigs, replace it."
   (let ((name (wg-wconfig-name wconfig)))
     (unless name (error "Attempt to save a nameless wconfig"))
     (setf (wg-workgroup-modified workgroup) t)
@@ -4277,8 +4277,7 @@ confirmation is required unless you supply a prefix argument."
 
 (defun wg-save-session (&optional force)
   "Save the current Workgroups session if it's been modified.
-Optional argument FORCE non-nil, or interactively with a prefix
-arg, save the session regardless of whether it's been modified."
+When FORCE - save session regardless of whether it's been modified."
   (interactive "P")
   (if (and (not (wg-modified-p)) (not force))
       (wg-message "(The session is unmodified)")
