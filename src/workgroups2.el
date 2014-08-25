@@ -182,11 +182,6 @@ There are problems with powerline."
   :type 'boolean
   :group 'workgroups)
 
-(defcustom wg-mode-line-only-name t
-  "Display only workgroup name in modeline without any flags."
-  :type 'boolean
-  :group 'workgroups)
-
 (defcustom wg-mode-line-decor-left-brace "("
   "String displayed at the left of the mode-line display."
   :type 'string
@@ -425,8 +420,12 @@ corresponding to a wg-buf, it tags it with the wg-buf's uid to
 unambiguously pair the two.")
 (make-variable-buffer-local 'wg-buffer-uid)
 
-(defvar wg-flag-modified t
-  "To set or not to set... `modified' flag when changing workgroups.")
+(defcustom wg-flag-modified t
+  "Show \"modified\" flags in modeline."
+  :type 'boolean
+  :group 'workgroups)
+
+
 
 (defvar wg-window-configuration-changed nil
   "Flag set by `window-configuration-change-hook'.")
@@ -1685,14 +1684,13 @@ Frame defaults to `selected-frame'.  See `wg-buffer-auto-association'."
     (cond (wg (wg-fontify " "
                 (:brace wg-mode-line-decor-left-brace)
                 (:mode (wg-workgroup-name wg))
-                (if (not wg-mode-line-only-name)
+                (if wg-flag-modified
                     (concat
                      (wg-add-face :div wg-mode-line-decor-divider)
-                     (wg-add-face :div wg-mode-line-decor-divider)
-                     (if (window-dedicated-p)
-                         wg-mode-line-decor-window-dedicated
-                       wg-mode-line-decor-window-undedicated)
-                     (wg-add-face :div wg-mode-line-decor-divider)
+                     ;;(if (window-dedicated-p)
+                     ;;    wg-mode-line-decor-window-dedicated
+                     ;;  wg-mode-line-decor-window-undedicated)
+                     ;;(wg-add-face :div wg-mode-line-decor-divider)
                      (if (wg-session-modified (wg-current-session))
                          wg-mode-line-decor-session-modified
                        wg-mode-line-decor-session-unmodified)
@@ -1701,11 +1699,10 @@ Frame defaults to `selected-frame'.  See `wg-buffer-auto-association'."
                        wg-mode-line-decor-workgroup-unmodified)))
                 (:brace wg-mode-line-decor-right-brace)))
           (t (if wg-display-nowg
-                 (progn
-                   (wg-fontify " "
-                     (:brace wg-mode-line-decor-left-brace)
-                     (:mode wg-nowg-string)
-                     (:brace wg-mode-line-decor-right-brace)))
+                 (wg-fontify " "
+                   (:brace wg-mode-line-decor-left-brace)
+                   (:mode wg-nowg-string)
+                   (:brace wg-mode-line-decor-right-brace))
                "")))))
 
 (defun wg-change-modeline ()
