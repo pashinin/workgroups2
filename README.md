@@ -1,6 +1,7 @@
-# Workgroups for Emacs
 [![Build Status](https://travis-ci.org/pashinin/workgroups2.png?branch=master)](https://travis-ci.org/pashinin/workgroups2)
 [![Gittip](http://img.shields.io/gittip/pashinin.png)](https://www.gittip.com/pashinin)
+
+# Workgroups for Emacs
 
 ## What is it?
 
