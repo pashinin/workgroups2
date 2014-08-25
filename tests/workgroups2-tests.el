@@ -11,16 +11,18 @@
   (should-not workgroups-mode))
 
 (ert-deftest 010-activate ()
+  ;;(if (file-exists-p "/tmp/wg-test")
+  ;;    (delete-file "/tmp/wg-test"))
   (setq wg-session-file "/tmp/wg-test")
   (workgroups-mode 1)
   (should workgroups-mode)
   (should (string= (wg-get-session-file) "/tmp/wg-test")))
 
 (ert-deftest wg-modeline-string ()
-  (should (string= (wg-mode-line-string) " (First workgroup:*-)"))
+  (should (string= (wg-mode-line-string) " (First workgroup:--)"))
   (setq wg-mode-line-decor-left-brace "["
         wg-mode-line-decor-right-brace "]")
-  (should (string= (wg-mode-line-string) " [First workgroup:*-]"))
+  (should (string= (wg-mode-line-string) " [First workgroup:--]"))
   (setq wg-flag-modified nil)
   (should (string= (wg-mode-line-string) " [First workgroup]"))
   )
