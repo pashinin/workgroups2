@@ -1,4 +1,5 @@
 ;;; workgroups2.el --- New workspaces for Emacs
+;;; -*- coding: utf-8; lexical-binding: t -*-
 ;;
 ;; Copyright (C) 2013-2014 Sergey Pashinin
 ;; Copyright (C) 2010-2011 tlh
