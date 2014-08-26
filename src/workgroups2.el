@@ -463,12 +463,6 @@ When you change window configuration.")
 (defvar wg-window-tree-selected-window nil
   "Used during wconfig restoration to hold the selected window.")
 
-(defvar wg-update-current-workgroup-working-wconfig-on-select-frame t
-  "Non-nil means update `selected-frame's current workgroup's
-working wconfig before `select-frame' selects a new frame.
-let-bind this to nil around forms in which you don't want this to
-happen.")
-
 (defvar wg-buffer-workgroup nil
   "A workgroup in which this buffer most recently appeared.
 Buffer-local.")
@@ -1514,8 +1508,7 @@ its correct state, prior to any window-config changes caused by
 (defadvice select-frame (before wg-update-current-workgroup-working-wconfig)
   "Update `selected-frame's current workgroup's working-wconfig.
 Before selecting a new frame."
-  (when wg-update-current-workgroup-working-wconfig-on-select-frame
-    (wg-update-current-workgroup-working-wconfig)))
+  (wg-update-current-workgroup-working-wconfig))
 
 (defun wg-enable-all-advice ()
   "Enable and activate all of Workgroups' advice."
@@ -2113,18 +2106,16 @@ with `wg-scale-wconfigs-wtree' to fit the frame as it exists."
             (wg-wconfig-wtree wconfig)
           (wg-scale-wconfigs-wtree wconfig fwidth fheight))))))
 
-
 (defun wg-wtree-buf-uids (wtree)
   "Return a new list of the buf uids of all wins in WTREE."
   (if (not wtree)
       (error "WTREE is nil in `wg-wtree-buf-uids'!"))
   (wg-flatten-wtree wtree 'wg-win-buf-uid))
 
+
 (defun wg-wtree-unique-buf-uids (wtree)
   "Return a list of the unique buf uids of all wins in WTREE."
   (cl-remove-duplicates (wg-wtree-buf-uids wtree) :test 'string=))
-
-
 
 
 (defun wg-reset-window-tree ()
@@ -3954,7 +3945,8 @@ But only if not the minibuffer was just exited.  Added to
 `window-configuration-change-hook'."
   (if wg-just-exited-minibuffer
       (setq wg-just-exited-minibuffer nil)
-    (setq wg-window-configuration-changed t)))
+    (progn
+      (setq wg-window-configuration-changed t))))
 
 (defun wg-unflag-undoify-window-configuration-change ()
   "Set `wg-undoify-window-configuration-change' to nil, exempting
@@ -3991,8 +3983,8 @@ return WORKGROUP's current undo state."
 
 (defun wg-update-current-workgroup-working-wconfig ()
   "Update `selected-frame's current workgroup's working-wconfig with `wg-current-wconfig'."
-  (awhen (wg-current-workgroup t)
-    (wg-set-workgroup-working-wconfig it (wg-current-wconfig))))
+  (when (wg-current-workgroup t)
+    (wg-set-workgroup-working-wconfig (wg-current-workgroup t) (wg-current-wconfig))))
 
 (defun wg-restore-wconfig-undoably (wconfig &optional noundo)
   "Restore WCONFIG in `selected-frame', saving undo information.
