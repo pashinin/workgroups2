@@ -4,9 +4,12 @@ env:
   global:
     - CURL=curl -fsSkL --retry 9 --retry-delay 9
   matrix:
-    - EMACS=emacs23
-    - EMACS=emacs24
-    - EMACS=emacs-snapshot
+    - EMACS=emacs23           GUI=1
+    - EMACS=emacs24           GUI=1
+    - EMACS=emacs-snapshot    GUI=1
+    - EMACS=emacs23           GUI=0
+    - EMACS=emacs24           GUI=0
+    - EMACS=emacs-snapshot    GUI=0
 #matrix:
 #  allow_failures:
 #    - env: EMACS=emacs-snapshot
@@ -31,7 +34,8 @@ install:
 
 script:
   - $EMACS --version
-  - make test EMACS=${EMACS}
+  - if [ "$GUI" = "1" ]; then make testgui EMACS=${EMACS}; fi;
+  - if [ "$GUI" = "0" ]; then make test EMACS=${EMACS}; fi;
 
 notifications:
   email: false
