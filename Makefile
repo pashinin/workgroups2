@@ -3,7 +3,7 @@
 EMACS ?= emacs
 TEST_DIR = src
 TRAVIS_FILE = .travis.yml
-EFLAGS ?= -L ../cl-lib -L src -L .
+EFLAGS ?= -L ../cl-lib -L src -L . -L tests
 BATCH = $(EMACS) $(EFLAGS) -batch -Q
 NOBATCH = $(EMACS) --debug-init $(EFLAGS) -Q
 NOBATCHE = $(NOBATCH) -eval
@@ -40,19 +40,3 @@ testgui: $(ELCS)
 	-l tests/workgroups2-tests.el -f my-ert-run-tests
 	if [ -f /tmp/wg-tests.log ]; then cat /tmp/wg-tests.log; exit 1; fi;
 	if [ -f /tmp/wg-tests-ok.log ]; then cat /tmp/wg-tests-ok.log; fi;
-
-test2:
-# desktop-save-mode
-	${EMACS} $(FLAGS) --eval "(desktop-save-mode 1)" --eval "(workgroups-mode 1)"
-
-# WGs list length
-	${EMACS} $(FLAGSWG) --eval "(message (number-to-string (length (wg-workgroup-list))))"
-
-# show WG name
-	${EMACS} $(FLAGSWG) --eval "(message (wg-workgroup-name (wg-current-workgroup)))"
-
-# save session
-	${WGCMD} "(wg-save-session)"
-
-test-ido:
-	emacs -Q -L src -l cl.el -l ido.el -l workgroups2.el --eval "(ido-mode t)" --eval "(workgroups-mode 1)"
