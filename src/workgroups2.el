@@ -3950,6 +3950,7 @@ But only if not the minibuffer was just exited.  Added to
   (if wg-just-exited-minibuffer
       (setq wg-just-exited-minibuffer nil)
     (progn
+      (wg-flag-workgroup-modified)
       (setq wg-window-configuration-changed t))))
 
 (defun wg-unflag-undoify-window-configuration-change ()
