@@ -36,6 +36,7 @@ script:
   - $EMACS --version
   - if [ "$GUI" = "1" ]; then make testgui EMACS=${EMACS}; fi;
   - if [ "$GUI" = "0" ]; then make test EMACS=${EMACS}; fi;
+  - ls -la /tmp
 
 notifications:
   email: false
