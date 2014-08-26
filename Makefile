@@ -28,7 +28,7 @@ test: $(ELCS)
 	(require 'cl) \
 	(require 'ert) \
 	(put 'flet 'byte-obsolete-info nil))" \
-	-l tests/ert-my-utils.el -l tests/workgroups2-tests.el -f ert-run-tests-batch-and-exit
+	-l tests/workgroups2-tests.el -f ert-run-tests-batch-and-exit
 
 
 .PHONY: testgui
