@@ -3307,7 +3307,9 @@ new workgroup during a switch.")
 
 (defun wg-flag-workgroup-modified (&optional workgroup)
   "Set WORKGROUP's and the current session's modified flags."
-  (when wg-flag-modified
+  (unless workgroup
+    (setq workgroup (wg-get-workgroup nil t)))
+  (when (and wg-flag-modified workgroup)
     (setf (wg-workgroup-modified workgroup) t)
     (wg-flag-session-modified)))
 
