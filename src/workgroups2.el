@@ -1301,11 +1301,6 @@ If not - try to go to the parent dir and do the same."
 
 
 ;;; Objects
-
-;; symbol
-;; (wg-unpickel (wg-pickel 123))
-;; (wg-unpickel (wg-pickel "table"))
-;; (wg-unpickel (wg-pickel 'test))
 (defun wg-pickel-symbol-serializer (symbol)
   "Return SYMBOL's serialization."
   (cond ((eq symbol t) t)
@@ -1318,8 +1313,6 @@ If not - try to go to the parent dir and do the same."
 
 
 ;; buffer
-;; (wg-unpickel (wg-pickel (current-buffer)))
-;; (wg-unpickel (wg-pickel (get-buffer org-agenda-buffer-name)))
 (defun wg-pickel-buffer-serializer (buffer)
   "Return BUFFER's UID in workgroups buffer list."
   (list 'b (wg-add-buffer-to-buf-list buffer)))
@@ -1329,13 +1322,12 @@ If not - try to go to the parent dir and do the same."
 
 
 ;; marker
-;; (wg-unpickel (wg-pickel (point-marker)))
 (defun wg-pickel-marker-serializer (marker)
-  "Return MARKERS's data."
+  "Return MARKER's data."
   (list 'm (list (marker-position marker)
                  (wg-add-buffer-to-buf-list (marker-buffer marker)))))
 (defun wg-pickel-deserialize-marker (data)
-  "Return marker from it's data."
+  "Return marker from it's DATA."
   (let ((m (make-marker)))
     (set-marker m (car data) (wg-pickel-deserialize-buffer (car (cdr data))))))
 
@@ -1415,14 +1407,10 @@ If not - try to go to the parent dir and do the same."
            (gethash table-id binds)))
 
 
-
 ;; TODO
 (defun wg-pickel-window-configuration-serializer (wc)
   "Return Window configuration WC's serialization."
   (list 'wc 1))
-
-
-
 
 
 (defun wg-pickel-serialize-objects (binds)
@@ -2613,7 +2601,7 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
                                   (prog1 (term vars)
                                     (rename-buffer (wg-buf-name buffer) t)))))))
 
-;; Python
+;; `inferior-python-mode'
 (wg-support 'inferior-python-mode 'python
             `((save . (python-shell-interpreter python-shell-interpreter-args))
               (deserialize . ,(lambda (buffer vars)

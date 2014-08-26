@@ -14,6 +14,11 @@
 ;;  `(progn
 ;;     (defface ,face ,spec ,doc ,@args)))
 
+(defmacro test-pickel (value)
+  "Test `wg-pickel' `wg-unpickel' on VALUE."
+  `(progn
+     (wg-unpickel (wg-pickel ,value))))
+
 (ert-deftest 000-initial ()
   ;;(make-frame)
   (if (file-exists-p "/tmp/wg-tests.log")
@@ -86,20 +91,31 @@
     )
   )
 
-(ert-deftest yyy-wg-save ()
-  ;;(should-not (string-equal "initial_terminal" (terminal-name (selected-frame))))
-  ;;(should-not (selected-frame))
-
-
-  ;;(should-not (window-tree))
+(ert-deftest 100-wg-save ()
   (should (= (length (frame-list)) 1))
-  ;;(should (= (length (wg-all-buf-uids)) 2))
-  ;; (length (wg-workgroup-list))
-  ;; (wg-workgroup-name (wg-current-workgroup))
   (wg-save-session)
+  (should-not (wg-session-modified (wg-current-session)))
   (unless (string-equal "initial_terminal" (terminal-name (selected-frame)))
     (unless (file-exists-p "/tmp/wg-test")
       (error "WG session file wasn't created"))))
+
+
+(ert-deftest 110-wg-pickel ()
+  (test-pickel 123)
+  (test-pickel "str")
+  (test-pickel 'symbol)
+  (test-pickel (current-buffer))
+  ;; (get-buffer org-agenda-buffer-name)
+  (test-pickel (point-marker))
+  ;; TODO:
+  ;;(test-pickel (current-window-configuration))
+  )
+
+
+;;(ert-deftest 300-inferior-python-mode ()
+;;  (delete-other-windows)
+;;  (switch-to-buffer wg-default-buffer)
+;;  )
 
 (provide 'workgroups2-tests)
 ;;; workgroups2-tests.el ends here
