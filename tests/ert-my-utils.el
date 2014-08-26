@@ -172,7 +172,8 @@ http://stackoverflow.com/questions/25490989/how-should-i-run-emacs-ert-tests-whe
         (progn
           (message "Error running tests")
           (backtrace)
-          (wg-tests-log))
+          ;;(wg-tests-log)
+          )
       (kill-emacs 0)
       )))
 
