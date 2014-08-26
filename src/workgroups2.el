@@ -2148,9 +2148,11 @@ a wtree."
     (wg-restore-window-tree-helper wtree)
     (awhen wg-window-tree-selected-window (select-window it))))
 
-(defun wg-window-tree-to-wtree (window-tree)
+(defun wg-window-tree-to-wtree (&optional window-tree)
   "Return the serialization (a wg-wtree) of Emacs window tree WINDOW-TREE."
   (wg-barf-on-active-minibuffer)
+  (unless window-tree
+    (setq window-tree (window-tree)))
   (cl-labels
       ((inner (w) (if (windowp w) (wg-window-to-win w)
                     (wg-dbind (dir edges . wins) w
