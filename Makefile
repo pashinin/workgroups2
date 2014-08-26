@@ -5,6 +5,8 @@ TEST_DIR = src
 TRAVIS_FILE = .travis.yml
 EFLAGS ?= -L ../cl-lib -L src -L .
 BATCH = $(EMACS) $(EFLAGS) -batch -Q
+NOBATCH = $(EMACS) --debug-init $(EFLAGS) -Q
+NOBATCHE = $(NOBATCH) -eval
 BATCHE = $(BATCH) -eval
 BATCHFLAGS = -batch -q --no-site-file
 FLAGS =   -L src -batch -l workgroups2.el --eval "(ido-mode t)"
@@ -27,6 +29,17 @@ test: $(ELCS)
 	(require 'ert) \
 	(put 'flet 'byte-obsolete-info nil))" \
 	-l tests/workgroups2-tests.el -f ert-run-tests-batch-and-exit
+
+
+.PHONY: testgui
+testgui: $(ELCS)
+	@$(NOBATCHE) "(progn\
+	(require 'cl) \
+	(require 'ert) \
+	(put 'flet 'byte-obsolete-info nil))" \
+	-l tests/workgroups2-tests.el -f my-ert-run-tests
+	if [ -f /tmp/wg-tests.log ]; then cat /tmp/wg-tests.log; exit 1; fi;
+	if [ -f /tmp/wg-tests-ok.log ]; then cat /tmp/wg-tests-ok.log; fi;
 
 test2:
 # desktop-save-mode
