@@ -2501,58 +2501,57 @@ how to write your own."
 
 ;; Dired
 (wg-support 'dired-mode 'dired
-            `((deserialize . ,(lambda (buffer vars)
-                                (when (or wg-restore-remote-buffers
-                                          (not (file-remote-p default-directory)))
-                                  (let ((d (wg-get-first-existing-dir)))
-                                    (if (file-directory-p d) (dired d))))))))
+  `((deserialize . ,(lambda (buffer vars)
+                      (when (or wg-restore-remote-buffers
+                                (not (file-remote-p default-directory)))
+                        (let ((d (wg-get-first-existing-dir)))
+                          (if (file-directory-p d) (dired d))))))))
 
 ;; `Info-mode'     C-h i
 (wg-support 'Info-mode 'info
-            `((save . (Info-current-file Info-current-node))
-              (deserialize . ,(lambda (buffer vars)
-                                ;;(with-current-buffer
-                                ;;    (get-buffer-create (wg-buf-name buffer))
-                                (aif vars
-                                    (if (fboundp 'Info-find-node)
-                                        (apply #'Info-find-node it))
-                                  (info)
-                                  (get-buffer (wg-buf-name buffer)))))))
+  `((save . (Info-current-file Info-current-node))
+    (deserialize . ,(lambda (buffer vars)
+                      ;;(with-current-buffer
+                      ;;    (get-buffer-create (wg-buf-name buffer))
+                      (aif vars
+                          (if (fboundp 'Info-find-node)
+                              (apply #'Info-find-node it))
+                        (info)
+                        (get-buffer (wg-buf-name buffer)))))))
 
 ;; `help-mode'
 ;; Bug: https://github.com/pashinin/workgroups2/issues/29
-(if nil
-    (wg-support 'help-mode 'help-mode
-                `((save . (help-xref-stack-item help-xref-stack help-xref-forward-stack))
-                  (deserialize . ,(lambda (buffer vars)
-                                    (wg-dbind (item stack forward-stack) vars
-                                      (condition-case err
-                                          (apply (car item) (cdr item))
-                                        (error (message "%s" err)))
-                                      (awhen (get-buffer "*Help*")
-                                        (set-buffer it)
-                                        (wg-when-boundp (help-xref-stack help-xref-forward-stack)
-                                          (setq help-xref-stack stack
-                                                help-xref-forward-stack forward-stack))))))))
-  )
+;; bug in wg-get-value
+(wg-support 'help-mode 'help-mode
+  `((save . (help-xref-stack-item help-xref-stack help-xref-forward-stack))
+    (deserialize . ,(lambda (buffer vars)
+                      (wg-dbind (item stack forward-stack) vars
+                        (condition-case err
+                            (apply (car item) (cdr item))
+                          (error (message "%s" err)))
+                        (awhen (get-buffer "*Help*")
+                          (set-buffer it)
+                          (wg-when-boundp (help-xref-stack help-xref-forward-stack)
+                            (setq help-xref-stack stack
+                                  help-xref-forward-stack forward-stack))))))))
 
 ;; ielm
 (wg-support 'inferior-emacs-lisp-mode 'ielm
-            `((deserialize . ,(lambda (buffer vars)
-                                (ielm) (get-buffer "*ielm*")))))
+  `((deserialize . ,(lambda (buffer vars)
+                      (ielm) (get-buffer "*ielm*")))))
 
 ;; Magit status
 (wg-support 'magit-status-mode 'magit
-            `((deserialize . ,(lambda (buffer vars)
-                                (if (file-directory-p default-directory)
-                                    (magit-status default-directory)
-                                  (let ((d (wg-get-first-existing-dir)))
-                                    (if (file-directory-p d) (dired d))))))))
+  `((deserialize . ,(lambda (buffer vars)
+                      (if (file-directory-p default-directory)
+                          (magit-status default-directory)
+                        (let ((d (wg-get-first-existing-dir)))
+                          (if (file-directory-p d) (dired d))))))))
 
 ;; Shell
 (wg-support 'shell-mode 'shell
-            `((deserialize . ,(lambda (buffer vars)
-                                (shell (wg-buf-name buffer))))))
+  `((deserialize . ,(lambda (buffer vars)
+                      (shell (wg-buf-name buffer))))))
 
 ;; org-agenda buffer
 (defun wg-get-org-agenda-view-commands ()
@@ -2582,20 +2581,20 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
               (org-goto-line line)))))))
 
 (wg-support 'org-agenda-mode 'org-agenda
-            '((serialize . (lambda (buffer)
-                             (wg-get-org-agenda-view-commands)))
-              (deserialize . (lambda (buffer vars)
-                               (org-agenda-list)
-                               (awhen (get-buffer org-agenda-buffer-name)
-                                 (with-current-buffer it
-                                   (wg-run-agenda-cmd vars))
-                                 it)))))
+  '((serialize . (lambda (buffer)
+                   (wg-get-org-agenda-view-commands)))
+    (deserialize . (lambda (buffer vars)
+                     (org-agenda-list)
+                     (awhen (get-buffer org-agenda-buffer-name)
+                       (with-current-buffer it
+                         (wg-run-agenda-cmd vars))
+                       it)))))
 
 ;; eshell
 (wg-support 'eshell-mode 'esh-mode
-            '((deserialize . (lambda (buffer vars)
-                               (prog1 (eshell t)
-                                 (rename-buffer (wg-buf-name buffer) t))))))
+  '((deserialize . (lambda (buffer vars)
+                     (prog1 (eshell t)
+                       (rename-buffer (wg-buf-name buffer) t))))))
 
 ;; term-mode
 ;;
@@ -2604,101 +2603,101 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
 ;; buffer is generated.
 ;;
 (wg-support 'term-mode 'term
-            `((serialize . ,(lambda (buffer)
-                              (if (get-buffer-process buffer)
-                                  (-last-item (process-command (get-buffer-process buffer)))
-                                "/bin/bash")))
-              (deserialize . ,(lambda (buffer vars)
-                                (cl-labels ((term-window-width () 80)
-                                            (window-height () 24))
-                                  (prog1 (term vars)
-                                    (rename-buffer (wg-buf-name buffer) t)))))))
+  `((serialize . ,(lambda (buffer)
+                    (if (get-buffer-process buffer)
+                        (-last-item (process-command (get-buffer-process buffer)))
+                      "/bin/bash")))
+    (deserialize . ,(lambda (buffer vars)
+                      (cl-labels ((term-window-width () 80)
+                                  (window-height () 24))
+                        (prog1 (term vars)
+                          (rename-buffer (wg-buf-name buffer) t)))))))
 
 ;; `inferior-python-mode'
 (wg-support 'inferior-python-mode 'python
-            `((save . (python-shell-interpreter python-shell-interpreter-args))
-              (deserialize . ,(lambda (buffer vars)
-                                (wg-dbind (pythoncmd pythonargs) vars
-                                  (run-python (concat pythoncmd " " pythonargs))
-                                  (awhen (get-buffer (process-buffer
-                                                      (python-shell-get-or-create-process)))
-                                    (with-current-buffer it (goto-char (point-max)))
-                                    it))))))
+  `((save . (python-shell-interpreter python-shell-interpreter-args))
+    (deserialize . ,(lambda (buffer vars)
+                      (wg-dbind (pythoncmd pythonargs) vars
+                        (run-python (concat pythoncmd " " pythonargs))
+                        (awhen (get-buffer (process-buffer
+                                            (python-shell-get-or-create-process)))
+                          (with-current-buffer it (goto-char (point-max)))
+                          it))))))
 
 
 ;; Sage shell ;;
 (wg-support 'inferior-sage-mode 'sage-mode
-            `((deserialize . ,(lambda (buffer vars)
-                                (save-window-excursion
-                                  (if (boundp' sage-command)
-                                      (run-sage t sage-command t)))
-                                (if (boundp 'sage-buffer)
-                                    (awhen sage-buffer
-                                      (set-buffer it)
-                                      (switch-to-buffer sage-buffer)
-                                      (goto-char (point-max))))))))
+  `((deserialize . ,(lambda (buffer vars)
+                      (save-window-excursion
+                        (if (boundp' sage-command)
+                            (run-sage t sage-command t)))
+                      (if (boundp 'sage-buffer)
+                          (awhen sage-buffer
+                            (set-buffer it)
+                            (switch-to-buffer sage-buffer)
+                            (goto-char (point-max))))))))
 
 ;; `inferior-ess-mode'     M-x R
 (wg-support 'inferior-ess-mode 'ess-inf
-            `((save . (inferior-ess-program))
-              (deserialize . ,(lambda (buffer vars)
-                                (wg-dbind (cmd) vars
-                                  (let ((ess-ask-about-transfile nil)
-                                        (ess-ask-for-ess-directory nil)
-                                        (ess-history-file nil))
-                                    (R)
-                                    (get-buffer (wg-buf-name buffer))))))))
+  `((save . (inferior-ess-program))
+    (deserialize . ,(lambda (buffer vars)
+                      (wg-dbind (cmd) vars
+                        (let ((ess-ask-about-transfile nil)
+                              (ess-ask-for-ess-directory nil)
+                              (ess-history-file nil))
+                          (R)
+                          (get-buffer (wg-buf-name buffer))))))))
 
 ;; `inferior-octave-mode'
 (wg-support 'inferior-octave-mode 'octave
-            `((deserialize . ,(lambda (buffer vars)
-                                (prog1 (run-octave)
-                                  (rename-buffer (wg-buf-name buffer) t))))))
+  `((deserialize . ,(lambda (buffer vars)
+                      (prog1 (run-octave)
+                        (rename-buffer (wg-buf-name buffer) t))))))
 
 ;; `prolog-inferior-mode'
 (wg-support 'prolog-inferior-mode 'prolog
-            `((deserialize . ,(lambda (buffer vars)
-                                (save-window-excursion
-                                  (run-prolog nil))
-                                (switch-to-buffer "*prolog*")
-                                (goto-char (point-max))))))
+  `((deserialize . ,(lambda (buffer vars)
+                      (save-window-excursion
+                        (run-prolog nil))
+                      (switch-to-buffer "*prolog*")
+                      (goto-char (point-max))))))
 
 ;; `ensime-inf-mode'
 (wg-support 'ensime-inf-mode 'ensime
-            `((deserialize . ,(lambda (buffer vars)
-                                (save-window-excursion
-                                  (ensime-inf-switch))
-                                (when (boundp 'ensime-inf-buffer-name)
-                                  (switch-to-buffer ensime-inf-buffer-name)
-                                  (goto-char (point-max)))))))
+  `((deserialize . ,(lambda (buffer vars)
+                      (save-window-excursion
+                        (ensime-inf-switch))
+                      (when (boundp 'ensime-inf-buffer-name)
+                        (switch-to-buffer ensime-inf-buffer-name)
+                        (goto-char (point-max)))))))
 
 ;; compilation-mode
 ;;
 ;; I think it's not a good idea to compile a program just to switch
 ;; workgroups. So just restoring a buffer name.
 (wg-support 'compilation-mode 'compile
-            `((serialize . ,(lambda (buffer)
-                              (if (boundp' compilation-arguments) compilation-arguments)))
-              (deserialize . ,(lambda (buffer vars)
-                                (save-window-excursion
-                                  (get-buffer-create (wg-buf-name buffer)))
-                                (with-current-buffer (wg-buf-name buffer)
-                                  (when (boundp' compilation-arguments)
-                                    (make-local-variable 'compilation-arguments)
-                                    (setq compilation-arguments vars)))
-                                (switch-to-buffer (wg-buf-name buffer))
-                                (goto-char (point-max))))))
+  `((serialize . ,(lambda (buffer)
+                    (if (boundp' compilation-arguments) compilation-arguments)))
+    (deserialize . ,(lambda (buffer vars)
+                      (save-window-excursion
+                        (get-buffer-create (wg-buf-name buffer)))
+                      (with-current-buffer (wg-buf-name buffer)
+                        (when (boundp' compilation-arguments)
+                          (make-local-variable 'compilation-arguments)
+                          (setq compilation-arguments vars)))
+                      (switch-to-buffer (wg-buf-name buffer))
+                      (goto-char (point-max))))))
 
 ;; grep-mode
 ;; see grep.el - `compilation-start' - it is just a compilation buffer
 ;; local variables:
 ;; `compilation-arguments' == (cmd mode nil nil)
 (wg-support 'grep-mode 'grep
-            `((serialize . ,(lambda (buffer)
-                              (if (boundp' compilation-arguments) compilation-arguments)))
-              (deserialize . ,(lambda (buffer vars)
-                                (compilation-start (car vars) (nth 1 vars))
-                                (switch-to-buffer "*grep*")))))
+  `((serialize . ,(lambda (buffer)
+                    (if (boundp' compilation-arguments) compilation-arguments)))
+    (deserialize . ,(lambda (buffer vars)
+                      (compilation-start (car vars) (nth 1 vars))
+                      (switch-to-buffer "*grep*")))))
 
 
 ;; speedbar-mode
@@ -2781,15 +2780,15 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
 ;; https://github.com/tobiassvn/inf-mongo
 ;; `mongo-command' - command used to start inferior mongo
 (wg-support 'inf-mongo-mode 'inf-mongo
-            `((serialize . ,(lambda (buffer)
-                              (if (boundp 'inf-mongo-command) inf-mongo-command)))
-              (deserialize . ,(lambda (buffer vars)
-                                (save-window-excursion
-                                  (when (fboundp 'inf-mongo)
-                                    (inf-mongo vars)))
-                                (when (get-buffer "*mongo*")
-                                  (switch-to-buffer "*mongo*")
-                                  (goto-char (point-max)))))))
+  `((serialize . ,(lambda (buffer)
+                    (if (boundp 'inf-mongo-command) inf-mongo-command)))
+    (deserialize . ,(lambda (buffer vars)
+                      (save-window-excursion
+                        (when (fboundp 'inf-mongo)
+                          (inf-mongo vars)))
+                      (when (get-buffer "*mongo*")
+                        (switch-to-buffer "*mongo*")
+                        (goto-char (point-max)))))))
 
 (defun wg-temporarily-rename-buffer-if-exists (buffer)
   "Rename BUFFER if it exists."
@@ -2803,56 +2802,56 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
 ;; `inf-sml-args' are the extra parameters passed, `inf-sml-host'
 ;; is the host on which sml was running when serialized
 (wg-support 'inferior-sml-mode 'sml-mode
-            `((serialize . ,(lambda (buffer)
-                              (list (if (boundp 'sml-program-name) sml-program-name)
-                                    (if (boundp 'sml-default-arg) sml-default-arg)
-                                    (if (boundp 'sml-host-name) sml-host-name))))
-              (deserialize . ,(lambda (buffer vars)
-                                (wg-dbind (program args host) vars
-                                  (save-window-excursion
-                                    ;; If a inf-sml buffer already exists rename it temporarily
-                                    ;; otherwise `run-sml' will simply switch to the existing
-                                    ;; buffer, however we want to create a separate buffer with
-                                    ;; the serialized name
-                                    (let* ((inf-sml-buffer-name (concat "*"
-                                                                        (file-name-nondirectory program)
-                                                                        "*"))
-                                           (existing-sml-buf (wg-temporarily-rename-buffer-if-exists
-                                                              inf-sml-buffer-name)))
-                                      (with-current-buffer (run-sml program args host)
-                                        ;; Rename the buffer
-                                        (rename-buffer (wg-buf-name buffer) t)
+  `((serialize . ,(lambda (buffer)
+                    (list (if (boundp 'sml-program-name) sml-program-name)
+                          (if (boundp 'sml-default-arg) sml-default-arg)
+                          (if (boundp 'sml-host-name) sml-host-name))))
+    (deserialize . ,(lambda (buffer vars)
+                      (wg-dbind (program args host) vars
+                        (save-window-excursion
+                          ;; If a inf-sml buffer already exists rename it temporarily
+                          ;; otherwise `run-sml' will simply switch to the existing
+                          ;; buffer, however we want to create a separate buffer with
+                          ;; the serialized name
+                          (let* ((inf-sml-buffer-name (concat "*"
+                                                              (file-name-nondirectory program)
+                                                              "*"))
+                                 (existing-sml-buf (wg-temporarily-rename-buffer-if-exists
+                                                    inf-sml-buffer-name)))
+                            (with-current-buffer (run-sml program args host)
+                              ;; Rename the buffer
+                              (rename-buffer (wg-buf-name buffer) t)
 
-                                        ;; Now we can re-rename the previously renamed buffer
-                                        (when existing-sml-buf
-                                          (with-current-buffer existing-sml-buf
-                                            (rename-buffer inf-sml-buffer-name t))))))
-                                  (switch-to-buffer (wg-buf-name buffer))
-                                  (goto-char (point-max)))))))
+                              ;; Now we can re-rename the previously renamed buffer
+                              (when existing-sml-buf
+                                (with-current-buffer existing-sml-buf
+                                  (rename-buffer inf-sml-buffer-name t))))))
+                        (switch-to-buffer (wg-buf-name buffer))
+                        (goto-char (point-max)))))))
 
 ;; Geiser repls
 ;; http://www.nongnu.org/geiser/
 (wg-support 'geiser-repl-mode 'geiser
-            `((save . (geiser-impl--implementation))
-              (deserialize . ,(lambda (buffer vars)
-                                (when (fboundp 'run-geiser)
-                                  (wg-dbind (impl) vars
-                                    (run-geiser impl)
-                                    (goto-char (point-max))))
-                                (switch-to-buffer (wg-buf-name buffer))))))
+  `((save . (geiser-impl--implementation))
+    (deserialize . ,(lambda (buffer vars)
+                      (when (fboundp 'run-geiser)
+                        (wg-dbind (impl) vars
+                          (run-geiser impl)
+                          (goto-char (point-max))))
+                      (switch-to-buffer (wg-buf-name buffer))))))
 
 ;; w3m-mode
 (wg-support 'w3m-mode 'w3m
-            `((save . (w3m-current-url))
-              (deserialize . ,(lambda (buffer vars)
-                                (wg-dbind (url) vars
-                                  (w3m-goto-url url))))))
+  `((save . (w3m-current-url))
+    (deserialize . ,(lambda (buffer vars)
+                      (wg-dbind (url) vars
+                        (w3m-goto-url url))))))
 
 ;; notmuch
 (wg-support 'notmuch-hello-mode 'notmuch
-            `((deserialize . ,(lambda (buffer vars)
-                                (notmuch)
-                                (get-buffer (wg-buf-name buffer))))))
+  `((deserialize . ,(lambda (buffer vars)
+                      (notmuch)
+                      (get-buffer (wg-buf-name buffer))))))
 
 ;; Wanderlust modes:
 ;; WL - folders
