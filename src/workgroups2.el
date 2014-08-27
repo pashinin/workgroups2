@@ -1094,13 +1094,14 @@ This needs to be a macro to allow specification of a setf'able place."
 
 (defun wg-get-value (arg)
   "Get a value of ARG if it exists."
-  (if (boundp `,arg) (eval arg)))
+  (if (boundp `,arg) arg))
 
 (defmacro wg-support (mode pkg params)
   "Macro to create (de)serialization functions for a buffer.
 You need to save/restore a specific MODE which is loaded from a
 package PKG.  In PARAMS you give local variables to save and a
 deserialization function."
+  (declare (indent 2))
   `(let ((mode-str (symbol-name ,mode))
          (args ,params))
 
@@ -1111,7 +1112,7 @@ Gets saved variables and runs code to restore a BUFFER."
                 (wg-dbind (this-function variables) (wg-buf-special-data buffer)
                   (let ((default-directory (car variables))
                         (df (cdr (assoc 'deserialize ',,params)))
-                        (user-vars (car (cdr variables))))
+                        (user-vars (cadr variables)))
                     (if df
                         (funcall df buffer user-vars)
                       (get-buffer-create wg-default-buffer))
@@ -1127,7 +1128,8 @@ Saves some variables to restore a BUFFER later."
                           (save (cdr (assoc 'save ',,params))))
                       (list ',(intern (format "wg-deserialize-%s-buffer" mode-str))
                             (list default-directory
-                                  (if sf (funcall sf buffer)
+                                  (if sf
+                                      (funcall sf buffer)
                                     (if save (mapcar 'wg-get-value save)))
                                   ))))))))
      ;; Maybe change a docstring for functions
