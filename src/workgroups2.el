@@ -1142,6 +1142,13 @@ Saves some variables to restore a BUFFER later."
                          ',(intern (format "wg-serialize-%s-buffer" mode-str)) t))
      ))
 
+(defconst wg-font-lock-keywords
+  '(("(\\(wg-support\\|wg-support\\)[ \t]*"
+     (1 font-lock-keyword-face)
+     ;;(2 font-lock-keyword-face)
+     )))
+(font-lock-add-keywords 'emacs-lisp-mode wg-font-lock-keywords)
+
 (defvar wg-current-session nil "Current session object.")
 (defun wg-current-session (&optional noerror)
   "Return `wg-current-session' or error unless NOERROR."
