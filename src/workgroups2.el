@@ -120,6 +120,10 @@ off and then on again to take effect."
 (defvar wg-record-incorrectly-restored-bufs nil
   "FIXME: docstring this.")
 
+(defvar wg-log-level 1
+  "Use later.
+0 means no messages at all (for tests)")
+
 (defcustom wg-emacs-exit-save-behavior 'save
   "Determines save behavior on Emacs exit.
 
@@ -647,7 +651,7 @@ features but is fucking unstable, so disabled by default"
 
 (defun wg-message (format-string &rest args)
   "Call `message' with FORMAT-STRING and ARGS."
-  (apply #'message format-string args))
+  (if (> wg-log-level 0) (apply #'message format-string args)))
 
 (defmacro wg-fontified-message (&rest format)
   "`wg-fontify' FORMAT and call `wg-message' on it."
