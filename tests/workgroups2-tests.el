@@ -2,10 +2,8 @@
 ;;; Commentary:
 ;;; Code:
 
-(require 'cl)
-(require 'ert)
+(require 'cl-lib)
 (require 'f)
-(load-file (concat (file-name-directory load-file-name) "ert-my-utils.el"))
 (require 'workgroups2)
 
 ;;(defmacro w-all-buf-uids (value)
@@ -13,11 +11,6 @@
 ;;  (declare (indent 2))
 ;;  `(progn
 ;;     (defface ,face ,spec ,doc ,@args)))
-
-(defmacro test-pickel (value)
-  "Test `wg-pickel' `wg-unpickel' on VALUE."
-  `(progn
-     (wg-unpickel (wg-pickel ,value))))
 
 (ert-deftest 000-initial ()
   ;;(make-frame)
@@ -35,7 +28,8 @@
   ;;    (delete-file "/tmp/wg-test"))
   (setq wg-session-file "/tmp/wg-test")
   ;;(setq wg-session-load-on-start nil)
-  (workgroups-mode 1)
+  (let (message-log-max)
+    (workgroups-mode 1))
   (should workgroups-mode)
   (should (string= (wg-get-session-file) "/tmp/wg-test")))
 
@@ -93,12 +87,18 @@
 
 (ert-deftest 100-wg-save ()
   (should (= (length (frame-list)) 1))
-  (wg-save-session)
+  (let (message-log-max)
+    (wg-save-session))
   (should-not (wg-session-modified (wg-current-session)))
   (unless (string-equal "initial_terminal" (terminal-name (selected-frame)))
     (unless (file-exists-p "/tmp/wg-test")
       (error "WG session file wasn't created"))))
 
+
+(defmacro test-pickel (value)
+  "Test `wg-pickel' `wg-unpickel' on VALUE."
+  `(progn
+     (wg-unpickel (wg-pickel ,value))))
 
 (ert-deftest 110-wg-pickel ()
   (test-pickel 123)
@@ -107,15 +107,43 @@
   (test-pickel (current-buffer))
   ;; (get-buffer org-agenda-buffer-name)
   (test-pickel (point-marker))
+  (test-pickel (list 'describe-variable 'help-xref-stack-item (get-buffer "*Help*")))
   ;; TODO:
   ;;(test-pickel (current-window-configuration))
   )
 
 
-;;(ert-deftest 300-inferior-python-mode ()
-;;  (delete-other-windows)
-;;  (switch-to-buffer wg-default-buffer)
-;;  )
+
+;;
+;; Special buffers
+;;
+
+(require 'python)
+(ert-deftest 300-special-modes ()
+  (wg-test-special 'dired-mode 'dired
+    (dired "/tmp"))
+
+  (wg-test-special 'Info-mode 'info
+    (info))
+
+  (wg-test-special 'help-mode 'help-mode
+    (describe-variable 'help-xref-stack-item)
+    (switch-to-buffer "*Help*"))
+
+  (wg-test-special 'magit-status-mode 'magit
+    (magit-status "."))
+
+  (wg-test-special 'shell-mode 'shell
+    (shell))
+
+  (wg-test-special 'term-mode 'term
+    (term "/bin/sh"))
+
+  (wg-test-special 'inferior-python-mode 'python
+    (run-python python-shell-interpreter)
+    (switch-to-buffer (process-buffer (python-shell-get-or-create-process))))
+
+  )
 
 (provide 'workgroups2-tests)
 ;;; workgroups2-tests.el ends here
