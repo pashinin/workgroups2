@@ -2262,9 +2262,18 @@ BUFFER or `wg-default-buffer' is visible in the only window."
 (defun wg-update-working-wconfig-on-delete-frame (frame)
   "Update FRAME's current workgroup's working-wconfig before
 FRAME is deleted, so we don't lose its state."
+  (wg-flag-session-modified)
   (with-selected-frame frame
     (wg-update-current-workgroup-working-wconfig)))
 
+(defun wg-update-working-wconfig-on-make-frame (frame)
+  "Update FRAME's current workgroup's working-wconfig before
+FRAME is deleted, so we don't lose its state."
+  (if (> (length (frame-list)) 1)
+      (wg-flag-session-modified))
+  ;;(with-selected-frame frame
+  ;;  (wg-update-current-workgroup-working-wconfig))
+  )
 
 (defun wg-wconfig-buf-uids (wconfig)
   "Return WCONFIG's wtree's `wg-wtree-buf-uids'."
@@ -3988,8 +3997,8 @@ return WORKGROUP's current undo state."
 
 (defun wg-update-current-workgroup-working-wconfig ()
   "Update `selected-frame's current workgroup's working-wconfig with `wg-current-wconfig'."
-  (when (wg-current-workgroup t)
-    (wg-set-workgroup-working-wconfig (wg-current-workgroup t) (wg-current-wconfig))))
+  (awhen (wg-current-workgroup t)
+    (wg-set-workgroup-working-wconfig it (wg-current-wconfig))))
 
 (defun wg-restore-wconfig-undoably (wconfig &optional noundo)
   "Restore WCONFIG in `selected-frame', saving undo information.
@@ -4012,10 +4021,9 @@ WORKGROUP is current."
 (defun wg-undoify-window-configuration-change ()
   "Conditionally `wg-add-wconfig-to-undo-list'.
 Added to `post-command-hook'."
-  (when (and
-         wg-window-configuration-changed         ;; When the window config has changed,
-         wg-undoify-window-configuration-change  ;; and undoification is still on for the current command
-         (wg-minibuffer-inactive-p))             ;; and the change didn't occur while the minibuffer is active,
+  (when (and wg-window-configuration-changed         ;; When the window config has changed,
+             wg-undoify-window-configuration-change  ;; and undoification is still on for the current command
+             (wg-minibuffer-inactive-p))             ;; and the change didn't occur while the minibuffer is active,
     (-when-let (workgroup (wg-current-workgroup t))  ;; and there's a current workgroup,
       ;; add the current wconfig to that workgroup's undo list:
       (wg-add-wconfig-to-undo-list workgroup (wg-current-wconfig))))
@@ -4304,9 +4312,11 @@ object, etc.  SESSION nil defaults to a new, blank session."
 
 (defun wg-mark-everything-unmodified ()
   "Mark the session and all workgroups as unmodified."
-  (setf (wg-session-modified (wg-current-session)) nil)
-  (dolist (workgroup (wg-workgroup-list))
-    (setf (wg-workgroup-modified workgroup) nil)))
+  (let (wg-undoify-window-configuration-change)    ; to skip WG's `post-command-hook' that marks "modified" again
+    (-when-let (session (wg-current-session t))
+      (setf (wg-session-modified session) nil))
+    (dolist (workgroup (wg-workgroup-list))
+      (setf (wg-workgroup-modified workgroup) nil))))
 
 (defun wg-session-parameter (parameter &optional default session)
   "Return session's value for PARAMETER.
@@ -4544,6 +4554,7 @@ Unless it is currently being deactivated."
    remove
    'kill-emacs-query-functions       'wg-save-session-on-emacs-exit
    'delete-frame-hook                'wg-update-working-wconfig-on-delete-frame
+   'after-make-frame-functions       'wg-update-working-wconfig-on-make-frame
    'wg-pre-window-configuration-change-hook 'wg-update-working-wconfig-hook
    'window-configuration-change-hook 'wg-flag-window-configuration-changed
    'post-command-hook                'wg-undoify-window-configuration-change
