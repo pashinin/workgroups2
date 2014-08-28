@@ -1993,9 +1993,10 @@ Return value."
   "Remove parameter PARAMETER from WIN's parameters."
   (wg-asetf (wg-win-parameters win) (wg-aremove it parameter)))
 
-(defun wg-window-to-win (window)
+(defun wg-window-to-win (&optional window)
   "Return the serialization (a wg-win) of Emacs window WINDOW."
-  (let ((selected (eq window (selected-window)))
+  (let ((window (or window (selected-window)))
+        (selected (eq window (selected-window)))
         win)
     (with-selected-window window
       (setq win
