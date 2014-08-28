@@ -3633,8 +3633,8 @@ symetry with `wg-undo-once-all-workgroups'."
      (wg-get-workgroup workgroup))
     'both)))
 
-(defun wg-rename-workgroup (workgroup newname)
-  "Rename WORKGROUP to NEWNAME."
+(defun wg-rename-workgroup (newname &optional workgroup)
+  "Set NEWNAME to WORKGROUP's name."
   (interactive (list nil (wg-read-new-workgroup-name "New name: ")))
   (let* ((workgroup (wg-get-workgroup workgroup))
          (oldname (wg-workgroup-name workgroup)))
