@@ -143,8 +143,27 @@
     (wg-test-special 'inferior-python-mode 'python
       (run-python python-shell-interpreter)
       (switch-to-buffer (process-buffer (python-shell-get-or-create-process)))))
-
   )
+
+(ert-deftest 310-frames ()
+  (should wg-control-frames)
+  (make-frame)
+  (make-frame)
+  (should (wg-modified-p))
+  (should (= (length (frame-list)) 3))
+  (should workgroups-mode)
+  (let (message-log-max)
+    (wg-save-session))
+  (should-not (wg-session-modified (wg-current-session)))
+  (should (= (length (wg-session-parameter 'frame-list)) 2))
+  (delete-other-frames)
+  (should (= (length (frame-list)) 1))
+  (wg-reload-session)
+  ;;(should (= (length (wg-session-parameter 'frame-list)) 2))
+  (should (= (length (frame-list)) 3))
+  (delete-other-frames)
+  (let (message-log-max)
+    (wg-save-session)))
 
 (provide 'workgroups2-tests)
 ;;; workgroups2-tests.el ends here
