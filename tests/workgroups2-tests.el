@@ -139,9 +139,10 @@
   (wg-test-special 'term-mode 'term
     (term "/bin/sh"))
 
-  (wg-test-special 'inferior-python-mode 'python
-    (run-python python-shell-interpreter)
-    (switch-to-buffer (process-buffer (python-shell-get-or-create-process))))
+  (unless (version< emacs-version "24")
+    (wg-test-special 'inferior-python-mode 'python
+      (run-python python-shell-interpreter)
+      (switch-to-buffer (process-buffer (python-shell-get-or-create-process)))))
 
   )
 
