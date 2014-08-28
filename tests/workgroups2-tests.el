@@ -61,6 +61,13 @@
   ;;(should-not (wg-current-workgroup))
   (unless (string-equal "initial_terminal" (terminal-name (selected-frame)))
     (should (wg-session-modified (wg-current-session))))
+
+  ;; Rename
+  (wg-rename-workgroup "asd")
+  (should (string= (wg-mode-line-string) " [asd:**]"))
+  (wg-rename-workgroup "First workgroup")
+  (should (string= (wg-mode-line-string) " [First workgroup:**]"))
+
   )
 
 (ert-deftest 055-structs ()
