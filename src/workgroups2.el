@@ -4258,8 +4258,7 @@ confirmation is required unless you supply a prefix argument."
                     (delete frame fl))) fl)
         (setq fl (delete (selected-frame) fl))
         (let (wg-flag-modified)
-          (if (wg-current-session t)
-              (wg-set-session-parameter 'frame-list (mapcar 'wg-frame-to-wconfig fl))))))
+          (wg-set-session-parameter 'frame-list (mapcar 'wg-frame-to-wconfig fl)))))
   (wg-write-sexp-to-file (wg-pickel-all-session-parameters) filename)
   (wg-fontified-message (:cmd "Wrote: ") (:file filename))
   (wg-mark-everything-unmodified))
@@ -4319,7 +4318,7 @@ SESSION nil defaults to the current session."
 (defun wg-set-session-parameter (parameter value &optional session)
   "Set PARAMETER to VALUE in SESSION.
 SESSION nil means use the current session.  Return value."
-  (let ((session (or session (wg-current-session))))
+  (-when-let (session (or session (wg-current-session t)))
     (wg-set-parameter (wg-session-parameters session) parameter value)
     (wg-flag-session-modified session)
     value))
