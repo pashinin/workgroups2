@@ -3636,15 +3636,15 @@ symetry with `wg-undo-once-all-workgroups'."
 (defun wg-rename-workgroup (newname &optional workgroup)
   "Set NEWNAME to WORKGROUP's name."
   (interactive (list nil (wg-read-new-workgroup-name "New name: ")))
-  (let* ((workgroup (wg-get-workgroup workgroup))
-         (oldname (wg-workgroup-name workgroup)))
-    (setf (wg-workgroup-name workgroup) newname)
-    (wg-flag-workgroup-modified workgroup)
-    (wg-fontified-message
-      (:cmd "Renamed: ")
-      (:cur oldname)
-      (:msg " to ")
-      (:cur (wg-workgroup-name workgroup)))))
+  (-when-let (workgroup (wg-get-workgroup workgroup))
+    (let* ((oldname (wg-workgroup-name workgroup)))
+      (setf (wg-workgroup-name workgroup) newname)
+      (wg-flag-workgroup-modified workgroup)
+      (wg-fontified-message
+        (:cmd "Renamed: ")
+        (:cur oldname)
+        (:msg " to ")
+        (:cur (wg-workgroup-name workgroup))))))
 
 (defun wg-reset (&optional force)
   "Reset Workgroups.
