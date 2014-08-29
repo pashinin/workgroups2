@@ -150,6 +150,8 @@
     (wg-test-special 'inferior-python-mode 'python
       (run-python python-shell-interpreter)
       (switch-to-buffer (process-buffer (python-shell-get-or-create-process)))))
+
+  ;; TODO: handle errors
   )
 
 (ert-deftest 310-frames ()
