@@ -3072,6 +3072,7 @@ If BUF's file doesn't exist, call `wg-restore-default-buffer'"
 
 (defun wg-restore-buffer (buf &optional switch)
   "Restore BUF, return it and maybe SWITCH to it."
+  (when buf
   (fset 'buffer-list wg-buffer-list-original)
   (prog1
       (or (wg-restore-existing-buffer buf switch)
@@ -3079,7 +3080,7 @@ If BUF's file doesn't exist, call `wg-restore-default-buffer'"
           (wg-restore-file-buffer buf switch)
           (progn (wg-restore-default-buffer switch) nil))
     (if wg-mess-with-buffer-list
-        (fset 'buffer-list wg-buffer-list-function))))
+        (fset 'buffer-list wg-buffer-list-function)))))
 
 
 
@@ -3162,7 +3163,8 @@ This is only here for completeness."
 
 (defun wg-find-buf-by-uid (uid)
   "Find a buf in `wg-buf-list' by UID."
-  (wg-find-bufobj-by-uid uid (wg-buf-list)))
+  (when uid
+    (wg-find-bufobj-by-uid uid (wg-buf-list))))
 
 (defun wg-set-buffer-uid-or-error (uid &optional buffer)
   "Set BUFFER's buffer local value of `wg-buffer-uid' to UID.
@@ -3203,13 +3205,14 @@ See `wg-buffer-local-variables-alist' for details."
 If there isn't already a buf corresponding to BUFFER in
 `wg-buf-list', make one and add it.  Return BUFFER's uid
 in either case."
+  (when buffer
   (with-current-buffer buffer
     (setq wg-buffer-uid
           (aif (wg-find-buffer-in-buf-list buffer (wg-buf-list))
               (wg-buf-uid it)
             (let ((buf (wg-buffer-to-buf buffer)))
               (push buf (wg-buf-list))
-              (wg-buf-uid buf))))))
+              (wg-buf-uid buf)))))))
 
 (defun wg-buffer-uid-or-add (buffer)
   "Return BUFFER's uid.
