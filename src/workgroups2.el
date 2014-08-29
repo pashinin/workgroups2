@@ -3141,15 +3141,6 @@ It works with Emacs buffer, Workgroups buffer object and a simple string."
   "Find the bufobj in BUFOBJ-LIST with uid UID."
   (cl-find uid bufobj-list :test 'string= :key 'wg-bufobj-uid))
 
-(defun wg-find-buf-in-buf-list (buf buf-list)
-  "Find BUF in BUF-LIST.
-This is only here for completeness."
-  (cl-find buf buf-list))
-
-(defun wg-find-buffer-in-buffer-list (buffer-or-name buffer-list)
-  "Find BUFFER-OR-NAME in BUFFER-LIST."
-  (cl-find (wg-get-buffer buffer-or-name) buffer-list :key 'wg-get-buffer))
-
 (defun wg-find-buffer-in-buf-list (buffer-or-name buf-list)
   "Find BUFFER-OR-NAME in BUF-LIST."
   (aif (wg-buffer-uid buffer-or-name)
@@ -3167,7 +3158,7 @@ This is only here for completeness."
     (wg-find-bufobj-by-uid uid (wg-buf-list))))
 
 (defun wg-set-buffer-uid-or-error (uid &optional buffer)
-  "Set BUFFER's buffer local value of `wg-buffer-uid' to UID.
+  "Change UID value of a BUFFER's local var `wg-buffer-uid'.
 If BUFFER already has a buffer local value of `wg-buffer-uid',
 and it's not equal to UID, error."
   (if wg-buffer-uid
