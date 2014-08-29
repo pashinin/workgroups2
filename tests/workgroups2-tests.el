@@ -102,28 +102,27 @@
       (error "WG session file wasn't created"))))
 
 
+;; Test serialization functions
+
 (defmacro test-pickel (value)
   "Test `wg-pickel' `wg-unpickel' on VALUE."
   `(progn
-     (wg-unpickel (wg-pickel ,value))))
+     (eq (wg-unpickel (wg-pickel ,value)) ,value)))
 
 (ert-deftest 110-wg-pickel ()
   (test-pickel 123)
   (test-pickel "str")
   (test-pickel 'symbol)
-  (test-pickel (current-buffer))
-  ;; (get-buffer org-agenda-buffer-name)
-  (test-pickel (point-marker))
+  (test-pickel (current-buffer))  ; #<buffer tests.el>
+  (test-pickel (point-marker))    ; #<marker at 3427 in tests.el>
+  (test-pickel (make-marker))     ; #<marker in no buffer>
   (test-pickel (list 'describe-variable 'help-xref-stack-item (get-buffer "*Help*")))
   ;; TODO:
   ;;(test-pickel (current-window-configuration))
   )
 
 
-
-;;
 ;; Special buffers
-;;
 
 (require 'python)
 (ert-deftest 300-special-modes ()
