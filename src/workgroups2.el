@@ -428,7 +428,10 @@ unambiguously pair the two.")
 (defcustom wg-flag-modified t
   "Show \"modified\" flags in modeline."
   :type 'boolean
-  :group 'workgroups)
+  :group 'workgroups
+  :set (lambda (sym val)
+         (custom-set-default sym val)
+         (force-mode-line-update)))
 
 
 
