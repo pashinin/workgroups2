@@ -898,20 +898,10 @@ This only exists to get rid of duplicate lambdas in a few reductions."
 
 ;;; alists
 
-(defun wg-make-alist (&rest kvps)
-  "Return a new alist from KVPS."
-  (let (alist)
-    (while kvps
-      (push (cons (car kvps) (cadr kvps)) alist)
-      (setq kvps (cddr kvps)))
-    (nreverse alist)))
-
 (defun wg-aget (alist key &optional default)
   "Return the value of KEY in ALIST. Uses `assq'.
 If PARAM is not found, return DEFAULT which defaults to nil."
   (aif (assq key alist) (cdr it) default))
-
-;;(wg-aget (wg-buf-local-vars (wg-buffer-to-buf (current-buffer))) 'major-mode)
 
 (defun wg-aput (alist key value)
   "Return a new alist from ALIST with KEY's value set to VALUE."
