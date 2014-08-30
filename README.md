@@ -1,9 +1,8 @@
+[![License](https://img.shields.io/badge/license-GPL_3-green.svg?dummy)](https://travis-ci.org/pashinin/workgroups2)
 [![Build Status](https://travis-ci.org/pashinin/workgroups2.png?branch=master)](https://travis-ci.org/pashinin/workgroups2)
 [![Gittip](http://img.shields.io/gittip/pashinin.png)](https://www.gittip.com/pashinin)
 
 # Workgroups for Emacs
-
-## What is it?
 
 Workgroups is a session manager for Emacs.
 
@@ -97,20 +96,19 @@ wg-after-switch-to-workgroup-hook
 
 For you:
 
-1. `<prefix> ?` or `(wg-help)` - This will bring up a help buffer
-   listing all the commands and their bindings.
-2. `M-x customize-group RET workgroups RET` - see the customization
-   section in the source for details, or use:
+1. `<prefix> ?` or `(wg-help)` - help buffer listing all the commands
+   and their bindings.
+2. `M-x customize-group RET workgroups RET` - all customization options
 
 For me:
 
-1. When **reporting a bug** - give me full `(backtrace)` of what
-   happened and your opinion on what happened
-2. When **requesting a major-mode support** - write how you *install*,
+1. **Reporting a bug** - give me full `(backtrace)` of what
+   happened and how you did it.
+2. **Requesting a major-mode support** - write how you *install*,
    *configure* and *run* yours.
 3. Make pull-requests
-4. Ask questions (personally I found the code very complex at first)
-5. Try to close this bug: https://github.com/pashinin/workgroups2/issues/49
+4. Ask questions (if you don't know how to hack it). Personally I
+   found the code *very* complex at first
 
 
 ## License
