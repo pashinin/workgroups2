@@ -166,7 +166,7 @@ Don't do it with Emacs --daemon option."
   :type 'string
   :group 'workgroups)
 
-(defcustom wg-mode-line-display-on t
+(defcustom wg-mode-line-display-on (not (featurep 'powerline))
   "Toggles Workgroups' mode-line display."
   :type 'boolean
   :group 'workgroups
@@ -178,12 +178,6 @@ Don't do it with Emacs --daemon option."
   "Non-nil means use faces in the mode-line display.
 It can be tricky to choose faces that are visible in both active
 and inactive mode-lines, so this feature defaults to off."
-  :type 'boolean
-  :group 'workgroups)
-
-(defcustom wg-mode-line-disable (featurep 'powerline)
-  "Do not do any modeline modifications.
-There are problems with powerline."
   :type 'boolean
   :group 'workgroups)
 
@@ -1708,8 +1702,7 @@ Frame defaults to `selected-frame'.  See `wg-buffer-auto-association'."
 
 (defun wg-change-modeline ()
   "Add Workgroups' mode-line format to `mode-line-format'."
-  (unless (or (assq 'wg-mode-line-display-on mode-line-format)
-              wg-mode-line-disable)
+  (unless (assq 'wg-mode-line-display-on mode-line-format)
     (let ((format '(wg-mode-line-display-on (:eval (wg-mode-line-string))))
           (pos (or (cl-position 'mode-line-position mode-line-format) 10)))
       (set-default 'mode-line-format (-insert-at (1+ pos) format mode-line-format))
