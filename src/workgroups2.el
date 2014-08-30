@@ -258,10 +258,16 @@ There are problems with powerline."
   :type 'hook
   :group 'workgroups)
 
-(defcustom wg-switch-to-workgroup-hook nil
+(defcustom wg-before-switch-to-workgroup-hook nil
   "Hook run by `wg-switch-to-workgroup'."
   :type 'hook
   :group 'workgroups)
+
+(defcustom wg-after-switch-to-workgroup-hook nil
+  "Hook run by `wg-switch-to-workgroup'."
+  :type 'hook
+  :group 'workgroups)
+(define-obsolete-variable-alias 'wg-switch-to-workgroup-hook 'wg-after-switch-to-workgroup-hook)
 
 (defcustom wg-pre-window-configuration-change-hook nil
   "Hook run before any function that triggers `window-configuration-change-hook'."
@@ -3700,21 +3706,7 @@ safe -- don't mutate them."
   "Switch to WORKGROUP.
 NOERROR means fail silently."
   (interactive (list (wg-read-workgroup-name)))
-
   (fset 'buffer-list wg-buffer-list-original)
-
-  ;; Mark if ECB is active
-  (let (wg-flag-modified)
-    (wg-set-workgroup-parameter 'ecb (and (boundp 'ecb-minor-mode)
-                                          ecb-minor-mode)))
-  ;;(wg-set-workgroup-parameter (wg-current-workgroup t) 'ecb-win-config (ecb-current-window-configuration))
-  ;; (type-of (ecb-current-window-configuration))
-  ;; (type-of (car (ecb-current-window-configuration)))
-  ;; (type-of (car (nthcdr 3 (ecb-current-window-configuration))))
-  ;; (wg-pickelable-or-error (ecb-current-window-configuration))
-  ;;(ecb-current-window-configuration)
-  ;;)
-
   (let ((workgroup (wg-get-workgroup-create workgroup))
         (current (wg-current-workgroup t)))
     (when (and (eq workgroup current) (not noerror))
@@ -3722,6 +3714,20 @@ NOERROR means fail silently."
     (when current (push current wg-deactivation-list))
     (unwind-protect
         (progn
+          ;; Before switch
+          (run-hooks 'wg-before-switch-to-workgroup-hook)
+          ;; Save info about some hard-to-work-with libraries
+          (let (wg-flag-modified)
+            (wg-set-workgroup-parameter 'ecb (and (boundp 'ecb-minor-mode)
+                                                  ecb-minor-mode)))
+          ;;(wg-set-workgroup-parameter (wg-current-workgroup t) 'ecb-win-config (ecb-current-window-configuration))
+          ;; (type-of (ecb-current-window-configuration))
+          ;; (type-of (car (ecb-current-window-configuration)))
+          ;; (type-of (car (nthcdr 3 (ecb-current-window-configuration))))
+          ;; (wg-pickelable-or-error (ecb-current-window-configuration))
+          ;;(ecb-current-window-configuration)
+          ;;)
+
           ;; Before switching - turn off ECB
           ;; https://github.com/pashinin/workgroups2/issues/34
           (if (and (boundp 'ecb-minor-mode)
@@ -3732,15 +3738,18 @@ NOERROR means fail silently."
               (let ((ecb-split-edit-window-after-start 'before-deactivation))
                 (ecb-deactivate)))
 
+          ;; Switch
           (wg-restore-workgroup workgroup)
           (wg-set-previous-workgroup current)
           (wg-set-current-workgroup workgroup)
 
+          ;; After switch
           ;; Save "last-workgroup" to the session params
           (let (wg-flag-modified)
-            (if (wg-current-workgroup t)
-                (wg-set-session-parameter 'last-workgroup
-                                          (wg-workgroup-name (wg-current-workgroup)))))
+            (awhen (wg-current-workgroup t)
+              (wg-set-session-parameter 'last-workgroup (wg-workgroup-name it)))
+            (awhen (wg-previous-workgroup t)
+              (wg-set-session-parameter 'prev-workgroup (wg-workgroup-name it))))
 
           ;; If a workgroup had ECB - turn it on
           (if (and (boundp 'ecb-minor-mode)
@@ -3751,15 +3760,10 @@ NOERROR means fail silently."
                 (ecb-activate)))
           ;;(ecb-last-window-config-before-deactivation
           ;; (wg-workgroup-parameter (wg-current-workgroup t) 'ecb-win-config nil)))
-
-          (run-hooks 'wg-switch-to-workgroup-hook)
-
           (if wg-mess-with-buffer-list
               (fset 'buffer-list wg-buffer-list-function))
-          (wg-fontified-message
-            (:cmd "Switched: ")
-            (wg-workgroup-name (wg-current-workgroup t))
-            ))
+          (wg-fontified-message (:cmd "Switched: ") (wg-workgroup-name (wg-current-workgroup t)))
+          (run-hooks 'wg-after-switch-to-workgroup-hook))
       (when current (pop wg-deactivation-list)))))
 
 (defun wg-switch-to-workgroup-at-index (index)
@@ -4197,8 +4201,11 @@ nil otherwise."
              (if (and wg-load-last-workgroup
                       (member (wg-session-parameter 'last-workgroup) (wg-workgroup-names)))
                  (wg-switch-to-workgroup (wg-session-parameter 'last-workgroup))
-               (wg-switch-to-workgroup (car it)))
-             ))
+               (wg-switch-to-workgroup (car it))))
+           (awhen (wg-session-parameter 'prev-workgroup)
+             (when (and (member it (wg-workgroup-names))
+                        (wg-get-workgroup it t))
+               (wg-set-previous-workgroup (wg-get-workgroup it t)))))
          (wg-fontified-message (:cmd "Loaded: ") (:file filename))
          (wg-mark-everything-unmodified))
         (t
