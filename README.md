@@ -1,7 +1,8 @@
-# Workgroups for Emacs
+[![License](https://img.shields.io/badge/license-GPL_3-green.svg?dummy)](https://github.com/pashinin/workgroups2)
 [![Build Status](https://travis-ci.org/pashinin/workgroups2.png?branch=master)](https://travis-ci.org/pashinin/workgroups2)
+[![Gittip](http://img.shields.io/gittip/pashinin.png)](https://www.gittip.com/pashinin)
 
-## What is it?
+# Workgroups for Emacs
 
 Workgroups is a session manager for Emacs.
 
@@ -16,9 +17,11 @@ Fork it, [add more special buffers support](https://github.com/pashinin/workgrou
 
 Just install "workgroups2" from Melpa and activate it with
 
-    (require 'workgroups2)
-    ;; Change some settings
-    (workgroups-mode 1)        ; put this one at the bottom of .emacs
+```elisp
+(require 'workgroups2)
+;; Change some settings
+(workgroups-mode 1)        ; put this one at the bottom of .emacs
+```
 
 ## Use
 
@@ -38,45 +41,77 @@ By default prefix is: "C-c z" (To change it - see settings below)
 
 If you want to change some settings - here is an example:
 
-    (require 'workgroups2)
-    ;; Your settings here
+```elisp
+(require 'workgroups2)
+;; Your settings here
 
-    ;; autoload/autosave:
-    ;;(setq wg-session-load-on-start nil)
+;;(setq wg-session-load-on-start t)    ; default: (not (daemonp))
 
-    ;; Change prefix key (before activating WG)
-    (setq wg-prefix-key (kbd "C-c z"))
+;; Change prefix key (before activating WG)
+(setq wg-prefix-key (kbd "C-c z"))
 
-    ;; Change workgroups session file
-    (setq wg-session-file "~/.emacs.d/.emacs_workgroups")
+;; Change workgroups session file
+(setq wg-session-file "~/.emacs.d/.emacs_workgroups")
 
-    ;; Set your own keyboard shortcuts to reload/save/switch WG:
-    (global-set-key (kbd "<pause>")     'wg-reload-session)
-    (global-set-key (kbd "C-S-<pause>") 'wg-save-session)
-    (global-set-key (kbd "s-z")         'wg-switch-to-workgroup)
-    (global-set-key (kbd "s-/")         'wg-switch-to-previous-workgroup)
+;; Set your own keyboard shortcuts to reload/save/switch WGs:
+;; "s" == "Super" or "Win"-key, "S" == Shift, "C" == Control
+(global-set-key (kbd "<pause>")     'wg-reload-session)
+(global-set-key (kbd "C-S-<pause>") 'wg-save-session)
+(global-set-key (kbd "s-z")         'wg-switch-to-workgroup)
+(global-set-key (kbd "s-/")         'wg-switch-to-previous-workgroup)
 
-    (workgroups-mode 1)   ; put this one at the bottom of .emacs
+(workgroups-mode 1)   ; put this one at the bottom of .emacs
+```
+## More options
+
+You can use `M-x customize-group` `workgroups` to see all variables and
+faces to change.
+
+```elisp
+;; What to do on Emacs exit / workgroups-mode exit?
+(setq wg-emacs-exit-save-behavior           'save)      ; Options: 'save 'ask nil
+(setq wg-workgroups-mode-exit-save-behavior 'save)      ; Options: 'save 'ask nil
+
+;; Mode Line changes
+;; Display workgroups in Mode Line?
+(setq wg-mode-line-display-on t)          ; Default: (not (featurep 'powerline))
+(setq wg-flag-modified t)                 ; Display modified flags as well
+(setq wg-mode-line-decor-left-brace "["
+      wg-mode-line-decor-right-brace "]"  ; how to surround it
+      wg-mode-line-decor-divider ":")
+```
+
+### Hooks
+
+Hooks' names can tell when they are executed
+
+```elisp
+workgroups-mode-hook                    ; when `workgroups-mode' is turned on
+workgroups-mode-exit-hook               ; `workgroups-mode' is turned off
+wg-before-switch-to-workgroup-hook
+wg-after-switch-to-workgroup-hook
+```
 
 ## Help
 
-Type `<prefix> ?` (Eval `(wg-help)`) for more help.
+For you:
 
-This will bring up a help buffer listing all the commands and their bindings.
+1. `<prefix> ?` or `(wg-help)` - help buffer listing all the commands
+   and their bindings.
+2. `M-x customize-group RET workgroups RET` - all customization options
 
-See the customization section in the source for details, or use:
+For me:
 
-    M-x customize-group RET workgroups RET
+1. **Reporting a bug** - give me full `(backtrace)` of what
+   happened and how you did it.
+2. **Requesting a major-mode support** - write how you *install*,
+   *configure* and *run* yours.
+3. Make pull-requests
+4. Ask questions (if you don't know how to hack it). Personally I
+   found the code *very* complex at first
 
-
-## Original Workgroups
-
-There is a package on Melpa called "workgroups".
-This extension is based on experimental branch of the [original repo](http://github.com/tlh/workgroups.el).
-
-So great respect to the author. But it has not been updated for more
-than 2 years and experimental branch was not released.
 
 ## License
 
-Workgroups for Emacs is released under the GPL.
+GPL. This extension is based on experimental branch of the
+[original repo](http://github.com/tlh/workgroups.el).
