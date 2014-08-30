@@ -658,12 +658,6 @@ features but is fucking unstable, so disabled by default"
   (declare (indent defun))
   `(wg-message (wg-fontify ,@format)))
 
-(defun wg-toggle-and-message (symbol)
-  "Toggle SYMBOL's truthiness and message the new value."
-  (wg-fontified-message
-    (:cmd (format "%s: " symbol))
-    (:msg (format "%s" (wg-toggle symbol)))))
-
 (defun wg-add-face (facekey string)
   "Return a copy of STRING fontified according to FACEKEY.
 FACEKEY must be a key in `wg-face-abbrevs'."
@@ -1703,11 +1697,6 @@ Frame defaults to `selected-frame'.  See `wg-buffer-auto-association'."
   (awhen (assq 'wg-mode-line-display-on mode-line-format)
     (set-default 'mode-line-format (remove it mode-line-format))
     (force-mode-line-update)))
-
-(defun wg-toggle-mode-line-display ()
-  "Toggle `wg-mode-line-display-on'."
-  (interactive)
-  (wg-toggle-and-message 'wg-mode-line-display-on))
 
 (defun wg-add-workgroups-mode-minor-mode-entries ()
   "Add Workgroups' minor-mode entries.
