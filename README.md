@@ -43,8 +43,7 @@ If you want to change some settings - here is an example:
     (require 'workgroups2)
     ;; Your settings here
 
-    ;; autoload/autosave:
-    ;;(setq wg-session-load-on-start nil)
+    ;;(setq wg-session-load-on-start t)    ; default: (not (daemonp))
 
     ;; Change prefix key (before activating WG)
     (setq wg-prefix-key (kbd "C-c z"))
@@ -53,12 +52,21 @@ If you want to change some settings - here is an example:
     (setq wg-session-file "~/.emacs.d/.emacs_workgroups")
 
     ;; Set your own keyboard shortcuts to reload/save/switch WG:
+    ;; "s" == "Super" or "Win"-key, "S" == Shift, "C" == Control
     (global-set-key (kbd "<pause>")     'wg-reload-session)
     (global-set-key (kbd "C-S-<pause>") 'wg-save-session)
     (global-set-key (kbd "s-z")         'wg-switch-to-workgroup)
     (global-set-key (kbd "s-/")         'wg-switch-to-previous-workgroup)
 
     (workgroups-mode 1)   ; put this one at the bottom of .emacs
+
+## More options
+
+```elisp
+;; What to do on Emacs exit / workgroups-mode exit?
+(setq wg-emacs-exit-save-behavior           'save)      ; Options: 'save 'ask nil
+(setq wg-workgroups-mode-exit-save-behavior 'save)      ; Options: 'save 'ask nil
+```
 
 ## Help
 
