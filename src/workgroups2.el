@@ -3765,7 +3765,8 @@ NOERROR means fail silently."
           ;; if *SPEEDBAR* buffer is visible - set some variables
           (let* ((buffers (mapcar 'window-buffer (window-list)))
                  (buffer-names (mapcar 'buffer-name buffers)))
-            (when (member sr-speedbar-buffer-name buffer-names)
+            (when (and (featurep 'sr-speedbar)
+                       (member sr-speedbar-buffer-name buffer-names))
               (setq sr-speedbar-window (get-buffer-window sr-speedbar-buffer-name))))
 
           ;; Finally
