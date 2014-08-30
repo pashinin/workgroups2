@@ -4269,9 +4269,9 @@ confirmation is required unless you supply a prefix argument."
   "Save the current Workgroups session if it's been modified.
 When FORCE - save session regardless of whether it's been modified."
   (interactive "P")
-  (if (and (not (wg-modified-p)) (not force))
-      (wg-message "(The session is unmodified)")
-    (wg-save-session-as (wg-get-session-file))))
+  ;;(if (and (not (wg-modified-p)) (not force))
+  ;;    (wg-message "(The session is unmodified)")
+  (wg-save-session-as (wg-get-session-file)))
 
 (defun wg-reset-internal (&optional session)
   "Reset Workgroups, setting `wg-current-session' to SESSION.
