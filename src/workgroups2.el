@@ -3760,6 +3760,15 @@ NOERROR means fail silently."
                 (ecb-activate)))
           ;;(ecb-last-window-config-before-deactivation
           ;; (wg-workgroup-parameter (wg-current-workgroup t) 'ecb-win-config nil)))
+
+          ;; `sr-speedbar'
+          ;; if *SPEEDBAR* buffer is visible - set some variables
+          (let* ((buffers (mapcar 'window-buffer (window-list)))
+                 (buffer-names (mapcar 'buffer-name buffers)))
+            (when (member sr-speedbar-buffer-name buffer-names)
+              (setq sr-speedbar-window (get-buffer-window sr-speedbar-buffer-name))))
+
+          ;; Finally
           (if wg-mess-with-buffer-list
               (fset 'buffer-list wg-buffer-list-function))
           (wg-fontified-message (:cmd "Switched: ") (wg-workgroup-name (wg-current-workgroup t)))
@@ -4590,6 +4599,11 @@ ARG is anything else, turn on `workgroups-mode'."
     (wg-enable-all-advice)
     (wg-add-or-remove-workgroups-hooks nil)
     (wg-change-modeline)
+
+    ;; some sr-speedbar hooks can harm
+    (when (featurep 'sr-speedbar)
+      (ad-disable-advice 'delete-other-windows 'around 'sr-speedbar-delete-other-window-advice)
+      (ad-disable-advice 'delete-window 'before 'sr-speedbar-delete-window-advice))
 
     ;; Load session
     (when (and wg-session-load-on-start
