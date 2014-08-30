@@ -65,31 +65,55 @@ If you want to change some settings - here is an example:
 ```
 ## More options
 
+You can use `M-x customize-group` `workgroups` to see all variables and
+faces to change.
+
 ```elisp
 ;; What to do on Emacs exit / workgroups-mode exit?
 (setq wg-emacs-exit-save-behavior           'save)      ; Options: 'save 'ask nil
 (setq wg-workgroups-mode-exit-save-behavior 'save)      ; Options: 'save 'ask nil
+
+;; Mode Line changes
+;; Display workgroups in Mode Line?
+(setq wg-mode-line-display-on t)          ; Default: (not (featurep 'powerline))
+(setq wg-flag-modified t)                 ; Display modified flags as well
+(setq wg-mode-line-decor-left-brace "["
+      wg-mode-line-decor-right-brace "]"  ; how to surround it
+      wg-mode-line-decor-divider ":")
+```
+
+### Hooks
+
+Hooks' names can tell when they are executed
+
+```elisp
+workgroups-mode-hook                    ; when `workgroups-mode' is turned on
+workgroups-mode-exit-hook               ; `workgroups-mode' is turned off
+wg-before-switch-to-workgroup-hook
+wg-after-switch-to-workgroup-hook
 ```
 
 ## Help
 
-Type `<prefix> ?` (Eval `(wg-help)`) for more help.
+For you:
 
-This will bring up a help buffer listing all the commands and their bindings.
+1. `<prefix> ?` or `(wg-help)` - This will bring up a help buffer
+   listing all the commands and their bindings.
+2. `M-x customize-group RET workgroups RET` - see the customization
+   section in the source for details, or use:
 
-See the customization section in the source for details, or use:
+For me:
 
-    M-x customize-group RET workgroups RET
+1. When **reporting a bug** - give me full `(backtrace)` of what
+   happened and your opinion on what happened
+2. When **requesting a major-mode support** - write how you *install*,
+   *configure* and *run* yours.
+3. Make pull-requests
+4. Ask questions (personally I found the code very complex at first)
+5. Try to close this bug: https://github.com/pashinin/workgroups2/issues/49
 
-
-## Original Workgroups
-
-There is a package on Melpa called "workgroups".
-This extension is based on experimental branch of the [original repo](http://github.com/tlh/workgroups.el).
-
-So great respect to the author. But it has not been updated for more
-than 2 years and experimental branch was not released.
 
 ## License
 
-Workgroups for Emacs is released under the GPL.
+GPL. This extension is based on experimental branch of the
+[original repo](http://github.com/tlh/workgroups.el).
