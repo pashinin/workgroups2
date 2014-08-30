@@ -2488,7 +2488,7 @@ Also add it to the wconfig kill-ring."
 ;; specialbufs
 (defcustom wg-special-buffer-serdes-functions
   '(wg-serialize-comint-buffer
-    wg-serialize-speedbar-buffer)
+    )
   "Functions providing serialization/deserialization for complex buffers.
 
 Use `wg-support' macro and this variable will be filled
@@ -2719,47 +2719,26 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
                       (switch-to-buffer "*grep*")))))
 
 
-;; speedbar-mode
-(defun wg-deserialize-speedbar-buffer (buf)
-  "Deserialize speedbar-buffer BUF."
-  (when (and (require 'speedbar nil 'noerror)
-             (require 'dframe nil 'noerror))
-    (wg-dbind (this-function args) (wg-buf-special-data buf)
-      (let ((default-directory (car args))
-            bufname)
-        (if (boundp 'sr-speedbar-buffer-name)
-            (setq bufname sr-speedbar-buffer-name)
-          (setq bufname "*SPEEDBAR*"))
-        (when (and (fboundp 'speedbar-mode)
-                   (fboundp 'speedbar-reconfigure-keymaps)
-                   (fboundp 'speedbar-update-contents)
-                   (fboundp 'speedbar-set-timer))
-          (with-no-warnings
-            (setq speedbar-buffer (get-buffer-create bufname))
-            (setq speedbar-frame (selected-frame)
-                  dframe-attached-frame (selected-frame)
-                  speedbar-select-frame-method 'attached
-                  speedbar-verbosity-level 0
-                  speedbar-last-selected-file nil)
-            (set-buffer speedbar-buffer)
-            (speedbar-mode)
-            (speedbar-reconfigure-keymaps)
-            (speedbar-update-contents)
-            (speedbar-set-timer 1)
-            (set-window-dedicated-p (get-buffer-window bufname) t)
-            (switch-to-buffer bufname)))
-        (current-buffer)
-        ))))
-
-
-(defun wg-serialize-speedbar-buffer (buffer)
-  "Serialize speedbar BUFFER."
-  (with-current-buffer buffer
-    (if (fboundp 'speedbar-mode)
-        (when (eq major-mode 'speedbar-mode)
-          (list 'wg-deserialize-speedbar-buffer
-                (list default-directory)
-                )))))
+;; `speedbar-mode' (has bugs)
+;; only from sr-speedbar.el
+;;(wg-support 'speedbar-mode 'sr-speedbar
+;;  `((deserialize . ,(lambda (buffer vars)
+;;                      ;;(with-current-buffer (get-buffer-create "*SPEEDBAR*")
+;;                        (with-no-warnings
+;;                          (setq speedbar-buffer (get-buffer-create "*SPEEDBAR*"))
+;;                          (setq speedbar-frame (selected-frame)
+;;                                dframe-attached-frame (selected-frame)
+;;                                speedbar-select-frame-method 'attached
+;;                                speedbar-verbosity-level 0
+;;                                speedbar-last-selected-file nil)
+;;                          (set-buffer speedbar-buffer)
+;;                          (speedbar-mode)
+;;                          (speedbar-reconfigure-keymaps)
+;;                          (speedbar-update-contents)
+;;                          (speedbar-set-timer 1)
+;;                          (aif (get-buffer-window "*SPEEDBAR*")
+;;                              (set-window-dedicated-p it t))
+;;                          (get-buffer-create "*SPEEDBAR*"))))))
 
 
 (defun wg-deserialize-slime-buffer (buf)
