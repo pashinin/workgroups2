@@ -29,6 +29,9 @@ deps:
 	if [ ! -f deps/magit-key-mode.el ];  then curl https://raw.githubusercontent.com/magit/magit/master/magit-key-mode.el -o deps/magit-key-mode.el; fi;
 
 
+docs:
+	cd doc && make html
+
 .PHONY: test
 test: $(ELCS)
 	@$(BATCHE) "(progn\
