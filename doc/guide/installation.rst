@@ -4,17 +4,17 @@
 
 Very simple with recent Emacs. Make sure you have these lines:
 
-   .. code-block:: cl
+.. code-block:: cl
 
-       (require 'package)
-       (add-to-list 'package-archives
-                    '("melpa" . "http://melpa.milkbox.net/packages/") t)
+   (require 'package)
+   (add-to-list 'package-archives
+                '("melpa" . "http://melpa.milkbox.net/packages/") t)
 
 before
 
-   .. code-block:: cl
+.. code-block:: cl
 
-       (package-initialize)
+   (package-initialize)
 
 Then type :kbd:`M-x list-packages`
 
