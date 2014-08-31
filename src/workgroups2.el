@@ -4145,7 +4145,7 @@ nil otherwise."
   (and (not (wg-dups-p (wg-buf-list) :key 'wg-buf-uid :test 'string=))
        (not (wg-dups-p (wg-workgroup-list) :key 'wg-workgroup-uid :test 'string=))))
 
-(defun wg-find-session-file (filename)
+(defun wg-open-session (filename)
   "Load a session visiting FILENAME, creating one if none already exists."
   (interactive "FFind session file: ")
   (cond ((file-exists-p filename)
@@ -4176,7 +4176,7 @@ nil otherwise."
          (wg-query-and-save-if-modified)
          (wg-reset-internal (wg-make-session :file-name filename))
          (wg-fontified-message (:cmd "(New Workgroups session file)")))))
-(defalias 'wg-open-session 'wg-find-session-file)
+(defalias 'wg-find-session-file 'wg-open-session)
 
 (defun wg-write-sexp-to-file (sexp file)
   "Write the printable representation of SEXP to FILE."

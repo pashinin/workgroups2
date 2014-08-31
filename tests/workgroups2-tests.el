@@ -106,8 +106,7 @@
 
 (defmacro test-pickel (value)
   "Test `wg-pickel' `wg-unpickel' on VALUE."
-  `(progn
-     (eq (wg-unpickel (wg-pickel ,value)) ,value)))
+  `(eq (wg-unpickel (wg-pickel ,value)) ,value))
 
 (ert-deftest 110-wg-pickel ()
   (test-pickel 123)
@@ -117,6 +116,7 @@
   (test-pickel (point-marker))    ; #<marker at 3427 in tests.el>
   (test-pickel (make-marker))     ; #<marker in no buffer>
   (test-pickel (list 'describe-variable 'help-xref-stack-item (get-buffer "*Help*")))
+  ;;(test-pickel (window-tree))
   ;; TODO:
   ;;(test-pickel (current-window-configuration))
   )
