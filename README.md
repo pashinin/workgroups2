@@ -1,4 +1,5 @@
 [![License](https://img.shields.io/badge/license-GPL_3-green.svg?dummy)](https://github.com/pashinin/workgroups2)
+[![Documentation](https://readthedocs.org/projects/workgroups2/badge/?version=latest)](http://workgroups2.readthedocs.org/en/latest/)
 [![Build Status](https://travis-ci.org/pashinin/workgroups2.png?branch=master)](https://travis-ci.org/pashinin/workgroups2)
 [![Gittip](http://img.shields.io/gittip/pashinin.png)](https://www.gittip.com/pashinin)
 
