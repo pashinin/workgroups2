@@ -1140,7 +1140,10 @@ Saves some variables to restore a BUFFER later."
 (defun wg-current-session (&optional noerror)
   "Return `wg-current-session' or error unless NOERROR."
   (or wg-current-session
-      (unless noerror (error "No session is defined"))))
+      (if workgroups-mode
+          (unless noerror (error "No session is defined"))
+        (unless noerror
+          (error "Activate workgroups with (workgroups-mode 1)")))))
 
 ;; locate-dominating-file
 (defun wg-get-first-existing-dir (&optional dir)
@@ -3439,8 +3442,10 @@ WCONFIG-OR-NAME is resolved with `wg-workgroup-get-saved-wconfig'."
 (defun wg-workgroup-list-or-error (&optional noerror)
   "Return the value of `wg-current-session's :workgroup-list slot.
 Or scream unless NOERROR."
-  (or (wg-workgroup-list)
-      (unless noerror (error "No workgroups are defined"))))
+  (aif (wg-current-session noerror)
+      (or (wg-session-workgroup-list it)
+          (unless noerror (error "No workgroups are defined.")))
+    (unless noerror (error "Current session is nil. No workgroups are defined"))))
 
 (defun wg-find-workgroup-by (slotkey value &optional noerror)
   "Return the workgroup on which ACCESSOR returns VALUE or error."
@@ -4033,8 +4038,9 @@ To save up to date undo info before the change."
 The string contains the names of all workgroups in `wg-workgroup-list',
 decorated with faces, dividers and strings identifying the
 current and previous workgroups."
-  (wg-display-internal 'wg-workgroup-display
-                       (or workgroup-list (wg-workgroup-list))))
+  (if (wg-current-session t)
+      (wg-display-internal 'wg-workgroup-display
+                           (or workgroup-list (wg-workgroup-list)))))
 
 (defun wg-create-first-wg ()
   "Create a first workgroup if needed."
@@ -4550,7 +4556,7 @@ ARG is anything else, turn on `workgroups-mode'."
    (workgroups-mode
     (if (boundp 'desktop-restore-frames)
         (setq desktop-restore-frames nil))
-    (wg-reset-internal)
+    (wg-reset-internal)                              ; creates a new `wg-current-session'
     (wg-add-workgroups-mode-minor-mode-entries)
     (wg-enable-all-advice)
     (wg-add-or-remove-workgroups-hooks nil)
