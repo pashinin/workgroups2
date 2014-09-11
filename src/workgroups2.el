@@ -3449,7 +3449,7 @@ Or scream unless NOERROR."
                     (:uid  'wg-workgroup-uid))))
     (or (cl-find value (wg-workgroup-list-or-error noerror) :test 'equal :key accessor)
         (unless noerror
-          (error "No are no workgroups with a %S of %S"
+          (error "There are no workgroups with a %S of %S"
                  accessor value)))))
 
 (defun wg-cyclic-nth-from-workgroup (workgroup &optional n)
