@@ -1018,8 +1018,7 @@ options."
   (dedicated)
   (selected)
   (minibuffer-scroll)
-  (buf-uid)
-  (wparams))
+  (buf-uid))
 
 (wg-defstruct wg buf
   (uid (wg-generate-uid))
@@ -1939,7 +1938,7 @@ as Workgroups' command remappings."
              (cond ((not wg-restore-point) win-start)
                    ((eq win-point :max) (point-max))
                    (t win-point)))
-            (dolist (pair (wg-win-wparams win))
+            (dolist (pair (wg-win-parameter win 'window-parameters))
               (set-window-parameter window (car pair) (cdr pair)))
             (when (>= win-start (point-max)) (recenter))))
 
@@ -1992,11 +1991,11 @@ Return value."
              :selected           selected
              :minibuffer-scroll  (eq window minibuffer-scroll-window)
              :dedicated          (window-dedicated-p window)
-             :buf-uid            (wg-buffer-uid-or-add (window-buffer window))
-             :wparams            (let ((result))
-                                   (dolist (p (window-parameters window) result)
-                                     (when (cdr (assq (car p) window-persistent-parameters))
-                                       (add-to-list 'result p t))))))
+             :buf-uid            (wg-buffer-uid-or-add (window-buffer window))))
+      (wg-set-win-parameter win 'window-parameters (let ((result))
+						     (dolist (p (window-parameters window) result)
+						       (when (cdr (assq (car p) window-persistent-parameters))
+							 (add-to-list 'result p t)))))
       (unless (version< emacs-version "24")
         ;; To solve: https://github.com/pashinin/workgroups2/issues/51
         ;; shouldn't ignore here
