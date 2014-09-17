@@ -4205,11 +4205,14 @@ nil otherwise."
             (wg-workgroup-selected-frame-wconfig workgroup) nil)))
 
   ;; Garbage collection
-  ;; https://github.com/pashinin/workgroups2/issues/48
-  ;;(let ((all-buf-uids (wg-all-buf-uids)))
-  ;;  (wg-asetf (wg-buf-list)
-  ;;            (cl-remove-if-not (lambda (uid) (member uid all-buf-uids)) it
-  ;;                              :key 'wg-buf-uid)))
+
+  ;; Commenting this will cause a constantly growing session file:
+  ;; (tried to comment this block to solve https://github.com/pashinin/workgroups2/issues/48)
+  (let ((all-buf-uids (wg-all-buf-uids)))
+    (wg-asetf (wg-buf-list)
+              (cl-remove-if-not (lambda (uid) (member uid all-buf-uids)) it
+                                :key 'wg-buf-uid)))
+
   (mapc 'wg-workgroup-gc-buf-uids (wg-workgroup-list))  ; Remove buf uids that have no referent in `wg-buf-list'
   (mapc 'wg-update-buffer-in-buf-list (wg-buffer-list-emacs)))
 
