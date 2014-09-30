@@ -1140,7 +1140,10 @@ Saves some variables to restore a BUFFER later."
 (defun wg-current-session (&optional noerror)
   "Return `wg-current-session' or error unless NOERROR."
   (or wg-current-session
-      (unless noerror (error "No session is defined"))))
+      (if workgroups-mode
+          (unless noerror (error "No session is defined"))
+        (unless noerror
+          (error "Activate workgroups with (workgroups-mode 1)")))))
 
 ;; locate-dominating-file
 (defun wg-get-first-existing-dir (&optional dir)
@@ -2425,7 +2428,7 @@ If you want, restore them manually and try again."
          (name (wg-read-saved-wconfig-name workgroup))
          (wconfig (wg-current-wconfig)))
     (setf (wg-wconfig-name wconfig) name)
-    (wg-workgroup-save-wconfig workgroup wconfig)
+    (wg-workgroup-save-wconfig wconfig workgroup)
     (wg-fontified-message
       (:cmd "Saved: ")
       (:cur name))))
@@ -2436,10 +2439,10 @@ If you want, restore them manually and try again."
   (let ((workgroup (wg-current-workgroup)))
     (wg-restore-wconfig-undoably
      (wg-workgroup-get-saved-wconfig
-      workgroup
       (ido-completing-read "Saved wconfig: "
                            (mapcar 'wg-wconfig-name (wg-workgroup-saved-wconfigs workgroup))
-                           nil t)))))
+                           nil t)
+      workgroup))))
 
 (defun wg-kill-saved-wconfig ()
   "Kill one of the current workgroup's saved wconfigs.
@@ -3439,8 +3442,10 @@ WCONFIG-OR-NAME is resolved with `wg-workgroup-get-saved-wconfig'."
 (defun wg-workgroup-list-or-error (&optional noerror)
   "Return the value of `wg-current-session's :workgroup-list slot.
 Or scream unless NOERROR."
-  (or (wg-workgroup-list)
-      (unless noerror (error "No workgroups are defined"))))
+  (aif (wg-current-session noerror)
+      (or (wg-session-workgroup-list it)
+          (unless noerror (error "No workgroups are defined.")))
+    (unless noerror (error "Current session is nil. No workgroups are defined"))))
 
 (defun wg-find-workgroup-by (slotkey value &optional noerror)
   "Return the workgroup on which ACCESSOR returns VALUE or error."
@@ -3449,7 +3454,7 @@ Or scream unless NOERROR."
                     (:uid  'wg-workgroup-uid))))
     (or (cl-find value (wg-workgroup-list-or-error noerror) :test 'equal :key accessor)
         (unless noerror
-          (error "No are no workgroups with a %S of %S"
+          (error "There are no workgroups with a %S of %S"
                  accessor value)))))
 
 (defun wg-cyclic-nth-from-workgroup (workgroup &optional n)
@@ -3592,7 +3597,7 @@ symetry with `wg-undo-once-all-workgroups'."
 
 (defun wg-rename-workgroup (newname &optional workgroup)
   "Set NEWNAME to WORKGROUP's name."
-  (interactive (list nil (wg-read-new-workgroup-name "New name: ")))
+  (interactive (list (wg-read-new-workgroup-name "New name: ") nil))
   (-when-let (workgroup (wg-get-workgroup workgroup))
     (let* ((oldname (wg-workgroup-name workgroup)))
       (setf (wg-workgroup-name workgroup) newname)
@@ -4033,8 +4038,9 @@ To save up to date undo info before the change."
 The string contains the names of all workgroups in `wg-workgroup-list',
 decorated with faces, dividers and strings identifying the
 current and previous workgroups."
-  (wg-display-internal 'wg-workgroup-display
-                       (or workgroup-list (wg-workgroup-list))))
+  (if (wg-current-session t)
+      (wg-display-internal 'wg-workgroup-display
+                           (or workgroup-list (wg-workgroup-list)))))
 
 (defun wg-create-first-wg ()
   "Create a first workgroup if needed."
@@ -4199,10 +4205,14 @@ nil otherwise."
             (wg-workgroup-selected-frame-wconfig workgroup) nil)))
 
   ;; Garbage collection
+
+  ;; Commenting this will cause a constantly growing session file:
+  ;; (tried to comment this block to solve https://github.com/pashinin/workgroups2/issues/48)
   (let ((all-buf-uids (wg-all-buf-uids)))
     (wg-asetf (wg-buf-list)
               (cl-remove-if-not (lambda (uid) (member uid all-buf-uids)) it
                                 :key 'wg-buf-uid)))
+
   (mapc 'wg-workgroup-gc-buf-uids (wg-workgroup-list))  ; Remove buf uids that have no referent in `wg-buf-list'
   (mapc 'wg-update-buffer-in-buf-list (wg-buffer-list-emacs)))
 
@@ -4549,7 +4559,7 @@ ARG is anything else, turn on `workgroups-mode'."
    (workgroups-mode
     (if (boundp 'desktop-restore-frames)
         (setq desktop-restore-frames nil))
-    (wg-reset-internal)
+    (wg-reset-internal)                              ; creates a new `wg-current-session'
     (wg-add-workgroups-mode-minor-mode-entries)
     (wg-enable-all-advice)
     (wg-add-or-remove-workgroups-hooks nil)
