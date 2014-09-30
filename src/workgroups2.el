@@ -2428,7 +2428,7 @@ If you want, restore them manually and try again."
          (name (wg-read-saved-wconfig-name workgroup))
          (wconfig (wg-current-wconfig)))
     (setf (wg-wconfig-name wconfig) name)
-    (wg-workgroup-save-wconfig workgroup wconfig)
+    (wg-workgroup-save-wconfig wconfig workgroup)
     (wg-fontified-message
       (:cmd "Saved: ")
       (:cur name))))
@@ -2439,10 +2439,10 @@ If you want, restore them manually and try again."
   (let ((workgroup (wg-current-workgroup)))
     (wg-restore-wconfig-undoably
      (wg-workgroup-get-saved-wconfig
-      workgroup
       (ido-completing-read "Saved wconfig: "
                            (mapcar 'wg-wconfig-name (wg-workgroup-saved-wconfigs workgroup))
-                           nil t)))))
+                           nil t)
+      workgroup))))
 
 (defun wg-kill-saved-wconfig ()
   "Kill one of the current workgroup's saved wconfigs.
