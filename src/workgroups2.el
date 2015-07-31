@@ -98,6 +98,12 @@
   "Workgroups for Emacs -- Emacs session manager"
   :group 'convenience)
 
+(defcustom wg-session-dir nil
+  "Default directory used to store workgroups."
+  :type 'file
+  :group 'workgroups)
+(defvaralias 'wg-default-session-dir 'wg-session-dir)
+
 (defcustom wg-session-file "~/.emacs_workgroups"
   "Default filename to be used to save workgroups."
   :type 'file
@@ -4161,7 +4167,7 @@ nil otherwise."
 
 (defun wg-open-session (filename)
   "Load a session visiting FILENAME, creating one if none already exists."
-  (interactive "FFind session file: ")
+  (interactive (list (read-file-name "Find session file: " wg-default-session-dir)))
   (cond ((file-exists-p filename)
          ;; TODO: handle errors when reading object
          (let ((session (read (f-read-text filename))))
@@ -4231,7 +4237,7 @@ This makes the session visit that file, and marks it as not modified.
 If optional second arg CONFIRM is non-nil, this function asks for
 confirmation before overwriting an existing file.  Interactively,
 confirmation is required unless you supply a prefix argument."
-  (interactive (list (read-file-name "Save session as: ")
+  (interactive (list (read-file-name "Save session as: " wg-default-session-dir)
                      (not current-prefix-arg)))
   (when (and confirm (file-exists-p filename))
     (unless (y-or-n-p (format "File `%s' exists; overwrite? " filename))
