@@ -3477,7 +3477,7 @@ Or scream unless NOERROR."
   "Read a workgroup name from `wg-workgroup-names'.
 REQUIRE-MATCH to match."
   (wg-completing-read "Workgroup: " (wg-workgroup-names) nil require-match nil nil
-                      (awhen (wg-current-workgroup t) (wg-workgroup-name it))))
+                      (awhen (wg-previous-workgroup t) (wg-workgroup-name it))))
 
 (defun wg-new-default-workgroup-name ()
   "Return a new, unique, default workgroup name."
