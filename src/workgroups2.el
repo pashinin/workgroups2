@@ -274,6 +274,11 @@ If nil - nothing happens."
   :type 'string
   :group 'workgroups)
 
+(defcustom wg-blank-on-new-workgroup t
+  "If t the always show *scratch* buffer on new wg
+If nil - use window-config from current wg."
+  :group 'workgroups
+  :type 'boolean)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -3636,13 +3641,14 @@ Workgroups session object, etc."
 (defun wg-create-workgroup (name &optional blank)
   "Create and add a workgroup named NAME.
 Optional argument BLANK non-nil (set interactively with a prefix
-arg) means use a blank, one window window-config.  Otherwise use
-the current window-configuration.  Keep in mind that even though
-the current window-config may be used, other parameters of the
-current workgroup are not copied to the created workgroup.  For
-that, use `wg-clone-workgroup'."
+arg or using wg-blank-on-new-workgroup) means use a blank, one
+window window-config.  Otherwise use the current window-configuration.
+Keep in mind that even though the current window-config may be used,
+other parameters of the current workgroup are not copied to
+the created workgroup.  For that, use `wg-clone-workgroup'."
   (interactive (list (wg-read-new-workgroup-name) current-prefix-arg))
-  (wg-switch-to-workgroup (wg-make-and-add-workgroup name blank))
+  (wg-switch-to-workgroup (wg-make-and-add-workgroup
+                           name (or blank wg-blank-on-new-workgroup)))
   (wg-fontified-message
     (:cmd "Created: ") (:cur name) "  " (wg-workgroup-list-display)))
 
