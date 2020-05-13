@@ -1,5 +1,4 @@
-;;; workgroups2.el --- New workspaces for Emacs
-;;; -*- coding: utf-8; lexical-binding: t -*-
+;;; workgroups2.el --- New workspaces for Emacs -*- coding: utf-8; lexical-binding: t -*-
 ;;
 ;; Copyright (C) 2013-2014 Sergey Pashinin
 ;; Copyright (C) 2010-2011 tlh
@@ -1949,8 +1948,11 @@ as Workgroups' command remappings."
       (set-window-prev-buffers
        selwin (wg-unpickel (wg-win-parameter win 'prev-buffers)))
       (set-window-next-buffers
-       selwin (wg-unpickel (wg-win-parameter win 'next-buffers)))
-      )))
+       selwin (wg-unpickel (wg-win-parameter win 'next-buffers))))
+    (dolist (param '(window-side window-slot))
+      (let ((value (wg-win-parameter win param)))
+        (when value
+          (set-window-parameter selwin param value))))))
 
 
 (defun wg-window-point (ewin)
@@ -2000,7 +2002,11 @@ Return value."
           (wg-set-win-parameter
            win 'next-buffers (wg-pickel (remove nil (cl-subseq (window-next-buffers window) 0 4))))
           (wg-set-win-parameter
-           win 'prev-buffers (wg-pickel (remove nil (cl-subseq (window-prev-buffers window) 0 4)))))))
+           win 'prev-buffers (wg-pickel (remove nil (cl-subseq (window-prev-buffers window) 0 4)))))
+        (dolist (param '(window-side window-slot))
+          (let ((value (window-parameter window param)))
+            (when value
+              (wg-set-win-parameter win param value))))))
     win))
 
 (defun wg-toggle-window-dedicated-p ()
@@ -2828,6 +2834,39 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
   `((deserialize . ,(lambda (buffer vars)
                       (notmuch)
                       (get-buffer (wg-buf-name buffer))))))
+
+;; dired-sidebar
+(wg-support 'dired-sidebar-mode 'dired-sidebar
+  `((serialize . ,(lambda (_buffer) dired-sidebar-display-alist))
+    (deserialize
+     . ,(lambda (_buffer saved-display-alist)
+          (when (and (or wg-restore-remote-buffers
+                         (not (file-remote-p default-directory)))
+                     ;; Restore buffer only if `dired-sidebar-show-sidebar'
+                     ;; will place it in the same side window as before.
+                     (equal dired-sidebar-display-alist saved-display-alist))
+            (let ((dir (wg-get-first-existing-dir)))
+              (when (file-directory-p dir)
+                (let ((buffer (dired-sidebar-get-or-create-buffer dir)))
+                  ;; Set up the buffer by calling `dired-sidebar-show-sidebar'
+                  ;; for side effects only, discarding the created window. We
+                  ;; don't want to add extra new windows during the session
+                  ;; restoration process.
+                  (save-window-excursion (dired-sidebar-show-sidebar buffer))
+                  ;; HACK: Replace the just-restored window after session is
+                  ;; restored. This ensures that we perform any additional
+                  ;; window setup that was not done by deserialization. The
+                  ;; point is to avoid depending too closely on the
+                  ;; implementation details of dired-sidebar. Rather than
+                  ;; serialize every detail, we let `dired-sidebar-show-sidebar'
+                  ;; do the work.
+                  (let ((frame (selected-frame)))
+                    (run-at-time 0 nil
+                                 (lambda ()
+                                   (with-selected-frame frame
+                                     (dired-sidebar-hide-sidebar)
+                                     (dired-sidebar-show-sidebar buffer)))))
+                  buffer))))))))
 
 ;; Wanderlust modes:
 ;; WL - folders
