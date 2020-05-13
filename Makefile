@@ -19,14 +19,17 @@ clean:
 .PHONY: deps
 deps:
 	mkdir -p deps;
-	if [ ! -f deps/f.el ];               then curl https://raw.githubusercontent.com/rejeep/f.el/master/f.el -o deps/f.el; fi;
-	if [ ! -f deps/s.el ];               then curl https://raw.githubusercontent.com/magnars/s.el/master/s.el -o deps/s.el; fi;
-	if [ ! -f deps/dash.el ];            then curl https://raw.githubusercontent.com/magnars/dash.el/master/dash.el -o deps/dash.el; fi;
-	if [ ! -f deps/anaphora.el ];        then curl https://raw.githubusercontent.com/rolandwalker/anaphora/master/anaphora.el -o deps/anaphora.el; fi;
-	if [ ! -f deps/magit.el ];           then curl https://raw.githubusercontent.com/magit/magit/master/magit.el -o deps/magit.el; fi;
-	if [ ! -f deps/git-commit-mode.el ]; then curl https://raw.githubusercontent.com/magit/git-modes/master/git-commit-mode.el -o deps/git-commit-mode.el; fi;
-	if [ ! -f deps/git-rebase-mode.el ]; then curl https://raw.githubusercontent.com/magit/git-modes/master/git-rebase-mode.el -o deps/git-rebase-mode.el; fi;
-	if [ ! -f deps/magit-key-mode.el ];  then curl https://raw.githubusercontent.com/magit/magit/master/magit-key-mode.el -o deps/magit-key-mode.el; fi;
+	if [ ! -f deps/f.el ];                 then curl https://raw.githubusercontent.com/rejeep/f.el/master/f.el -o deps/f.el; fi;
+	if [ ! -f deps/s.el ];                 then curl https://raw.githubusercontent.com/magnars/s.el/master/s.el -o deps/s.el; fi;
+	if [ ! -f deps/dash.el ];              then curl https://raw.githubusercontent.com/magnars/dash.el/master/dash.el -o deps/dash.el; fi;
+	if [ ! -f deps/anaphora.el ];          then curl https://raw.githubusercontent.com/rolandwalker/anaphora/master/anaphora.el -o deps/anaphora.el; fi;
+	if [ ! -f deps/magit.el ];             then curl https://raw.githubusercontent.com/magit/magit/master/magit.el -o deps/magit.el; fi;
+	if [ ! -f deps/git-commit-mode.el ];   then curl https://raw.githubusercontent.com/magit/git-modes/master/git-commit-mode.el -o deps/git-commit-mode.el; fi;
+	if [ ! -f deps/git-rebase-mode.el ];   then curl https://raw.githubusercontent.com/magit/git-modes/master/git-rebase-mode.el -o deps/git-rebase-mode.el; fi;
+	if [ ! -f deps/magit-key-mode.el ];    then curl https://raw.githubusercontent.com/magit/magit/master/magit-key-mode.el -o deps/magit-key-mode.el; fi;
+	if [ ! -f deps/dired-sidebar.el ];     then curl https://raw.githubusercontent.com/jojojames/dired-sidebar/master/dired-sidebar.el -o deps/dired-sidebar.el; fi;
+	if [ ! -f deps/dired-subtree.el ];     then curl https://raw.githubusercontent.com/Fuco1/dired-hacks/master/dired-subtree.el -o deps/dired-subtree.el; fi;
+	if [ ! -f deps/dired-hacks-utils.el ]; then curl https://raw.githubusercontent.com/Fuco1/dired-hacks/master/dired-hacks-utils.el -o deps/dired-hacks-utils.el; fi;
 
 
 docs:

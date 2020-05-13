@@ -2835,6 +2835,39 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
                       (notmuch)
                       (get-buffer (wg-buf-name buffer))))))
 
+;; dired-sidebar
+(wg-support 'dired-sidebar-mode 'dired-sidebar
+  `((serialize . ,(lambda (_buffer) dired-sidebar-display-alist))
+    (deserialize
+     . ,(lambda (_buffer saved-display-alist)
+          (when (and (or wg-restore-remote-buffers
+                         (not (file-remote-p default-directory)))
+                     ;; Restore buffer only if `dired-sidebar-show-sidebar'
+                     ;; will place it in the same side window as before.
+                     (equal dired-sidebar-display-alist saved-display-alist))
+            (let ((dir (wg-get-first-existing-dir)))
+              (when (file-directory-p dir)
+                (let ((buffer (dired-sidebar-get-or-create-buffer dir)))
+                  ;; Set up the buffer by calling `dired-sidebar-show-sidebar'
+                  ;; for side effects only, discarding the created window. We
+                  ;; don't want to add extra new windows during the session
+                  ;; restoration process.
+                  (save-window-excursion (dired-sidebar-show-sidebar buffer))
+                  ;; HACK: Replace the just-restored window after session is
+                  ;; restored. This ensures that we perform any additional
+                  ;; window setup that was not done by deserialization. The
+                  ;; point is to avoid depending too closely on the
+                  ;; implementation details of dired-sidebar. Rather than
+                  ;; serialize every detail, we let `dired-sidebar-show-sidebar'
+                  ;; do the work.
+                  (let ((frame (selected-frame)))
+                    (run-at-time 0 nil
+                                 (lambda ()
+                                   (with-selected-frame frame
+                                     (dired-sidebar-hide-sidebar)
+                                     (dired-sidebar-show-sidebar buffer)))))
+                  buffer))))))))
+
 ;; Wanderlust modes:
 ;; WL - folders
 ;;(defun wg-deserialize-wl-folders-buffer (buf)
