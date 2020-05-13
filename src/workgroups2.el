@@ -1948,8 +1948,11 @@ as Workgroups' command remappings."
       (set-window-prev-buffers
        selwin (wg-unpickel (wg-win-parameter win 'prev-buffers)))
       (set-window-next-buffers
-       selwin (wg-unpickel (wg-win-parameter win 'next-buffers)))
-      )))
+       selwin (wg-unpickel (wg-win-parameter win 'next-buffers))))
+    (dolist (param '(window-side window-slot))
+      (let ((value (wg-win-parameter win param)))
+        (when value
+          (set-window-parameter selwin param value))))))
 
 
 (defun wg-window-point (ewin)
@@ -1999,7 +2002,11 @@ Return value."
           (wg-set-win-parameter
            win 'next-buffers (wg-pickel (remove nil (cl-subseq (window-next-buffers window) 0 4))))
           (wg-set-win-parameter
-           win 'prev-buffers (wg-pickel (remove nil (cl-subseq (window-prev-buffers window) 0 4)))))))
+           win 'prev-buffers (wg-pickel (remove nil (cl-subseq (window-prev-buffers window) 0 4)))))
+        (dolist (param '(window-side window-slot))
+          (let ((value (window-parameter window param)))
+            (when value
+              (wg-set-win-parameter win param value))))))
     win))
 
 (defun wg-toggle-window-dedicated-p ()
