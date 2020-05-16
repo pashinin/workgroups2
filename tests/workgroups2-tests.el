@@ -153,36 +153,6 @@
   ;; TODO: handle errors
   )
 
-(ert-deftest 305-dired-sidebar ()
-  (let ((wg-log-level 0)
-        message-log-max)
-    ;; prepare
-    (delete-other-windows)
-    (switch-to-buffer wg-default-buffer)
-
-    ;; create sidebar window
-    (require 'dired-sidebar)
-    (dired-sidebar-toggle-sidebar "/tmp")
-    (dired-sidebar-jump-to-sidebar)
-    (should (eq major-mode 'dired-sidebar-mode))
-    (should (window-parameter (selected-window) 'window-side))
-    (should (window-parameter (selected-window) 'window-slot))
-    (wg-save-session)
-
-    ;; save and restore
-    (workgroups-mode 0)
-    (switch-to-buffer wg-default-buffer)
-    (delete-other-windows)
-    (workgroups-mode 1)
-    (switch-to-buffer wg-default-buffer)
-    (should (not (window-parameter (selected-window) 'window-side)))
-    (should (not (window-parameter (selected-window) 'window-slot)))
-    (should (dired-sidebar-showing-sidebar-p))
-    (dired-sidebar-jump-to-sidebar)
-    (should (eq major-mode 'dired-sidebar-mode))
-    (should (window-parameter (selected-window) 'window-side))
-    (should (window-parameter (selected-window) 'window-slot))))
-
 (ert-deftest 310-frames ()
   ;; Create some frames
   (should wg-control-frames)
