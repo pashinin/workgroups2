@@ -66,7 +66,7 @@ It is done in ``wg-open-session``. First you read a
 
 .. code-block:: cl
 
-   (let ((session (read (f-read-text filename))))
+   (let ((session (read (wg-read-text filename))))
      ...
 
 Then you just switch to 1 of the saved workgroups in this object

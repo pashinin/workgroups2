@@ -7,7 +7,7 @@
 ;; Keywords: session management window-configuration persistence
 ;; Homepage: https://github.com/pashinin/workgroups2
 ;; Version: 1.2.0
-;; Package-Requires: ((emacs "24.4") (dash "2.8.0") (anaphora "1.0.0") (f "0.17"))
+;; Package-Requires: ((emacs "24.4") (dash "2.8.0") (anaphora "1.0.0"))
 ;;
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -85,7 +85,6 @@
 ;;; Code:
 
 (require 'cl-lib)
-(require 'f)
 (require 'dash)
 (require 'ring)
 (require 'anaphora)
@@ -4158,12 +4157,22 @@ nil otherwise."
   (and (not (wg-dups-p (wg-buf-list) :key 'wg-buf-uid :test 'string=))
        (not (wg-dups-p (wg-workgroup-list) :key 'wg-workgroup-uid :test 'string=))))
 
+(defun wg-read-text (path)
+  "Read text with PATH, using `utf-8' coding."
+  (decode-coding-string
+   (with-temp-buffer
+     (set-buffer-multibyte nil)
+     (setq buffer-file-coding-system 'binary)
+     (insert-file-contents-literally path)
+     (buffer-substring-no-properties (point-min) (point-max)))
+   'utf-8))
+
 (defun wg-open-session (filename)
   "Load a session visiting FILENAME, creating one if none already exists."
   (interactive "FFind session file: ")
   (cond ((file-exists-p filename)
          ;; TODO: handle errors when reading object
-         (let ((session (read (f-read-text filename))))
+         (let ((session (read (wg-read-text filename))))
            (unless (wg-session-p session)
              (error "%S is not a Workgroups session file." filename))
            (setf (wg-session-file-name session) filename)

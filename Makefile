@@ -35,7 +35,7 @@ docs:
 .PHONY: test
 test: $(ELCS)
 	@$(BATCHE) "(progn\
-	(require 'cl) \
+	(require 'cl-lib) \
 	(require 'ert) \
 	(put 'flet 'byte-obsolete-info nil))" \
 	-l tests/ert-my-utils.el -l tests/workgroups2-tests.el -f ert-run-tests-batch-and-exit
@@ -44,7 +44,7 @@ test: $(ELCS)
 .PHONY: testgui
 testgui: $(ELCS)
 	@$(NOBATCHE) "(progn\
-	(require 'cl) \
+	(require 'cl-lib) \
 	(require 'ert) \
 	(put 'flet 'byte-obsolete-info nil))" \
 	-l tests/ert-my-utils.el -l tests/workgroups2-tests.el -f my-ert-run-tests

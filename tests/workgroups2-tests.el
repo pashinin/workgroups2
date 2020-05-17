@@ -3,7 +3,6 @@
 ;;; Code:
 
 (require 'cl-lib)
-(require 'f)
 (require 'workgroups2)
 
 ;;(defmacro w-all-buf-uids (value)

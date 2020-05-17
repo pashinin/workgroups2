@@ -6,16 +6,14 @@
 ;;; Code:
 
 (require 'cl-lib)
-(require 'f)
 (require 'ert)
 
 (defun wg-tests-log (&optional ok)
   "Try to log with status OK."
   (with-current-buffer "*Messages*"
-    (let ((txt (buffer-substring (point-min) (point-max))))
-      (if ok
-          (f-write-text txt 'utf-8 "/tmp/wg-tests-ok.log")
-        (f-write-text txt 'utf-8 "/tmp/wg-tests.log")))))
+    (write-region (point-min)
+                  (point-max)
+                  (if ok "/tmp/wg-tests-ok.log" "/tmp/wg-tests.log"))))
 
 (defun ert--run-test-internal (test-execution-info)
   "Low-level function to run a test according to TEST-EXECUTION-INFO.
