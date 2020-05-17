@@ -19,7 +19,6 @@ clean:
 .PHONY: deps
 deps:
 	mkdir -p deps;
-	if [ ! -f deps/s.el ];               then curl https://raw.githubusercontent.com/magnars/s.el/master/s.el -o deps/s.el; fi;
 	if [ ! -f deps/dash.el ];            then curl https://raw.githubusercontent.com/magnars/dash.el/master/dash.el -o deps/dash.el; fi;
 	if [ ! -f deps/magit.el ];           then curl https://raw.githubusercontent.com/magit/magit/master/magit.el -o deps/magit.el; fi;
 	if [ ! -f deps/git-commit-mode.el ]; then curl https://raw.githubusercontent.com/magit/git-modes/master/git-commit-mode.el -o deps/git-commit-mode.el; fi;
