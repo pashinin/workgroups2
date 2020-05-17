@@ -7,7 +7,7 @@
 ;; Keywords: session management window-configuration persistence
 ;; Homepage: https://github.com/pashinin/workgroups2
 ;; Version: 1.2.0
-;; Package-Requires: ((emacs "24.4") (dash "2.8.0") (anaphora "1.0.0"))
+;; Package-Requires: ((emacs "24.4") (dash "2.8.0"))
 ;;
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -87,8 +87,6 @@
 (require 'cl-lib)
 (require 'dash)
 (require 'ring)
-(require 'anaphora)
-
 
 (defconst wg-version "1.2.0" "Current version of Workgroups.")
 
@@ -620,6 +618,19 @@ features but is fucking unstable, so disabled by default"
 
 
 ;;; fancy displays
+
+(defmacro aif (cond then &rest else)
+  "Like `if', but the result of evaluating COND is bound to `it'.
+The variable `it' is available within THEN and ELSE.
+COND, THEN, and ELSE are otherwise as documented for `if'."
+  `(let ((it ,cond))
+     (if it ,then ,@else)))
+
+(defmacro awhen (cond &rest body)
+  "Like `when', but the result of evaluating COND is bound to `it'.
+The variable `it' is available within BODY.
+COND and BODY are otherwise as documented for `when'."
+  `(aif ,cond (progn ,@body)))
 
 (defun wg-element-display (elt elt-string &optional current-elt-p previous-elt-p)
   "Return display string for ELT."
@@ -2693,29 +2704,6 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
     (deserialize . ,(lambda (buffer vars)
                       (compilation-start (car vars) (nth 1 vars))
                       (switch-to-buffer "*grep*")))))
-
-
-;; `speedbar-mode' (has bugs)
-;; only from sr-speedbar.el
-;;(wg-support 'speedbar-mode 'sr-speedbar
-;;  `((deserialize . ,(lambda (buffer vars)
-;;                      ;;(with-current-buffer (get-buffer-create "*SPEEDBAR*")
-;;                        (with-no-warnings
-;;                          (setq speedbar-buffer (get-buffer-create "*SPEEDBAR*"))
-;;                          (setq speedbar-frame (selected-frame)
-;;                                dframe-attached-frame (selected-frame)
-;;                                speedbar-select-frame-method 'attached
-;;                                speedbar-verbosity-level 0
-;;                                speedbar-last-selected-file nil)
-;;                          (set-buffer speedbar-buffer)
-;;                          (speedbar-mode)
-;;                          (speedbar-reconfigure-keymaps)
-;;                          (speedbar-update-contents)
-;;                          (speedbar-set-timer 1)
-;;                          (aif (get-buffer-window "*SPEEDBAR*")
-;;                              (set-window-dedicated-p it t))
-;;                          (get-buffer-create "*SPEEDBAR*"))))))
-
 
 (defun wg-deserialize-slime-buffer (buf)
   "Deserialize `slime' buffer BUF."
