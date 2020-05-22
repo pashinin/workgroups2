@@ -3275,9 +3275,8 @@ Print PROMPT"
     (wg-read-object
      (or prompt (format "Name (default: %S): " default))
      (lambda (new) (and (stringp new)
-                        (not (equal new ""))
-                        (wg-unique-workgroup-name-p new)))
-     "Please enter a unique, non-empty name"
+                        (not (equal new ""))))
+     "Please enter a non-empty name"
      nil nil nil nil default)))
 
 (defun wg-read-workgroup-index ()
@@ -3514,11 +3513,6 @@ REQUIRE-MATCH to match."
           (setq result new-name))))
     result))
 
-(defun wg-unique-workgroup-name-p (new-name)
-  "Return t if NEW-NAME is unique in `wg-workgroup-list', nil otherwise."
-  (cl-every (lambda (existing-name) (not (equal new-name existing-name)))
-            (wg-workgroup-names t)))
-
 (defun wg-read-saved-wconfig-name (workgroup &optional prompt require-match)
   "Read the name of a saved wconfig, completing on the names of
 WORKGROUP's saved wconfigs."
@@ -3651,6 +3645,7 @@ Workgroups session object, etc."
               (y-or-n-p "Really reset Workgroups? "))
     (error "Canceled"))
   (wg-reset-internal)
+  (wg-save-session t)
   (wg-fontified-message (:cmd "Reset: ") (:msg "Workgroups")))
 
 (defun wg-query-and-save-if-modified ()
@@ -3668,7 +3663,23 @@ the current window-config may be used, other parameters of the
 current workgroup are not copied to the created workgroup.  For
 that, use `wg-clone-workgroup'."
   (interactive (list (wg-read-new-workgroup-name) current-prefix-arg))
+
+  (unless (file-exists-p (wg-get-session-file))
+    (wg-reset t)
+    (wg-save-session t))
+
+  (unless wg-current-session
+    ;; code extracted from `wg-open-session'.
+    ;; open session but do NOT load any workgroup.
+    (let* ((session (my-wg-read-session-file)))
+      (setf (wg-session-file-name session) wg-session-file)
+      (wg-reset-internal (wg-unpickel-session-parameters session))))
+
   (wg-switch-to-workgroup (wg-make-and-add-workgroup name blank))
+
+  ;; save the session file in real time
+  (wg-save-session t)
+
   (wg-fontified-message
     (:cmd "Created: ") (:cur name) "  " (wg-workgroup-list-display)))
 
