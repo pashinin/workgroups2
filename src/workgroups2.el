@@ -1174,6 +1174,7 @@ If not - try to go to the parent dir and do the same."
     (h . wg-pickel-deserialize-hash-table)
     (b . wg-pickel-deserialize-buffer)
     (m . wg-pickel-deserialize-marker)
+    (d . wg-pickel-deserialize-default)
     ;;(f . wg-pickel-deserialize-frame)
     )
   "Alist mapping type keys to object deserialization functions.")
@@ -1226,7 +1227,7 @@ If not - try to go to the parent dir and do the same."
 (defun wg-pickel-object-serializer (obj)
   "Return the object serializer for the `type-of' OBJ."
   (or (wg-aget wg-pickel-object-serializers (type-of obj))
-      (error "Invalid type: %S" (type-of obj))))
+      (wg-pickel-default-serializer obj)))
 
 (defun wg-pickel-link-serializer (obj)
   "Return the link serializer for the `type-of' OBJ."
@@ -1299,11 +1300,18 @@ If not - try to go to the parent dir and do the same."
   (list 'm (list (marker-position marker)
                  (wg-add-buffer-to-buf-list (marker-buffer marker)))))
 
+(defun wg-pickel-default-serializer (object)
+  "Return OBJECT's data."
+  (list 'd (prin1-to-string obj)))
+
 (defun wg-pickel-deserialize-marker (data)
   "Return marker from it's DATA."
   (let ((m (make-marker)))
     (set-marker m (car data) (wg-pickel-deserialize-buffer (car (cdr data))))))
 
+(defun wg-pickel-deserialize-default (OBJECT)
+  "Return data from OBJECT."
+  (read OBJECT))
 
 ;; cons - http://www.gnu.org/software/emacs/manual/html_node/eintr/cons.html
 (defun wg-pickel-cons-serializer (cons)
