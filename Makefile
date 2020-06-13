@@ -33,7 +33,7 @@ docs:
 	cd doc && make html
 
 .PHONY: test
-test: $(ELCS)
+test: $(ELCS) clean
 	@$(BATCHE) "(progn\
 	(require 'cl-lib) \
 	(require 'ert) \
