@@ -1302,7 +1302,7 @@ If not - try to go to the parent dir and do the same."
 
 (defun wg-pickel-default-serializer (object)
   "Return OBJECT's data."
-  (list 'd (prin1-to-string obj)))
+  (list 'd (prin1-to-string object)))
 
 (defun wg-pickel-deserialize-marker (data)
   "Return marker from it's DATA."
