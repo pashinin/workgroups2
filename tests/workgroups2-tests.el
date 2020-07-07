@@ -135,81 +135,19 @@
     (describe-variable 'help-xref-stack-item)
     (switch-to-buffer "*Help*"))
 
-  (wg-test-special 'magit-status-mode 'magit
-    (magit-status "."))
-
   (wg-test-special 'shell-mode 'shell
     (shell))
 
   (wg-test-special 'term-mode 'term
     (term "/bin/sh"))
 
-  (unless (version< emacs-version "24")
-    (wg-test-special 'inferior-python-mode 'python
-      (run-python python-shell-interpreter)
-      (switch-to-buffer (process-buffer (python-shell-get-or-create-process)))))
+  (wg-test-special 'inferior-python-mode
+                   'python
+                   (run-python python-shell-interpreter)
+                   (switch-to-buffer (process-buffer (python-shell-get-or-create-process))))
 
   ;; TODO: handle errors
   )
-
-(ert-deftest 305-dired-sidebar ()
-  (let ((wg-log-level 0)
-        message-log-max)
-    ;; prepare
-    (delete-other-windows)
-    (switch-to-buffer wg-default-buffer)
-
-    ;; create sidebar window
-    (require 'dired-sidebar)
-    (dired-sidebar-toggle-sidebar "/tmp")
-    (dired-sidebar-jump-to-sidebar)
-    (should (eq major-mode 'dired-sidebar-mode))
-    (should (window-parameter (selected-window) 'window-side))
-    (should (window-parameter (selected-window) 'window-slot))
-    (wg-save-session)
-
-    ;; save and restore
-    (workgroups-mode 0)
-    (switch-to-buffer wg-default-buffer)
-    (delete-other-windows)
-    (workgroups-mode 1)
-    (switch-to-buffer wg-default-buffer)
-    (should (not (window-parameter (selected-window) 'window-side)))
-    (should (not (window-parameter (selected-window) 'window-slot)))
-    (should (dired-sidebar-showing-sidebar-p))
-    (dired-sidebar-jump-to-sidebar)
-    (should (eq major-mode 'dired-sidebar-mode))
-    (should (window-parameter (selected-window) 'window-side))
-    (should (window-parameter (selected-window) 'window-slot))))
-
-(ert-deftest 310-frames ()
-  ;; Create some frames
-  (should wg-control-frames)
-  (make-frame)
-  (make-frame)
-  (should (wg-modified-p))
-  (should (= (length (frame-list)) 3))
-  (should workgroups-mode)
-
-  ;; Save
-  (let (message-log-max)
-    (wg-save-session))
-
-  ;; Reset to 1 frame
-  (should-not (wg-session-modified (wg-current-session)))
-  (should (= (length (wg-session-parameter 'frame-list)) 2))
-  (delete-other-frames)
-  (should (= (length (frame-list)) 1))
-
-  ;; Restore frames
-  (wg-reload-session)
-  ;;(should (= (length (wg-session-parameter 'frame-list)) 2))
-  (should (= (length (frame-list)) 3))
-  (delete-other-frames)
-  (let (message-log-max)
-    (wg-save-session)))
-
-
 
 ;; Bugs
 
