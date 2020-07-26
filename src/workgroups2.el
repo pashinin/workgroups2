@@ -913,34 +913,29 @@ If PARAM is not found, return DEFAULT which defaults to nil."
   "Return t if BUFFER-OR-NAME is the current buffer, nil otherwise."
   (eq (wg-get-buffer buffer-or-name) (current-buffer)))
 
-(defun wg-concat (&rest symbols-and-strings)
-  "Return a new interned symbol by concatenating SYMBOLS-AND-STRINGS."
-  (intern (mapconcat (lambda (obj) (if (symbolp obj) (symbol-name obj) obj))
-                     symbols-and-strings "")))
-
 (defmacro wg-defstruct (name-form &rest slot-defs)
   "`defstruct' wrapper that namespace-prefixes all generated functions.
 Note: this doesn't yet work with :conc-name, and possibly other
 options."
   (declare (indent 2))
   (let* ((prefix "wg")
-         (name name-form)
-         (prefixed-name (wg-concat prefix "-" name)))
+         (name (symbol-name name-form)) ; string type
+         (prefixed-name (concat prefix "-" name))
+         (symbol-prefixed-name (intern prefixed-name)))
     (cl-labels ((rebind (opstr)
-                        (let ((oldfnsym (wg-concat opstr "-" prefixed-name))
-                              (newfnsym (wg-concat prefix "-" opstr "-" name)))
-                          `((fset ',newfnsym
-                                  (symbol-function ',oldfnsym))
+                        (let ((oldfnsym (intern (concat opstr "-" prefixed-name)))
+                              (newfnsym (intern (concat prefix "-" opstr "-" name))))
+                          `((fset ',newfnsym (symbol-function ',oldfnsym))
                             (fmakunbound ',oldfnsym)))))
       ;; `eval-and-compile' gets rid of byte-comp warnings ("function `foo' not
       ;; known to be defined").  We can accomplish this with `declare-function'
       ;; too, but it annoyingly requires inclusion of the function's arglist,
       ;; which gets ugly.
       `(eval-and-compile
-         (cl-defstruct ,prefixed-name ,@slot-defs)
+         (cl-defstruct ,symbol-prefixed-name ,@slot-defs)
          ,@(rebind "make")
          ,@(rebind "copy")
-         ',prefixed-name))))
+         ',symbol-prefixed-name))))
 
 ;; {{
 (wg-defstruct session
