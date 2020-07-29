@@ -16,11 +16,19 @@ Just install "workgroups2" from Melpa and activate it with
 
 #+begin_src elisp
 (require 'workgroups2)
-;; Change some settings
-(workgroups-mode 1)        ; put this one at the bottom of .emacs
 #+end_src
 
-** Use
+** Usage
+*** Quick Start
+Use =M-x wg-create-workgroup= to save current windows layout.
+
+Use =M-x wg-open-workgroup= to open saved windows layout.
+*** Enable minor mode =workgroups-mode= (OPTIONAL)
+Put below line at the bottom of =.emacs=,
+#+begin_src elisp
+(workgroups-mode 1)
+#+end_src
+
 Most commands are bound to both =<prefix> <key>= and =<prefix> C-<key>=.
 
 By default prefix is: "C-c z" (To change it - see settings below)
@@ -35,10 +43,7 @@ By default prefix is: "C-c z" (To change it - see settings below)
 <prefix> C-f  - load session
 #+end_example
 
-** Configure
-
-If you want to change some settings - here is an example:
-
+If you want to set up this minor mode further:
 #+begin_src elisp
 (require 'workgroups2)
 ;; Your settings here
@@ -47,9 +52,6 @@ If you want to change some settings - here is an example:
 
 ;; Change prefix key (before activating WG)
 (setq wg-prefix-key (kbd "C-c z"))
-
-;; Change workgroups session file
-(setq wg-session-file "~/.emacs.d/.emacs_workgroups")
 
 ;; Set your own keyboard shortcuts to reload/save/switch WGs:
 ;; "s" == "Super" or "Win"-key, "S" == Shift, "C" == Control
@@ -60,11 +62,14 @@ If you want to change some settings - here is an example:
 
 (workgroups-mode 1)   ; put this one at the bottom of .emacs
 #+end_src
-** More options
+** Tips (OPTIONAL)
 You can use =M-x customize-group workgroups= to see all variables and
 faces to change.
 
 #+begin_src elisp
+;; Change workgroups session file
+(setq wg-session-file "~/.emacs.d/.emacs_workgroups")
+
 ;; What to do on Emacs exit / workgroups-mode exit?
 (setq wg-emacs-exit-save-behavior           'save)      ; Options: 'save 'ask nil
 (setq wg-workgroups-mode-exit-save-behavior 'save)      ; Options: 'save 'ask nil
