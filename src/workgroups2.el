@@ -3151,7 +3151,7 @@ same name in WORKGROUP's saved wconfigs, replace it."
 (defun wg-workgroup-kill-saved-wconfig (workgroup wconfig-or-name)
   "Delete WCONFIG-OR-NAME from WORKGROUP's saved wconfigs.
 WCONFIG-OR-NAME is resolved with `wg-workgroup-get-saved-wconfig'."
-  (let* ((wconfig (wg-workgroup-get-saved-wconfig workgroup wconfig-or-name)))
+  (let* ((wconfig (wg-workgroup-get-saved-wconfig wconfig-or-name workgroup)))
     (when wconfig
       (wg-asetf (wg-workgroup-saved-wconfigs workgroup) (remq wconfig it)
                 (wg-workgroup-modified workgroup) t))))
@@ -3228,7 +3228,8 @@ WORKGROUP's saved wconfigs."
 (defun wg-read-saved-wconfig (workgroup)
   "Read the name of and return one of WORKGROUP's saved wconfigs."
   (wg-workgroup-get-saved-wconfig
-   workgroup (wg-read-saved-wconfig-name workgroup nil t)))
+   (wg-read-saved-wconfig-name workgroup nil t)
+   workgroup))
 
 
 ;;; workgroup-list reorganization commands
