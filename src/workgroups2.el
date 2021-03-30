@@ -614,6 +614,34 @@ The variable `it' is available within BODY.
 COND and BODY are otherwise as documented for `when'."
   `(aif ,cond (progn ,@body)))
 
+(defmacro wg-docar (spec &rest body)
+  "do-style wrapper for `mapcar'.
+
+\(fn (VAR LIST) BODY...)"
+  (declare (indent 1))
+  `(mapcar (lambda (,(car spec)) ,@body) ,(cadr spec)))
+
+(defmacro wg-fontify (&rest specs)
+  "A small fontification DSL.
+The results of all SPECS are `concat'd together.
+If a spec is a cons with a keyword car, apply `wg-add-face' to it.
+Other conses get evaluated, and should produce a strings.
+If a spec is a string it is used unmodified.
+Anything else is formatted with %s to produce a string."
+  (declare (indent defun))
+  `(concat
+    ,@(wg-docar (spec specs)
+        (cond ((and (consp spec)
+                    (keywordp (car spec)))
+               `(wg-add-face ,@spec))
+              ;;((listp spec) (cdr (eval spec)))
+              ;;((listp spec)
+              ;; ;;(prin1-to-string (nth 1 (eval spec)))
+              ;; )
+              ((consp spec) spec)
+              ((stringp spec) spec)
+              (t `(format "%s" ,spec))))))
+
 (defun wg-element-display (elt elt-string &optional current-elt-p previous-elt-p)
   "Return display string for ELT."
   (cond ((and current-elt-p (funcall current-elt-p elt))
@@ -663,27 +691,6 @@ FACEKEY must be a key in `wg-face-abbrevs'."
       (put-text-property 0 (length string) 'face face string)
       string)))
 
-(defmacro wg-fontify (&rest specs)
-  "A small fontification DSL.
-The results of all SPECS are `concat'd together.
-If a spec is a cons with a keyword car, apply `wg-add-face' to it.
-Other conses get evaluated, and should produce a strings.
-If a spec is a string it is used unmodified.
-Anything else is formatted with %s to produce a string."
-  (declare (indent defun))
-  `(concat
-    ,@(wg-docar (spec specs)
-        (cond ((and (consp spec)
-                    (keywordp (car spec)))
-               `(wg-add-face ,@spec))
-              ;;((listp spec) (cdr (eval spec)))
-              ;;((listp spec)
-              ;; ;;(prin1-to-string (nth 1 (eval spec)))
-              ;; )
-              ((consp spec) spec)
-              ((stringp spec) spec)
-              (t `(format "%s" ,spec))))))
-
 (defmacro wg-with-gensyms (syms &rest body)
   "Bind all symbols in SYMS to `gensym's, and eval BODY."
   (declare (indent 1))
@@ -711,13 +718,6 @@ Iterative to prevent stack overflow."
   (declare (indent 1))
   `(when (and ,@(mapcar (lambda (sym) `(boundp ',sym)) symbols))
      ,@body))
-
-(defmacro wg-docar (spec &rest body)
-  "do-style wrapper for `mapcar'.
-
-\(fn (VAR LIST) BODY...)"
-  (declare (indent 1))
-  `(mapcar (lambda (,(car spec)) ,@body) ,(cadr spec)))
 
 (defmacro wg-dohash (spec &rest body)
   "do-style wrapper for `maphash'.
@@ -1597,6 +1597,11 @@ See `wg-buffer-auto-association' for allowable values of ASSOC."
          (wg-auto-associate-buffer-helper
           workgroup buffer (funcall assoc workgroup buffer)))
         (t nil)))
+
+(defvar wg-deactivation-list nil
+  "A stack of workgroups that are currently being switched away from.
+Used to avoid associating the old workgroup's buffers with the
+new workgroup during a switch.")
 
 (defun wg-auto-associate-buffer (buffer &optional frame)
   "Conditionally associate BUFFER with the current workgroup in FRAME.
@@ -3008,11 +3013,6 @@ Print PROMPT"
   "Throw an error when the minibuffer is active."
   (when (not (wg-minibuffer-inactive-p))
     (error "Exit minibuffer to use workgroups functions!")))
-
-(defvar wg-deactivation-list nil
-  "A stack of workgroups that are currently being switched away from.
-Used to avoid associating the old workgroup's buffers with the
-new workgroup during a switch.")
 
 (defun wg-flag-session-modified ()
   "Set SESSION's modified flag."
