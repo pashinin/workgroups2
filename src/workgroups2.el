@@ -35,8 +35,8 @@
 ;;
 ;; Quick start,
 ;;
-;; - use `wg-create-workgroup' to save current windows layout
-;; - use `wg-open-workgroup' to open saved windows layout
+;; - `wg-create-workgroup' to save current windows layout
+;; - `wg-open-workgroup' to open saved windows layout
 ;;
 ;; Optionally, you can use minor-mode `workgroups-mode' by put below
 ;; line into .emacs ,
@@ -155,11 +155,6 @@ Don't do it with Emacs --daemon option."
 
 (defcustom workgroups-mode-exit-hook nil
   "Hook run when `workgroups-mode' is turned off."
-  :type 'hook
-  :group 'workgroups)
-
-(defcustom wg-before-switch-to-workgroup-hook nil
-  "Hook run by `wg-switch-to-workgroup'."
   :type 'hook
   :group 'workgroups)
 
@@ -3000,8 +2995,6 @@ that, use `wg-clone-workgroup'."
       (when current (push current wg-deactivation-list))
       (unwind-protect
           (progn
-            ;; Before switch
-            (run-hooks 'wg-before-switch-to-workgroup-hook)
             ;; Save info about some hard-to-work-with libraries
             (wg-set-workgroup-parameter 'ecb (and (boundp 'ecb-minor-mode)
                                                   ecb-minor-mode))

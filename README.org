@@ -80,7 +80,6 @@ Hooks' names can tell when they are executed
 #+begin_src elisp
 workgroups-mode-hook                    ; when `workgroups-mode' is turned on
 workgroups-mode-exit-hook               ; `workgroups-mode' is turned off
-wg-before-switch-to-workgroup-hook
 wg-after-switch-to-workgroup-hook
 #+end_src
 
