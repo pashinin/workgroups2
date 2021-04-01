@@ -27,7 +27,7 @@
 ;;
 ;;; Commentary:
 ;;
-;; Workgroups2 is an Emacs session manager. It is based on the
+;; Workgroups2 is an Emacs session manager.  It is based on the
 ;; experimental branch of the original "workgroups" extension.
 ;;
 ;; If you find a bug - please post it here:
@@ -96,10 +96,6 @@ off and then on again to take effect."
 (defvar wg-record-incorrectly-restored-bufs nil
   "FIXME: docstring this.")
 
-(defvar wg-log-level 1
-  "Use later.
-0 means no messages at all (for tests)")
-
 (defcustom wg-emacs-exit-save-behavior 'save
   "Determines save behavior on Emacs exit.
 
@@ -137,11 +133,6 @@ Don't do it with Emacs --daemon option."
   :type 'string
   :group 'workgroups)
 
-(defcustom wg-load-last-workgroup t
-  "Load last active (not first) workgroup from all your workgroups if it exists."
-  :group 'workgroups
-  :type 'boolean)
-
 (defcustom wg-control-frames t
   "Save/restore frames."
   :group 'workgroups
@@ -166,13 +157,6 @@ Don't do it with Emacs --daemon option."
   "Hook run before any function that triggers `window-configuration-change-hook'."
   :type 'hook
   :group 'workgroups)
-
-(defcustom wg-open-this-wg nil
-  "Try to open this workgroup on start.
-If nil - nothing happens."
-  :type 'string
-  :group 'workgroups)
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -230,13 +214,6 @@ For example, in the case of `major-mode' it should funcall the
 value (a major-mode function symbol) rather than just assigning
 it to `major-mode'."
   :type 'alist
-  :group 'workgroups)
-
-
-(defcustom wg-nowg-string "No workgroups"
-  "Display this string if there are no workgroups and
-`wg-display-nowg' is t."
-  :type 'string
   :group 'workgroups)
 
 (defcustom wg-restore-remote-buffers t
@@ -401,50 +378,6 @@ features but is fucking unstable, so disabled by default"
            (fset 'buffer-list wg-buffer-list-original))))
 (fset 'buffer-list wg-buffer-list-original)
 
-(defcustom wg-use-faces t
-  "Non-nil means use faces in various messages."
-  :type 'boolean
-  :group 'workgroups)
-
-(defcustom wg-list-display-decor-left-brace "( "
-  "String displayed to the left of the list display."
-  :type 'string
-  :group 'workgroups)
-
-(defcustom wg-list-display-decor-right-brace " )"
-  "String displayed to the right of the list display."
-  :type 'string
-  :group 'workgroups)
-
-(defcustom wg-list-display-decor-divider " | "
-  "String displayed between elements of the list display."
-  :type 'string
-  :group 'workgroups)
-
-(defcustom wg-list-display-decor-current-left "-<{ "
-  "String displayed to the left of the current element of the list display."
-  :type 'string
-  :group 'workgroups)
-
-(defcustom wg-list-display-decor-current-right " }>-"
-  "String displayed to the right of the current element of the list display."
-  :type 'string
-  :group 'workgroups)
-
-(defcustom wg-list-display-decor-previous-left "< "
-  "String displayed to the left of the previous element of the list display."
-  :type 'string
-  :group 'workgroups)
-
-(defcustom wg-list-display-decor-previous-right " >"
-  "String displayed to the right of the previous element of the list display."
-  :type 'string
-  :group 'workgroups)
-
-
-(defvar wg-face-abbrevs nil
-  "Assoc list mapping face abbreviations to face names.")
-
 (defmacro wg-aif (cond then &rest else)
   "Like `if', but the result of evaluating COND is bound to `it'.
 The variable `it' is available within THEN and ELSE.
@@ -468,31 +401,6 @@ COND and BODY are otherwise as documented for `when'."
 \(fn (VAR LIST) BODY...)"
     (declare (indent 1))
     `(mapcar (lambda (,(car spec)) ,@body) ,(cadr spec))))
-
-(defun wg-element-display (elt elt-string &optional current-elt-p previous-elt-p)
-  "Return display string for ELT."
-  (cond
-   ((and current-elt-p (funcall current-elt-p elt))
-    (concat wg-list-display-decor-current-left
-            elt-string
-            wg-list-display-decor-current-right))
-
-   ((and previous-elt-p (funcall previous-elt-p elt))
-    (concat wg-list-display-decor-previous-left
-            elt-string
-            wg-list-display-decor-previous-right))
-
-   (t
-    elt-string)))
-
-(defun wg-workgroup-display (workgroup index)
-  "Return display string for WORKGROUP at INDEX."
-  (if (not workgroup) wg-nowg-string
-    (wg-element-display
-     workgroup
-     (format "%d: %s" index (wg-workgroup-name workgroup))
-     'wg-current-workgroup-p
-     'wg-previous-workgroup-p)))
 
 (defmacro wg-with-gensyms (syms &rest body)
   "Bind all symbols in SYMS to `gensym's, and eval BODY."
@@ -1239,7 +1147,7 @@ If not - try to go to the parent dir and do the same."
 (defun wg-unpickel (pickel)
   "Return the deserialization of PICKEL."
   (unless (wg-pickel-p pickel)
-    (error "Attempt to unpickel a non-pickel."))
+    (error "Attempt to unpickel a non-pickel"))
   (wg-dbind (_id serial-objects serial-links result) pickel
     (gethash
      result
@@ -1779,7 +1687,7 @@ a wtree."
                        :wlist  (mapcar #'inner wins))))))
     (let ((w (car window-tree)))
       (when (and (windowp w) (window-minibuffer-p w))
-        (error "Workgroups can't operate on minibuffer-only frames."))
+        (error "Workgroups can't operate on minibuffer-only frames"))
       (inner w))))
 
 
@@ -2565,14 +2473,9 @@ If BUF's file doesn't exist, call `wg-restore-default-buffer'"
   (when uid
     (wg-find-bufobj-by-uid uid (wg-buf-list))))
 
-(defun wg-set-buffer-uid-or-error (uid &optional _buffer)
-  "Change UID value of a BUFFER's local var `wg-buffer-uid'.
-If BUFFER already has a buffer local value of `wg-buffer-uid',
-and it's not equal to UID, error."
-  (if wg-buffer-uid
-      ;;(if (string= wg-buffer-uid uid) uid
-      ;;  (error "uids don't match %S and %S" uid wg-buffer-uid))
-      (setq wg-buffer-uid uid)))
+(defun wg-set-buffer-uid-or-error (uid)
+  "Change UID value of a BUFFER's local var `wg-buffer-uid'."
+  (if wg-buffer-uid (setq wg-buffer-uid uid)))
 
 
 (defun wg-buffer-special-data (buffer)
@@ -2867,8 +2770,8 @@ WCONFIG-OR-NAME is resolved with `wg-workgroup-get-saved-wconfig'."
 Or scream unless NOERROR."
   (wg-aif (wg-current-session noerror)
       (or (wg-session-workgroup-list it)
-          (unless noerror (error "No workgroups are defined.")))
-    (unless noerror (error "Current session is nil. No workgroups are defined"))))
+          (unless noerror (error "No workgroups are defined")))
+    (unless noerror (error "Current session is nil.  No workgroups are defined"))))
 
 (defun wg-find-workgroup-by (slotkey value &optional noerror)
   "Return the workgroup on which ACCESSOR returns VALUE or error."
@@ -3165,24 +3068,6 @@ To save up to date undo info before the change."
             (wg-workgroup-weak-buf-uids workgroup)
             (cl-remove-if-not 'wg-find-buf-by-uid it)))
 
-(defun wg-display-internal (elt-fn list)
-  "Return display string built by calling ELT-FN on each element of LIST."
-  (let ((div wg-list-display-decor-divider)
-        (i -1))
-    (concat wg-list-display-decor-left-brace
-            (if (not list) (funcall elt-fn nil nil)
-              (wg-doconcat (elt list div) (funcall elt-fn elt (cl-incf i))))
-            wg-list-display-decor-right-brace)))
-
-(defun wg-workgroup-list-display (&optional workgroup-list)
-  "Return the WORKGROUP-LIST display string.
-The string contains the names of all workgroups in `wg-workgroup-list',
-decorated with faces, dividers and strings identifying the
-current and previous workgroups."
-  (when wg-current-session
-    (wg-display-internal 'wg-workgroup-display
-                         (or workgroup-list (wg-workgroup-list)))))
-
 (defun wg-create-first-wg ()
   "Create a first workgroup if needed."
   (when (and workgroups-mode
@@ -3243,7 +3128,7 @@ Ask to overwrite if a workgroup with the same name exists."
       (error "A workgroup with uid %S already exists" uid))
     (when (wg-find-workgroup-by :name name t)
       (unless (or wg-no-confirm-on-destructive-operation
-                  (y-or-n-p (format "%S exists. Overwrite? " name)))
+                  (y-or-n-p (format "%S exists.  Overwrite? " name)))
         (error "Cancelled"))))
   (wg-add-workgroup workgroup))
 
@@ -3284,24 +3169,20 @@ that name and return it.  Otherwise error."
          ;; TODO: handle errors when reading object
          (let ((session (read (wg-read-text filename))))
            (unless (wg-session-p session)
-             (error "%S is not a Workgroups session file." filename))
+             (error "%S is not a Workgroups session file" filename))
            (setf (wg-session-file-name session) filename)
            (wg-reset-internal (wg-unpickel-session-parameters session)))
 
          (if wg-control-frames (wg-restore-frames))
 
-         (wg-awhen (wg-workgroup-list)
-           (if (and wg-open-this-wg
-                    (member wg-open-this-wg (wg-workgroup-names)))
-               (wg-switch-to-workgroup wg-open-this-wg)
-             (if (and wg-load-last-workgroup
-                      (member (wg-session-parameter 'last-workgroup) (wg-workgroup-names)))
-                 (wg-switch-to-workgroup (wg-session-parameter 'last-workgroup))
-               (wg-switch-to-workgroup (car it))))
+         (when (wg-workgroup-list)
+           (if (member (wg-session-parameter 'last-workgroup) (wg-workgroup-names))
+               (wg-switch-to-workgroup (wg-session-parameter 'last-workgroup))
+             (wg-switch-to-workgroup (car (wg-workgroup-list))))
            (wg-awhen (wg-session-parameter 'prev-workgroup)
-             (when (and (member it (wg-workgroup-names))
-                        (wg-get-workgroup it t))
-               (wg-set-previous-workgroup (wg-get-workgroup it t)))))
+                     (when (and (member it (wg-workgroup-names))
+                                (wg-get-workgroup it t))
+                       (wg-set-previous-workgroup (wg-get-workgroup it t)))))
          (wg-mark-everything-unmodified))
         (t
          (wg-query-and-save-if-modified)
