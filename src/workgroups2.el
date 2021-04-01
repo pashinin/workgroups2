@@ -234,7 +234,6 @@ and inactive mode-lines, so this feature defaults to off."
   :type 'hook
   :group 'workgroups)
 
-(define-obsolete-variable-alias 'wg-switch-to-workgroup-hook 'wg-after-switch-to-workgroup-hook "20140830")
 (defcustom wg-after-switch-to-workgroup-hook nil
   "Hook run by `wg-switch-to-workgroup'."
   :type 'hook
