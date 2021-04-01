@@ -245,11 +245,6 @@ it to `major-mode'."
   :type 'string
   :group 'workgroups)
 
-(defcustom wg-display-nowg nil
-  "Display something if there are no workgroups."
-  :type 'boolean
-  :group 'workgroups)
-
 (defcustom wg-restore-remote-buffers t
   "Restore buffers that get \"t\" with `file-remote-p'."
   :type 'boolean
@@ -313,14 +308,6 @@ When nil - save/restore frame parameters to/from the first workgroup."
   "Number of past window configs to retain for undo."
   :type 'integer
   :group 'workgroups)
-
-(defcustom wg-wconfig-kill-ring-max 20
-  "Maximum length of the `wg-wconfig-kill-ring'."
-  :type 'integer
-  :group 'workgroups)
-
-(defvar wg-wconfig-kill-ring nil
-  "Ring of killed or kill-ring-saved wconfigs.")
 
 (defvar wg-buffer-uid nil
   "Symbol for the current buffer's wg-buf's uid.
@@ -464,56 +451,6 @@ features but is fucking unstable, so disabled by default"
 (defvar wg-face-abbrevs nil
   "Assoc list mapping face abbreviations to face names.")
 
-(defmacro wg-defface (face key spec doc &rest args)
-  "`defface' wrapper adding a lookup key used by `wg-fontify'."
-  (declare (indent 2))
-  `(progn
-     (cl-pushnew (cons ,key ',face) wg-face-abbrevs :test #'equal)
-     (defface ,face ,spec ,doc ,@args)))
-
-(wg-defface wg-current-workgroup-face :cur
-  '((t :inherit font-lock-constant-face :bold nil))
-  "Face used for current elements in list displays."
-  :group 'workgroups)
-
-(wg-defface wg-previous-workgroup-face :prev
-  '((t :inherit font-lock-keyword-face :bold nil))
-  "Face used for the name of the previous workgroup in the list display."
-  :group 'workgroups)
-
-(wg-defface wg-other-workgroup-face :other
-  '((t :inherit font-lock-string-face :bold nil))
-  "Face used for the names of other workgroups in the list display."
-  :group 'workgroups)
-
-(wg-defface wg-command-face :cmd
-  '((t :inherit font-lock-function-name-face :bold nil))
-  "Face used for command/operation strings."
-  :group 'workgroups)
-
-(wg-defface wg-divider-face :div
-  '((t :inherit font-lock-builtin-face :bold nil))
-  "Face used for dividers."
-  :group 'workgroups)
-
-(wg-defface wg-brace-face :brace
-  '((t :inherit font-lock-builtin-face :bold nil))
-  "Face used for left and right braces."
-  :group 'workgroups)
-
-(wg-defface wg-message-face :msg
-  '((t :inherit font-lock-string-face :bold nil))
-  "Face used for messages."
-  :group 'workgroups)
-
-(wg-defface wg-filename-face :file
-  '((t :inherit font-lock-keyword-face :bold nil))
-  "Face used for filenames."
-  :group 'workgroups)
-
-
-;;; fancy displays
-
 (defmacro wg-aif (cond then &rest else)
   "Like `if', but the result of evaluating COND is bound to `it'.
 The variable `it' is available within THEN and ELSE.
@@ -538,38 +475,21 @@ COND and BODY are otherwise as documented for `when'."
     (declare (indent 1))
     `(mapcar (lambda (,(car spec)) ,@body) ,(cadr spec))))
 
-(defmacro wg-fontify (&rest specs)
-  "A small fontification DSL.
-The results of all SPECS are `concat'd together.
-If a spec is a cons with a keyword car, apply `wg-add-face' to it.
-Other conses get evaluated, and should produce a strings.
-If a spec is a string it is used unmodified.
-Anything else is formatted with %s to produce a string."
-  (declare (indent defun))
-  `(concat
-    ,@(wg-docar (spec specs)
-        (cond ((and (consp spec)
-                    (keywordp (car spec)))
-               `(wg-add-face ,@spec))
-              ;;((listp spec) (cdr (eval spec)))
-              ;;((listp spec)
-              ;; ;;(prin1-to-string (nth 1 (eval spec)))
-              ;; )
-              ((consp spec) spec)
-              ((stringp spec) spec)
-              (t `(format "%s" ,spec))))))
-
 (defun wg-element-display (elt elt-string &optional current-elt-p previous-elt-p)
   "Return display string for ELT."
-  (cond ((and current-elt-p (funcall current-elt-p elt))
-         (wg-fontify (:cur (concat wg-list-display-decor-current-left
-                                   elt-string
-                                   wg-list-display-decor-current-right))))
-        ((and previous-elt-p (funcall previous-elt-p elt))
-         (wg-fontify (:prev (concat wg-list-display-decor-previous-left
-                                    elt-string
-                                    wg-list-display-decor-previous-right))))
-        (t (wg-fontify (:other elt-string)))))
+  (cond
+   ((and current-elt-p (funcall current-elt-p elt))
+    (concat wg-list-display-decor-current-left
+            elt-string
+            wg-list-display-decor-current-right))
+
+   ((and previous-elt-p (funcall previous-elt-p elt))
+    (concat wg-list-display-decor-previous-left
+            elt-string
+            wg-list-display-decor-previous-right))
+
+   (t
+    elt-string)))
 
 (defun wg-workgroup-display (workgroup index)
   "Return display string for WORKGROUP at INDEX."
@@ -579,34 +499,6 @@ Anything else is formatted with %s to produce a string."
      (format "%d: %s" index (wg-workgroup-name workgroup))
      'wg-current-workgroup-p
      'wg-previous-workgroup-p)))
-
-(defun wg-buffer-display (buffer index)
-  "Return display string for BUFFER.  INDEX is ignored."
-  (ignore index)
-  (if (not buffer) "No buffers"
-    (wg-element-display
-     (wg-get-buffer buffer)
-     (format "%s" (wg-buffer-name buffer))
-     'wg-current-buffer-p)))
-
-(defun wg-message (format-string &rest args)
-  "Call `message' with FORMAT-STRING and ARGS."
-  (if (> wg-log-level 0) (apply #'message format-string args)))
-
-(defmacro wg-fontified-message (&rest format)
-  "`wg-fontify' FORMAT and call `wg-message' on it."
-  (declare (indent defun))
-  `(wg-message (wg-fontify ,@format)))
-
-(defun wg-add-face (facekey string)
-  "Return a copy of STRING fontified according to FACEKEY.
-FACEKEY must be a key in `wg-face-abbrevs'."
-  (let ((face (wg-aget wg-face-abbrevs facekey))
-        (string  (copy-sequence string)))
-    (unless face (error "No face with key %s" facekey))
-    (if (not wg-use-faces) string
-      (put-text-property 0 (length string) 'face face string)
-      string)))
 
 (defmacro wg-with-gensyms (syms &rest body)
   "Bind all symbols in SYMS to `gensym's, and eval BODY."
@@ -1583,8 +1475,6 @@ Adds entries to `minor-mode-list', `minor-mode-alist' and
    (kbd "C-c")        'wg-create-workgroup
    (kbd "c")          'wg-create-workgroup
    (kbd "A")          'wg-rename-workgroup
-   (kbd "C-'")        'wg-switch-to-workgroup
-   (kbd "'")          'wg-switch-to-workgroup
    (kbd "C-v")        'wg-switch-to-workgroup
    (kbd "v")          'wg-switch-to-workgroup
 
@@ -1593,67 +1483,21 @@ Adds entries to `minor-mode-list', `minor-mode-alist' and
    (kbd "C-w")        'wg-save-session-as
    (kbd "C-f")        'wg-open-session
 
-   ;; killing and yanking
-   (kbd "C-k")        'wg-kill-workgroup
-   (kbd "k")          'wg-kill-workgroup
-   (kbd "C-y")        'wg-yank-wconfig
-   (kbd "y")          'wg-yank-wconfig
-   (kbd "M-k")        'wg-kill-workgroup-and-buffers
-   (kbd "K")          'wg-delete-other-workgroups
-
-
-   ;; workgroup switching
-   (kbd "C-j")        'wg-switch-to-workgroup-at-index
-   (kbd "j")          'wg-switch-to-workgroup-at-index
-   (kbd "0")          'wg-switch-to-workgroup-at-index-0
-   (kbd "1")          'wg-switch-to-workgroup-at-index-1
-   (kbd "2")          'wg-switch-to-workgroup-at-index-2
-   (kbd "3")          'wg-switch-to-workgroup-at-index-3
-   (kbd "4")          'wg-switch-to-workgroup-at-index-4
-   (kbd "5")          'wg-switch-to-workgroup-at-index-5
-   (kbd "6")          'wg-switch-to-workgroup-at-index-6
-   (kbd "7")          'wg-switch-to-workgroup-at-index-7
-   (kbd "8")          'wg-switch-to-workgroup-at-index-8
-   (kbd "9")          'wg-switch-to-workgroup-at-index-9
-   (kbd "C-p")        'wg-switch-to-workgroup-left
-   (kbd "p")          'wg-switch-to-workgroup-left
-   (kbd "C-n")        'wg-switch-to-workgroup-right
-   (kbd "n")          'wg-switch-to-workgroup-right
-   (kbd "C-a")        'wg-switch-to-previous-workgroup
-   (kbd "a")          'wg-switch-to-previous-workgroup
-
-
    ;; updating and reverting
    ;; wconfig undo/redo
    (kbd "C-r")        'wg-revert-workgroup
    (kbd "r")          'wg-revert-workgroup
    (kbd "C-S-r")      'wg-revert-all-workgroups
    (kbd "R")          'wg-revert-all-workgroups
-   (kbd "<left>")     'wg-undo-wconfig-change
-   (kbd "<right>")    'wg-redo-wconfig-change
-   (kbd "[")          'wg-undo-wconfig-change
-   (kbd "]")          'wg-redo-wconfig-change
-
 
    ;; wconfig save/restore
    (kbd "C-d C-s")    'wg-save-wconfig
    (kbd "C-d C-'")    'wg-restore-saved-wconfig
    (kbd "C-d C-k")    'wg-kill-saved-wconfig
 
-
-   ;; workgroup movement
-   (kbd "C-,")        'wg-offset-workgroup-left
-   (kbd "C-.")        'wg-offset-workgroup-right
-
-   ;; toggling
-   (kbd "C-t C-d")    'wg-toggle-window-dedicated-p
-
-
    ;; misc
    (kbd "!")          'wg-reset
-   (kbd "?")          'wg-help
-
-   )
+   (kbd "?")          'wg-help)
   "The keymap that sits on `wg-prefix-key'.")
 
 (defun wg-make-workgroups-mode-map ()
@@ -1663,10 +1507,6 @@ as Workgroups' command remappings."
   (let ((map (make-sparse-keymap)))
     (define-key map wg-prefix-key
       wg-prefixed-map)
-    (when (and (fboundp 'winner-undo)
-               (fboundp 'winner-redo))
-      (define-key map [remap winner-undo] 'wg-undo-wconfig-change)
-      (define-key map [remap winner-redo] 'wg-redo-wconfig-change))
     (setq workgroups-mode-map map)))
 
 
@@ -1826,14 +1666,6 @@ Return value."
             (when value
               (wg-set-win-parameter win param value))))))
     win))
-
-(defun wg-toggle-window-dedicated-p ()
-  "Toggle `window-dedicated-p' in `selected-window'."
-  (interactive)
-  (set-window-dedicated-p nil (not (window-dedicated-p)))
-  (wg-fontified-message
-    (:cmd "Window:")
-    (:cur (concat (unless (window-dedicated-p) " not") " dedicated"))))
 
 (defun wg-w-edges (w)
   "Return W's edge list."
@@ -2163,9 +1995,7 @@ If you want, restore them manually and try again."
          (wconfig (wg-current-wconfig)))
     (setf (wg-wconfig-name wconfig) name)
     (wg-workgroup-save-wconfig wconfig workgroup)
-    (wg-fontified-message
-      (:cmd "Saved: ")
-      (:cur name))))
+    (message "Saved: %s" name)))
 
 (defun wg-restore-saved-wconfig ()
   "Restore one of the current workgroup's saved wconfigs in `selected-frame'."
@@ -2179,16 +2009,12 @@ If you want, restore them manually and try again."
       workgroup))))
 
 (defun wg-kill-saved-wconfig ()
-  "Kill one of the current workgroup's saved wconfigs.
-Also add it to the wconfig kill-ring."
+  "Kill one of the current workgroup's saved wconfigs."
   (interactive)
   (let* ((workgroup (wg-current-workgroup))
          (wconfig (wg-read-saved-wconfig workgroup)))
     (wg-workgroup-kill-saved-wconfig workgroup wconfig)
-    (wg-add-to-wconfig-kill-ring wconfig)
-    (wg-fontified-message
-      (:cmd "Deleted: ")
-      (:cur (wg-wconfig-name wconfig)))))
+    (message "Deleted: %s" (wg-wconfig-name wconfig))))
 
 
 (defun wg-reverse-wconfig (wconfig &optional dir)
@@ -2886,15 +2712,6 @@ Print PROMPT"
      "Please enter a non-empty name"
      nil nil nil nil default)))
 
-(defun wg-read-workgroup-index ()
-  "Prompt for the index of a workgroup."
-  (let ((max (1- (length (wg-workgroup-list-or-error)))))
-    (wg-read-object
-     (format "%s\n\nEnter [0-%d]: " (wg-workgroup-list-display) max)
-     (lambda (obj) (and (integerp obj) (wg-within obj 0 max t)))
-     (format "Please enter an integer [%d-%d]" 0 max)
-     nil nil t)))
-
 (defun wg-minibuffer-inactive-p ()
   "Return t when `minibuffer-depth' is zero, nil otherwise."
   (zerop (minibuffer-depth)))
@@ -3120,47 +2937,6 @@ WORKGROUP's saved wconfigs."
    (wg-read-saved-wconfig-name workgroup nil t)
    workgroup))
 
-
-;;; workgroup-list reorganization commands
-
-(defun wg-offset-workgroup-left (&optional workgroup n)
-  "Offset WORKGROUP leftward in `wg-workgroup-list' cyclically."
-  (interactive (list nil current-prefix-arg))
-  (wg-cyclic-offset-workgroup (wg-get-workgroup workgroup) (or n -1))
-  (wg-fontified-message
-    (:cmd "Offset left: ")
-    (wg-workgroup-list-display)))
-
-(defun wg-offset-workgroup-right (&optional workgroup n)
-  "Offset WORKGROUP rightward in `wg-workgroup-list' cyclically."
-  (interactive (list nil current-prefix-arg))
-  (wg-cyclic-offset-workgroup (wg-get-workgroup workgroup) (or n 1))
-  (wg-fontified-message
-    (:cmd "Offset right: ")
-    (wg-workgroup-list-display)))
-
-
-;;; undo/redo commands
-
-(defun wg-undo-wconfig-change (&optional workgroup)
-  "Undo a change to the current workgroup's window-configuration."
-  (interactive)
-  (let* ((workgroup (wg-get-workgroup workgroup))
-         (undid? (wg-workgroup-offset-position-in-undo-list workgroup 1)))
-    (wg-fontified-message
-      (:cmd "Undo")
-      (:cur (if undid? "" "  No more undo info")))))
-
-(defun wg-redo-wconfig-change (&optional workgroup)
-  "Redo a change to the current workgroup's window-configuration."
-  (interactive)
-  (let* ((workgroup (wg-get-workgroup workgroup))
-         (redid? (wg-workgroup-offset-position-in-undo-list workgroup -1)))
-    (wg-fontified-message
-      (:cmd "Redo")
-      (:cur (if redid? "" "  No more redo info")))))
-
-
 ;;; window-tree commands
 ;;
 (defun wg-rename-workgroup (newname &optional workgroup)
@@ -3171,11 +2947,9 @@ WORKGROUP's saved wconfigs."
       (let* ((oldname (wg-workgroup-name workgroup)))
         (setf (wg-workgroup-name workgroup) newname)
         (wg-flag-workgroup-modified workgroup)
-        (wg-fontified-message
-          (:cmd "Renamed: ")
-          (:cur oldname)
-          (:msg " to ")
-          (:cur (wg-workgroup-name workgroup)))) )))
+        (message "Renamed: %s to %s"
+                 oldname
+                 (wg-workgroup-name workgroup))) )))
 
 (defun wg-reset (&optional force)
   "Reset Workgroups.
@@ -3186,8 +2960,7 @@ Workgroups session object, etc."
               (y-or-n-p "Really reset Workgroups? "))
     (error "Canceled"))
   (wg-reset-internal (wg-make-session))
-  (wg-save-session t)
-  (wg-fontified-message (:cmd "Reset: ") (:msg "Workgroups")))
+  (wg-save-session t))
 
 (defun wg-query-and-save-if-modified ()
   "Query for save when `wg-modified-p'."
@@ -3291,124 +3064,8 @@ that, use `wg-clone-workgroup'."
             ;; Finally
             (if wg-mess-with-buffer-list
                 (fset 'buffer-list wg-buffer-list-function))
-            (wg-fontified-message (:cmd "Switched: ") (wg-workgroup-name (wg-current-workgroup t)))
             (run-hooks 'wg-after-switch-to-workgroup-hook))
         (when current (pop wg-deactivation-list))))))
-
-(defun wg-switch-to-workgroup-at-index (index)
-  "Switch to the workgroup at INDEX in `wg-workgroup-list'."
-  (interactive (list (or current-prefix-arg (wg-read-workgroup-index))))
-  (let ((wl (wg-workgroup-list-or-error)))
-    (wg-switch-to-workgroup
-     (or (nth index wl) (error "There are only %d workgroups" (length wl))))))
-
-(cl-macrolet
-    ((define-range-of-switch-to-workgroup-at-index (num)
-       `(progn
-          ,@(wg-docar (i (wg-range 0 num))
-              `(defun ,(intern (format "wg-switch-to-workgroup-at-index-%d" i)) ()
-                 ,(format "Switch to the workgroup at index %d." i)
-                 (interactive)
-                 (wg-switch-to-workgroup-at-index ,i))))))
-  (define-range-of-switch-to-workgroup-at-index 10))
-
-(defun wg-switch-to-cyclic-nth-from-workgroup (workgroup n)
-  "Switch N workgroups cyclically from WORKGROUP in `wg-workgroup-list.'"
-  (let ((workgroup-list (wg-workgroup-list-or-error))
-        (workgroup (wg-get-workgroup workgroup t)))
-    (wg-switch-to-workgroup
-     (cond ((not workgroup) (car workgroup-list))
-           ((= 1 (length workgroup-list)) (error "There's only one workgroup"))
-           (t (wg-cyclic-nth-from-workgroup workgroup n))))))
-
-(defun wg-switch-to-workgroup-left (&optional workgroup n)
-  "Switch to WORKGROUP that is (- N) places away from WORKGROUP in `wg-workgroup-list'.
-Use `current-prefix-arg' for N if non-nil.  Otherwise N defaults to 1."
-  (interactive (list nil current-prefix-arg))
-  (wg-switch-to-cyclic-nth-from-workgroup workgroup (- (or n 1))))
-
-(defun wg-switch-to-workgroup-right (&optional workgroup n)
-  "Switch to the workgroup N places from WORKGROUP in `wg-workgroup-list'.
-Use `current-prefix-arg' for N if non-nil.  Otherwise N defaults to 1."
-  (interactive (list nil current-prefix-arg))
-  (wg-switch-to-cyclic-nth-from-workgroup workgroup (or n 1)))
-
-(defun wg-switch-to-previous-workgroup ()
-  "Switch to the previous workgroup."
-  (interactive)
-  (wg-switch-to-workgroup (wg-previous-workgroup)))
-
-(defun wg-wconfig-kill-ring ()
-  "Return `wg-wconfig-kill-ring', creating it first if necessary."
-  (or wg-wconfig-kill-ring
-      (setq wg-wconfig-kill-ring (make-ring wg-wconfig-kill-ring-max))))
-
-(defun wg-add-to-wconfig-kill-ring (wconfig)
-  "Add WCONFIG to `wg-wconfig-kill-ring'."
-  (ring-insert (wg-wconfig-kill-ring) wconfig))
-
-(defun wg-kill-workgroup (&optional workgroup)
-  "Kill WORKGROUP, saving its working-wconfig to the kill ring."
-  (interactive)
-  (let* ((workgroup (wg-get-workgroup workgroup))
-         (to (or (wg-previous-workgroup t)
-                 (wg-cyclic-nth-from-workgroup workgroup))))
-    (wg-add-to-wconfig-kill-ring (wg-workgroup-working-wconfig workgroup))
-    (wg-delete-workgroup workgroup)
-    (if (eq workgroup to) (wg-restore-wconfig (wg-make-blank-wconfig))
-      (wg-switch-to-workgroup to))
-    (wg-fontified-message
-      (:cmd "Killed: ")
-      (:cur (wg-workgroup-name workgroup)) "  "
-      (wg-workgroup-list-display))))
-
-(defun wg-yank-wconfig ()
-  "Restore a wconfig from `wg-wconfig-kill-ring'.
-Successive yanks restore wconfigs sequentially from the kill
-ring, starting at the front."
-  (interactive)
-  (when (zerop (ring-length (wg-wconfig-kill-ring)))
-    (error "The kill-ring is empty"))
-  (let ((pos (if (not (eq real-last-command 'wg-yank-wconfig)) 0
-               (1+ (or (get 'wg-yank-wconfig :position) 0)))))
-    (put 'wg-yank-wconfig :position pos)
-    (wg-restore-wconfig-undoably (ring-ref (wg-wconfig-kill-ring) pos))
-    (wg-fontified-message
-      (:cmd "Yanked: ")
-      (:msg (format "%S" pos)) "  "
-      (wg-workgroup-list-display))))
-
-(defun wg-kill-workgroup-and-buffers (&optional workgroup)
-  "Kill WORKGROUP and the buffers in its working-wconfig."
-  (interactive)
-  (let* ((workgroup (wg-get-workgroup workgroup))
-         (bufs (save-window-excursion
-                 (wg-restore-workgroup workgroup)
-                 (mapcar #'window-buffer (window-list)))))
-    (wg-kill-workgroup workgroup)
-    (mapc #'kill-buffer bufs)
-    (wg-fontified-message
-      (:cmd "Killed: ")
-      (:cur (wg-workgroup-name workgroup))
-      (:msg " and its buffers ") "\n"
-      (wg-workgroup-list-display))))
-
-(defun wg-delete-other-workgroups (&optional workgroup)
-  "Delete all workgroups but WORKGROUP."
-  (interactive)
-  (let ((workgroup (wg-get-workgroup workgroup)))
-    (unless (or wg-no-confirm-on-destructive-operation
-                (y-or-n-p "Really delete all other workgroups? "))
-      (error "Cancelled"))
-    (dolist (w (wg-workgroup-list-or-error))
-      (unless (eq w workgroup)
-        (wg-delete-workgroup w)))
-    (unless (wg-current-workgroup-p workgroup)
-      (wg-switch-to-workgroup workgroup))
-    (wg-fontified-message
-      (:cmd "Deleted: ")
-      (:msg "All workgroups but ")
-      (:cur (wg-workgroup-name workgroup)))))
 
 (defun wg-revert-workgroup (&optional workgroup)
   "Restore WORKGROUP's window configuration to its state at the last save."
@@ -3418,9 +3075,7 @@ ring, starting at the front."
     (if (wg-current-workgroup-p workgroup)
         (wg-restore-wconfig-undoably base-wconfig)
       (wg-add-wconfig-to-undo-list workgroup base-wconfig))
-    (wg-fontified-message
-      (:cmd "Reverted: ")
-      (:cur (wg-workgroup-name workgroup)))))
+    (message "Reverted: %s" (wg-workgroup-name workgroup))))
 
 (defun wg-revert-all-workgroups ()
   "Revert all workgroups to their base wconfigs.
@@ -3428,9 +3083,7 @@ Only workgroups' working-wconfigs in `selected-frame' are
 reverted."
   (interactive)
   (mapc #'wg-revert-workgroup (wg-workgroup-list-or-error))
-  (wg-fontified-message
-    (:cmd "Reverted: ")
-    (:msg "All")))
+  (message "Reverted: All"))
 
 (defun wg-workgroup-state-table (&optional frame)
   "Return FRAME's workgroup table, creating it first if necessary."
@@ -3563,13 +3216,12 @@ To save up to date undo info before the change."
 
 (defun wg-display-internal (elt-fn list)
   "Return display string built by calling ELT-FN on each element of LIST."
-  (let ((div (wg-add-face :div wg-list-display-decor-divider))
+  (let ((div wg-list-display-decor-divider)
         (i -1))
-    (wg-fontify
-      (:brace wg-list-display-decor-left-brace)
-      (if (not list) (funcall elt-fn nil nil)
-        (wg-doconcat (elt list div) (funcall elt-fn elt (cl-incf i))))
-      (:brace wg-list-display-decor-right-brace))))
+    (concat wg-list-display-decor-left-brace
+            (if (not list) (funcall elt-fn nil nil)
+              (wg-doconcat (elt list div) (funcall elt-fn elt (cl-incf i))))
+            wg-list-display-decor-right-brace)))
 
 (defun wg-workgroup-list-display (&optional workgroup-list)
   "Return the WORKGROUP-LIST display string.
@@ -3664,14 +3316,6 @@ that name and return it.  Otherwise error."
           (wg-make-and-add-workgroup workgroup)
         (wg-get-workgroup workgroup))))  ; Call this again for its error message
 
-(defun wg-cyclic-offset-workgroup (workgroup n)
-  "Offset WORKGROUP's position in `wg-workgroup-list' by N."
-  (let ((workgroup-list (wg-workgroup-list-or-error)))
-    (unless (member workgroup workgroup-list)
-      (error "Workgroup isn't present in `wg-workgroup-list'."))
-    (setf (wg-workgroup-list) (wg-cyclic-offset-elt workgroup workgroup-list n)
-          (wg-session-modified (wg-current-session)) t)))
-
 (defun wg-read-text (path)
   "Read text with PATH, using `utf-8' coding."
   (decode-coding-string
@@ -3707,12 +3351,11 @@ that name and return it.  Otherwise error."
              (when (and (member it (wg-workgroup-names))
                         (wg-get-workgroup it t))
                (wg-set-previous-workgroup (wg-get-workgroup it t)))))
-         (wg-fontified-message (:cmd "Loaded: ") (:file filename))
          (wg-mark-everything-unmodified))
         (t
          (wg-query-and-save-if-modified)
          (wg-reset-internal (wg-make-session :file-name filename))
-         (wg-fontified-message (:cmd "(New Workgroups session file)")))))
+         (message "(New Workgroups session file)"))))
 (defalias 'wg-find-session-file 'wg-open-session)
 
 (defun wg-write-sexp-to-file (sexp file)
@@ -3777,7 +3420,6 @@ confirmation is required unless you supply a prefix argument."
         (setq fl (delete (selected-frame) fl))
         (wg-set-session-parameter 'frame-list (mapcar 'wg-frame-to-wconfig fl))))
   (wg-write-sexp-to-file (wg-pickel-all-session-parameters) filename)
-  (wg-fontified-message (:cmd "Wrote: ") (:file filename))
   (wg-mark-everything-unmodified))
 (defalias 'wg-write-session-file 'wg-save-session-as)
 
@@ -3800,7 +3442,6 @@ Resets all frame parameters, buffer-local vars, current session
 object, etc.  SESSION nil defaults to a new, blank session."
   (mapc 'wg-reset-frame (frame-list))
   (mapc 'wg-reset-buffer (wg-buffer-list-emacs))
-  (setq wg-wconfig-kill-ring nil)
   (setq wg-current-session session))
 
 (defun wg-all-buf-uids (&optional session buffer-list)
@@ -3966,41 +3607,6 @@ WEAK non-nil means weakly associate it.  Otherwise strongly associate it."
     (wg-awhen (wg-current-workgroup t)
       (wg-workgroup-dissociate-bufobj it (current-buffer)))))
 
-(defun wg-associate-visible-buffers-with-workgroup (&optional workgroup weak)
-  "Associate all buffers visible in `selected-frame' with WORKGROUP.
-WEAK non-nil means weakly associate them.  Otherwise strongly
-associate them."
-  (interactive (list nil current-prefix-arg))
-  (let ((workgroup (wg-get-workgroup workgroup))
-        (buffers (mapcar 'window-buffer (window-list))))
-    (dolist (buffer buffers)
-      (wg-workgroup-associate-bufobj workgroup buffer weak))
-    (wg-fontified-message
-      (:cmd (format "%s associated: " (if weak "Weakly" "Strongly")))
-      (wg-display-internal 'wg-buffer-display buffers))))
-
-(defun wg-dissociate-buffer-from-workgroup (&optional workgroup buffer)
-  "Dissociate BUFFER from WORKGROUP."
-  (interactive (list nil nil))
-  (let ((workgroup (wg-get-workgroup workgroup))
-        (buffer (or buffer (current-buffer))))
-    (wg-message
-     (if (wg-workgroup-dissociate-bufobj workgroup buffer)
-         "Dissociated %S from %s" "%S isn't associated with %s")
-     (wg-buffer-name buffer)
-     (wg-workgroup-name workgroup))))
-
-(defun wg-associate-buffers (workgroup window-or-emacs-window-tree)
-  "Associate the buffers visible in window elements of
-WINDOW-OR-EMACS-WINDOW-TREE with the given WORKGROUP.
-WINDOW-OR-EMACS-WINDOW-TREE must be either a window or a tree of
-the form produced by `(car (window-tree))'."
-  (if (windowp window-or-emacs-window-tree)
-      (with-current-buffer (window-buffer window-or-emacs-window-tree)
-        (setq wg-buffer-workgroup workgroup))
-    (dolist (w (cddr window-or-emacs-window-tree))
-      (when w (wg-associate-buffers workgroup w)))))
-
 (defun wg-workgroup-bufobj-association-type (workgroup bufobj)
   "Return BUFOBJ's association-type in WORKGROUP, or nil if unassociated."
   (let ((uid (wg-bufobj-uid-or-add bufobj)))
@@ -4060,8 +3666,6 @@ ARG is anything else, turn on `workgroups-mode'."
     (wg-disable-all-advice)
     (wg-add-or-remove-workgroups-hooks t)
     (run-hooks 'workgroups-mode-exit-hook)))
-  (wg-fontified-message
-    (:cmd "Workgroups Mode: ") (:msg (if workgroups-mode "on" "off")))
   (wg-create-first-wg)
   workgroups-mode)
 

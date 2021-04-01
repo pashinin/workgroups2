@@ -5,12 +5,6 @@
 (require 'cl-lib)
 (require 'workgroups2)
 
-;;(defmacro w-all-buf-uids (value)
-;;  "Test `wg-all-buf-uids'."
-;;  (declare (indent 2))
-;;  `(progn
-;;     (defface ,face ,spec ,doc ,@args)))
-
 (ert-deftest 000-initial ()
   ;;(make-frame)
   (if (file-exists-p "/tmp/wg-tests.log")
