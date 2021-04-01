@@ -1473,10 +1473,8 @@ Adds entries to `minor-mode-list', `minor-mode-alist' and
 
    ;; workgroups
    (kbd "C-c")        'wg-create-workgroup
-   (kbd "c")          'wg-create-workgroup
    (kbd "A")          'wg-rename-workgroup
    (kbd "C-v")        'wg-switch-to-workgroup
-   (kbd "v")          'wg-switch-to-workgroup
 
    ;; session
    (kbd "C-s")        'wg-save-session
@@ -1486,7 +1484,6 @@ Adds entries to `minor-mode-list', `minor-mode-alist' and
    ;; updating and reverting
    ;; wconfig undo/redo
    (kbd "C-r")        'wg-revert-workgroup
-   (kbd "r")          'wg-revert-workgroup
    (kbd "C-S-r")      'wg-revert-all-workgroups
    (kbd "R")          'wg-revert-all-workgroups
 
@@ -1496,7 +1493,6 @@ Adds entries to `minor-mode-list', `minor-mode-alist' and
    (kbd "C-d C-k")    'wg-kill-saved-wconfig
 
    ;; misc
-   (kbd "!")          'wg-reset
    (kbd "?")          'wg-help)
   "The keymap that sits on `wg-prefix-key'.")
 
@@ -2951,17 +2947,6 @@ WORKGROUP's saved wconfigs."
                  oldname
                  (wg-workgroup-name workgroup))) )))
 
-(defun wg-reset (&optional force)
-  "Reset Workgroups.
-Resets all frame parameters, buffer-local vars, the current
-Workgroups session object, etc."
-  (interactive "P")
-  (unless (or force wg-no-confirm-on-destructive-operation
-              (y-or-n-p "Really reset Workgroups? "))
-    (error "Canceled"))
-  (wg-reset-internal (wg-make-session))
-  (wg-save-session t))
-
 (defun wg-query-and-save-if-modified ()
   "Query for save when `wg-modified-p'."
   (or (not (wg-modified-p))
@@ -2984,9 +2969,8 @@ that, use `wg-clone-workgroup'."
   (interactive (list (wg-read-new-workgroup-name) current-prefix-arg))
 
   (unless (file-exists-p (wg-get-session-file))
-    (wg-reset t)
+    (wg-reset-internal (wg-make-session))
     (wg-save-session t))
-
 
   (unless wg-current-session
     ;; code extracted from `wg-open-session'.
