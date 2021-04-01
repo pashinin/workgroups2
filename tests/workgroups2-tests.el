@@ -21,12 +21,13 @@
   ;;    (delete-file "/tmp/wg-test"))
   (setq wg-session-file "/tmp/wg-test")
   ;;(setq wg-session-load-on-start nil)
-  (let (message-log-max)
-    (workgroups-mode 1))
-  (should workgroups-mode)
+  (wg-reset-internal (wg-make-session))
+  (wg-open-session wg-session-file)
   (should (string= (wg-get-session-file) "/tmp/wg-test")))
 
 (ert-deftest 030-wg-utils ()
+  (workgroups-mode 1)
+  ;; (message "(wg-all-buf-uids)=%s" (wg-all-buf-uids))
   (should (= (length (wg-all-buf-uids)) 1))
   (should (wg-frame-to-wconfig))
   )
@@ -38,10 +39,6 @@
   (split-window-vertically)
   (switch-to-buffer "*Messages*")
   ;; Check 2 buffers
-  ;;(should-not (window-tree))
-  ;;(should-not (wg-window-tree-to-wtree))
-  ;;(should (= (length (wg-all-buf-uids)) 2))
-  ;;(should-not (wg-current-workgroup))
   (unless (string-equal "initial_terminal" (terminal-name (selected-frame)))
     (should (wg-session-modified (wg-current-session)))))
 
@@ -127,41 +124,7 @@
 
 ;; Bugs
 
-;; https://github.com/pashinin/workgroups2/issues/48
-;;(ert-deftest 500-bug-48 ()
-;;  ;; Create a bunch of files for 2 workgroups
-;;  (make-directory "/tmp/wg1" t)
-;;  (make-directory "/tmp/wg2" t)
-;;  (dotimes (i 20)
-;;    (let ((file (format "/tmp/wg1/file_%.2d.\n" (1+ i))))
-;;      (unless (file-exists-p file)
-;;        (write-file file))
-;;      (find-file file)))
-;;  (wg-create-workgroup "wg2" t)
-;;  (dotimes (i 20)
-;;    (let ((file (format "/tmp/wg2/file_%.2d.\n" (+ i 41))))
-;;      (unless (file-exists-p file)
-;;        (write-file file))
-;;      (find-file file)))
-;;
-;;  ;; Reopen, resave
-;;  (workgroups-mode 0)
-;;  (workgroups-mode 1)
-;;  (wg-save-session)     ;; this removes BUF objects, I think garbage collection
-;;
-;;  ;;(should (= (length (wg-session-buf-list (wg-current-session))) 3))
-;;  (let* ((bufs (wg-session-buf-list (wg-current-session)))
-;;         (bufs-len (length bufs))
-;;         (wg1 (wg-get-workgroup "First workgroup"))
-;;         (wg2 (wg-get-workgroup "wg2"))
-;;         (bufs1 (wg-workgroup-associated-bufs wg1))
-;;         (bufs2 (wg-workgroup-associated-bufs wg2))
-;;         (len1 (length bufs1))
-;;         (len2 (length bufs2)))
-;;    ;;(wg-workgroup-associated-bufs)
-;;    (should (>= bufs-len 40))
-;;    (should (>= len1 20))
-;;    (should (>= len2 20))))
+;; https://github.com/pashinin/workgroups2/issues/48 TODO
 
 (provide 'workgroups2-tests)
 ;;; workgroups2-tests.el ends here

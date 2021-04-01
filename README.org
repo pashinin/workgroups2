@@ -36,7 +36,6 @@ By default prefix is: "C-c z" (To change it - see settings below)
 #+begin_example
 <prefix> <key>
 <prefix> c    - create workgroup
-<prefix> A    - rename workgroup
 <prefix> k    - kill workgroup
 <prefix> v    - switch to workgroup
 <prefix> C-s  - save session

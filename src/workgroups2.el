@@ -54,7 +54,6 @@
 ;; <prefix> <key>
 ;;
 ;; <prefix> c    - create workgroup
-;; <prefix> A    - rename workgroup
 ;; <prefix> k    - kill workgroup
 ;; <prefix> v    - switch to workgroup
 ;; <prefix> C-s  - save session
@@ -2506,8 +2505,6 @@ If BUF's file doesn't exist, call `wg-restore-default-buffer'"
       (if wg-mess-with-buffer-list
           (fset 'buffer-list wg-buffer-list-function)))))
 
-
-
 ;;; buffer object utils
 
 (defun wg-completing-read (prompt choices &optional pred require-match initial-input history default)
@@ -3406,13 +3403,12 @@ object, etc.  SESSION nil defaults to a new, blank session."
   (mapc 'wg-reset-buffer (wg-buffer-list-emacs))
   (setq wg-current-session session))
 
-(defun wg-all-buf-uids (&optional session buffer-list)
-  "Return the union of all SESSION buf-uids and BUFFER-LIST uids."
-  (cl-union (cl-reduce 'wg-string-list-union  ; (wg-session-all-buf-uids session)
-                       (wg-session-workgroup-list (or session (wg-current-session)))
+(defun wg-all-buf-uids ()
+  "Return the union of all buf-uids."
+  (cl-union (cl-reduce 'wg-string-list-union
+                       (wg-session-workgroup-list (wg-current-session))
                        :key 'wg-workgroup-all-buf-uids)
-            ;; (wg-buffer-list-all-uids buffer-list)
-            (delq nil (mapcar 'wg-buffer-uid (or buffer-list (wg-buffer-list-emacs))))
+            (delq nil (mapcar 'wg-buffer-uid (wg-buffer-list-emacs)))
             :test 'string=))
 
 (defun wg-modified-p ()
