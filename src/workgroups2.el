@@ -1468,7 +1468,6 @@ Adds entries to `minor-mode-list', `minor-mode-alist' and
 
    ;; workgroups
    (kbd "C-c")        'wg-create-workgroup
-   (kbd "A")          'wg-rename-workgroup
    (kbd "C-v")        'wg-switch-to-workgroup
 
    ;; session
@@ -2928,20 +2927,6 @@ WORKGROUP's saved wconfigs."
    (wg-read-saved-wconfig-name workgroup nil t)
    workgroup))
 
-;;; window-tree commands
-;;
-(defun wg-rename-workgroup (newname &optional workgroup)
-  "Set NEWNAME to WORKGROUP's name."
-  (interactive (list (wg-read-new-workgroup-name "New name: ") nil))
-  (let* ((workgroup (wg-get-workgroup workgroup)))
-    (when workgroup
-      (let* ((oldname (wg-workgroup-name workgroup)))
-        (setf (wg-workgroup-name workgroup) newname)
-        (wg-flag-workgroup-modified workgroup)
-        (message "Renamed: %s to %s"
-                 oldname
-                 (wg-workgroup-name workgroup))) )))
-
 (defun wg-query-and-save-if-modified ()
   "Query for save when `wg-modified-p'."
   (or (not (wg-modified-p))
@@ -3655,18 +3640,23 @@ command's docstring;  But why, when there's `apropos-command'?"
   (interactive)
   (apropos-command "^wg-"))
 
+(defun wg-all-group-names ()
+  "Get all group names."
+  (mapcar (lambda (group)
+            ;; re-shape group for `completing-read'
+            (cons (wg-workgroup-name group) group))
+          (wg-session-workgroup-list
+           (read (wg-read-text wg-session-file)))))
+
 ;;;###autoload
 (defun wg-open-workgroup ()
   "Open specific workgroup."
   (interactive)
-  (let* ((group-names (mapcar (lambda (group)
-                                ;; re-shape group for `completing-read'
-                                (cons (wg-workgroup-name group) group))
-                              (wg-session-workgroup-list
-                               (read (wg-read-text wg-session-file)))))
-         (selected-group (completing-read "Select work group: " group-names)))
-
-    (when selected-group
+  (let* ((group-names (wg-all-group-names))
+         selected-group)
+    (when (and group-names
+               (setq selected-group
+                     (completing-read "Select work group: " group-names)))
       (wg-find-session-file wg-session-file)
       (wg-switch-to-workgroup selected-group))))
 
