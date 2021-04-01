@@ -32,16 +32,6 @@
   (should workgroups-mode)
   (should (string= (wg-get-session-file) "/tmp/wg-test")))
 
-(ert-deftest 020-modeline-string ()
-  (should (string= (wg-mode-line-string) " (First workgroup:--)"))
-  (setq wg-mode-line-decor-left-brace "["
-        wg-mode-line-decor-right-brace "]")
-  (should (string= (wg-mode-line-string) " [First workgroup:--]"))
-  (setq wg-flag-modified nil)
-  (should (string= (wg-mode-line-string) " [First workgroup]"))
-  (setq wg-flag-modified t)
-  )
-
 (ert-deftest 030-wg-utils ()
   (should (= (length (wg-all-buf-uids)) 1))
   (should (wg-frame-to-wconfig))
@@ -59,15 +49,7 @@
   ;;(should (= (length (wg-all-buf-uids)) 2))
   ;;(should-not (wg-current-workgroup))
   (unless (string-equal "initial_terminal" (terminal-name (selected-frame)))
-    (should (wg-session-modified (wg-current-session))))
-
-  ;; Rename
-  (wg-rename-workgroup "asd")
-  (should (string= (wg-mode-line-string) " [asd:**]"))
-  (wg-rename-workgroup "First workgroup")
-  (should (string= (wg-mode-line-string) " [First workgroup:**]"))
-
-  )
+    (should (wg-session-modified (wg-current-session)))))
 
 (ert-deftest 055-structs ()
   (let* ((s (wg-current-session))
