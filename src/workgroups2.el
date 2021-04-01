@@ -1992,9 +1992,9 @@ If you want, restore them manually and try again."
   (let ((workgroup (wg-current-workgroup)))
     (wg-restore-wconfig-undoably
      (wg-workgroup-get-saved-wconfig
-      (wg-completing-read "Saved wconfig: "
-                          (mapcar 'wg-wconfig-name (wg-workgroup-saved-wconfigs workgroup))
-                          nil t)
+      (completing-read "Saved wconfig: "
+                       (mapcar 'wg-wconfig-name (wg-workgroup-saved-wconfigs workgroup))
+                       nil t)
       workgroup))))
 
 (defun wg-kill-saved-wconfig ()
@@ -2507,14 +2507,6 @@ If BUF's file doesn't exist, call `wg-restore-default-buffer'"
 
 ;;; buffer object utils
 
-(defun wg-completing-read (prompt choices &optional pred require-match initial-input history default)
-  "Do a completing read.  Use `ido-mode` if enabled."
-  (if ido-mode
-      (ido-completing-read prompt choices pred require-match
-                           initial-input history default)
-    (completing-read prompt choices pred require-match
-                     initial-input history default)))
-
 (defun wg-buffer-uid (buffer-or-name)
   "Return BUFFER-OR-NAME's buffer-local value of `wg-buffer-uid'."
   (buffer-local-value 'wg-buffer-uid (wg-get-buffer buffer-or-name)))
@@ -2899,8 +2891,8 @@ Or scream unless NOERROR."
 (defun wg-read-workgroup-name (&optional require-match)
   "Read a workgroup name from `wg-workgroup-names'.
 REQUIRE-MATCH to match."
-  (wg-completing-read "Workgroup: " (wg-workgroup-names) nil require-match nil nil
-                      (wg-awhen (wg-current-workgroup t) (wg-workgroup-name it))))
+  (completing-read "Workgroup: " (wg-workgroup-names) nil require-match nil nil
+                   (wg-awhen (wg-current-workgroup t) (wg-workgroup-name it))))
 
 (defun wg-new-default-workgroup-name ()
   "Return a new, unique, default workgroup name."
@@ -2914,9 +2906,9 @@ REQUIRE-MATCH to match."
 (defun wg-read-saved-wconfig-name (workgroup &optional prompt require-match)
   "Read the name of a saved wconfig, completing on the names of
 WORKGROUP's saved wconfigs."
-  (wg-completing-read (or prompt "Saved wconfig name: ")
-                      (wg-workgroup-saved-wconfig-names workgroup)
-                      nil require-match))
+  (completing-read (or prompt "Saved wconfig name: ")
+                   (wg-workgroup-saved-wconfig-names workgroup)
+                   nil require-match))
 
 (defun wg-read-saved-wconfig (workgroup)
   "Read the name of and return one of WORKGROUP's saved wconfigs."
