@@ -469,7 +469,7 @@ When a buffer can't be restored, when creating a blank wg."
   :group 'workgroups)
 
 (defconst wg-buffer-list-original (symbol-function 'buffer-list))
-(fset 'wg-buffer-list-emacs wg-buffer-list-original)
+(defalias 'wg-buffer-list-emacs wg-buffer-list-original)
 
 (defun buffer-list (&optional frame)
   "Redefinition of `buffer-list'.
@@ -616,6 +616,36 @@ COND and BODY are otherwise as documented for `when'."
   (declare (indent 1) (debug t))
   `(wg-aif ,cond (progn ,@body)))
 
+(eval-and-compile
+  ;; `wg-docar' has been used in macro.
+  (defmacro wg-docar (spec &rest body)
+    "do-style wrapper for `mapcar'.
+
+\(fn (VAR LIST) BODY...)"
+    (declare (indent 1))
+    `(mapcar (lambda (,(car spec)) ,@body) ,(cadr spec))))
+
+(defmacro wg-fontify (&rest specs)
+  "A small fontification DSL.
+The results of all SPECS are `concat'd together.
+If a spec is a cons with a keyword car, apply `wg-add-face' to it.
+Other conses get evaluated, and should produce a strings.
+If a spec is a string it is used unmodified.
+Anything else is formatted with %s to produce a string."
+  (declare (indent defun))
+  `(concat
+    ,@(wg-docar (spec specs)
+        (cond ((and (consp spec)
+                    (keywordp (car spec)))
+               `(wg-add-face ,@spec))
+              ;;((listp spec) (cdr (eval spec)))
+              ;;((listp spec)
+              ;; ;;(prin1-to-string (nth 1 (eval spec)))
+              ;; )
+              ((consp spec) spec)
+              ((stringp spec) spec)
+              (t `(format "%s" ,spec))))))
+
 (defun wg-element-display (elt elt-string &optional current-elt-p previous-elt-p)
   "Return display string for ELT."
   (cond ((and current-elt-p (funcall current-elt-p elt))
@@ -665,27 +695,6 @@ FACEKEY must be a key in `wg-face-abbrevs'."
       (put-text-property 0 (length string) 'face face string)
       string)))
 
-(defmacro wg-fontify (&rest specs)
-  "A small fontification DSL.
-The results of all SPECS are `concat'd together.
-If a spec is a cons with a keyword car, apply `wg-add-face' to it.
-Other conses get evaluated, and should produce a strings.
-If a spec is a string it is used unmodified.
-Anything else is formatted with %s to produce a string."
-  (declare (indent defun))
-  `(concat
-    ,@(wg-docar (spec specs)
-        (cond ((and (consp spec)
-                    (keywordp (car spec)))
-               `(wg-add-face ,@spec))
-              ;;((listp spec) (cdr (eval spec)))
-              ;;((listp spec)
-              ;; ;;(prin1-to-string (nth 1 (eval spec)))
-              ;; )
-              ((consp spec) spec)
-              ((stringp spec) spec)
-              (t `(format "%s" ,spec))))))
-
 (defmacro wg-with-gensyms (syms &rest body)
   "Bind all symbols in SYMS to `gensym's, and eval BODY."
   (declare (indent 1))
@@ -697,29 +706,11 @@ Abbreviation of `destructuring-bind'."
   (declare (indent 2))
   `(cl-destructuring-bind ,args ,expr ,@body))
 
-(defun wg-partition (items)
-  "Take ITEMS, return a list of N length sublists, offset by STEP.
-Iterative to prevent stack overflow."
-  (let* (acc first-2-items)
-    (while items
-      (setq first-2-items (if (> (length items) 1) (list (nth 0 items) (nth 1 items))
-                            (list (nth 1 items))))
-      (push first-2-items acc)
-      (setq items (nthcdr 2 items)))
-    (nreverse acc)))
-
 (defmacro wg-when-boundp (symbols &rest body)
   "When all SYMBOLS are bound, `eval' BODY."
   (declare (indent 1))
   `(when (and ,@(mapcar (lambda (sym) `(boundp ',sym)) symbols))
      ,@body))
-
-(defmacro wg-docar (spec &rest body)
-  "do-style wrapper for `mapcar'.
-
-\(fn (VAR LIST) BODY...)"
-  (declare (indent 1))
-  `(mapcar (lambda (,(car spec)) ,@body) ,(cadr spec)))
 
 (defmacro wg-dohash (spec &rest body)
   "do-style wrapper for `maphash'.
@@ -736,6 +727,19 @@ Iterative to prevent stack overflow."
   (declare (indent 1))
   (wg-dbind (elt seq &optional sep) spec
     `(mapconcat (lambda (,elt) ,@body) ,seq (or ,sep ""))))
+
+(eval-and-compile
+  ;; wwg-partition has been used in macro.
+  (defun wg-partition (items)
+    "Take ITEMS, return a list of N length sublists, offset by STEP.
+Iterative to prevent stack overflow."
+    (let* (acc first-2-items)
+      (while items
+        (setq first-2-items (if (> (length items) 1) (list (nth 0 items) (nth 1 items))
+                              (list (nth 1 items))))
+        (push first-2-items acc)
+        (setq items (nthcdr 2 items)))
+      (nreverse acc))))
 
 (defmacro wg-asetf (&rest places-and-values)
   "Anaphoric `setf'."
@@ -826,13 +830,15 @@ Otherwise return nil.  KEYS can be any keyword args accepted by `pushnew'."
   `(< (length ,seq-place)
       (length (cl-pushnew ,item ,seq-place ,@keys))))
 
-(defun wg-range (start end)
-  "Return a list of integers from START up to but not including END."
-  (let (accum (i start))
-    (while (< i end)
-      (push i accum)
-      (setq i (1+ i)))
-    (nreverse accum)))
+(eval-and-compile
+  ;; `wg-range' has been used in macro.
+  (defun wg-range (start end)
+    "Return a list of integers from START up to but not including END."
+    (let (accum (i start))
+      (while (< i end)
+        (push i accum)
+        (setq i (1+ i)))
+      (nreverse accum))))
 
 (defun wg-insert-before (elt list index)
   "Insert ELT into LIST before INDEX."
@@ -1609,6 +1615,11 @@ See `wg-buffer-auto-association' for allowable values of ASSOC."
          (wg-auto-associate-buffer-helper
           workgroup buffer (funcall assoc workgroup buffer)))
         (t nil)))
+
+(defvar wg-deactivation-list nil
+  "A stack of workgroups that are currently being switched away from.
+Used to avoid associating the old workgroup's buffers with the
+new workgroup during a switch.")
 
 (defun wg-auto-associate-buffer (buffer &optional frame)
   "Conditionally associate BUFFER with the current workgroup in FRAME.
@@ -3024,11 +3035,6 @@ Print PROMPT"
   "Throw an error when the minibuffer is active."
   (when (not (wg-minibuffer-inactive-p))
     (error "Exit minibuffer to use workgroups functions!")))
-
-(defvar wg-deactivation-list nil
-  "A stack of workgroups that are currently being switched away from.
-Used to avoid associating the old workgroup's buffers with the
-new workgroup during a switch.")
 
 (defun wg-flag-session-modified ()
   "Set SESSION's modified flag."
