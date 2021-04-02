@@ -2292,7 +2292,9 @@ WCONFIG-OR-NAME is resolved with `wg-workgroup-get-saved-wconfig'."
 
 (defun wg-restore-workgroup (workgroup)
   "Restore WORKGROUP in `selected-frame'."
-  (wg-restore-wconfig-undoably (wg-workgroup-working-wconfig workgroup) t))
+  (wg-unflag-undoify-window-configuration-change)
+  (wg-update-current-workgroup-working-wconfig)
+  (wg-restore-wconfig (wg-workgroup-working-wconfig workgroup)))
 
 (defun wg-workgroup-list-or-error (&optional noerror)
   "Return the value of `wg-current-session's :workgroup-list slot.
@@ -2468,13 +2470,6 @@ return WORKGROUP's current undo state."
   "Update `selected-frame's current workgroup's working-wconfig with `wg-current-wconfig'."
   (and (wg-current-workgroup t)
        (wg-set-workgroup-working-wconfig (wg-current-workgroup t) (wg-current-wconfig))))
-
-(defun wg-restore-wconfig-undoably (wconfig &optional noundo)
-  "Restore WCONFIG in `selected-frame', saving undo information.
-Skip undo when NOUNDO."
-  (when noundo (wg-unflag-undoify-window-configuration-change))
-  (wg-update-current-workgroup-working-wconfig)
-  (wg-restore-wconfig wconfig))
 
 (defun wg-update-working-wconfig-hook ()
   "Used in before advice on all functions that trigger `window-configuration-change-hook'.
