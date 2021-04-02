@@ -2397,9 +2397,6 @@ the current window-configuration."
   ;; I prefer simpler UI
   (message "Workgroup \"%s\" was created and saved." name))
 
-;; Fix compile warn.
-(defvar ecb-split-edit-window-after-start)
-
 (defun wg-switch-to-workgroup (workgroup)
   "Switch to WORKGROUP."
   (interactive (list (wg-read-workgroup-name)))
@@ -2410,19 +2407,6 @@ the current window-configuration."
       (when current (push current wg-deactivation-list))
       (unwind-protect
           (progn
-            ;; Save info about some hard-to-work-with libraries
-            (wg-set-workgroup-parameter 'ecb (and (boundp 'ecb-minor-mode)
-                                                  ecb-minor-mode))
-            ;; Before switching - turn off ECB
-            ;; https://github.com/pashinin/workgroups2/issues/34
-            (when (and (boundp 'ecb-minor-mode)
-                       (boundp 'ecb-frame)
-                       (fboundp 'ecb-deactivate)
-                       ecb-minor-mode
-                       (equal ecb-frame (selected-frame)))
-              (let ((ecb-split-edit-window-after-start 'before-deactivation))
-                (ecb-deactivate)))
-
             ;; Switch
             (wg-restore-workgroup workgroup)
             (wg-set-previous-workgroup current)
@@ -2434,16 +2418,6 @@ the current window-configuration."
                  (wg-set-session-parameter 'last-workgroup (wg-workgroup-name (wg-current-workgroup t))))
             (and (wg-previous-workgroup t)
                  (wg-set-session-parameter 'prev-workgroup (wg-workgroup-name (wg-previous-workgroup t))))
-
-            ;; If a workgroup had ECB - turn it on
-            (if (and (boundp 'ecb-minor-mode)
-                     (not ecb-minor-mode)
-                     (fboundp 'ecb-activate)
-                     (wg-workgroup-parameter (wg-current-workgroup t) 'ecb nil))
-                (let ((ecb-split-edit-window-after-start 'before-deactivation))
-                  (ecb-activate)))
-            ;;(ecb-last-window-config-before-deactivation
-            ;; (wg-workgroup-parameter (wg-current-workgroup t) 'ecb-win-config nil)))
 
             ;; `sr-speedbar'
             ;; if *SPEEDBAR* buffer is visible - set some variables
