@@ -2366,11 +2366,6 @@ WORKGROUP's saved wconfigs."
       (when (y-or-n-p "Save modified workgroups? ")
         (wg-save-session))))
 
-;; Fix compile warn
-(defvar sr-speedbar-window)
-(defvar sr-speedbar-buffer-name)
-(defvar sr-speedbar-buffer-name)
-
 (defun wg-create-workgroup (name &optional blank)
   "Create and add a workgroup named NAME.
 Optional argument BLANK non-nil (set interactively with a prefix
@@ -2418,14 +2413,6 @@ the current window-configuration."
                  (wg-set-session-parameter 'last-workgroup (wg-workgroup-name (wg-current-workgroup t))))
             (and (wg-previous-workgroup t)
                  (wg-set-session-parameter 'prev-workgroup (wg-workgroup-name (wg-previous-workgroup t))))
-
-            ;; `sr-speedbar'
-            ;; if *SPEEDBAR* buffer is visible - set some variables
-            (let* ((buffers (mapcar 'window-buffer (window-list)))
-                   (buffer-names (mapcar 'buffer-name buffers)))
-              (when (and (featurep 'sr-speedbar)
-                         (member sr-speedbar-buffer-name buffer-names))
-                (setq sr-speedbar-window (get-buffer-window sr-speedbar-buffer-name))))
 
             ;; Finally
             (if wg-mess-with-buffer-list
