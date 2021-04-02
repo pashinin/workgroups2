@@ -53,10 +53,8 @@
 ;;
 ;; <prefix> <key>
 ;;
-;; <prefix> C-c    - create workgroup
-;; <prefix> C-v    - switch to workgroup
-;; <prefix> C-s  - save session
-;; <prefix> C-f  - load session
+;; <prefix> C-c    - create new workgroup
+;; <prefix> C-v    - open existing workgroup
 ;;
 ;; Change workgroups session file,
 ;; (setq wg-session-file "~/.emacs.d/.emacs_workgroups"
@@ -1021,7 +1019,6 @@ Adds entries to `minor-mode-list', `minor-mode-alist' and
    (kbd "C-v")        'wg-open-workgroup
 
    ;; session
-   (kbd "C-s")        'wg-save-session
    (kbd "C-f")        'wg-open-session)
   "The keymap that sits on `wg-prefix-key'.")
 
@@ -2358,7 +2355,7 @@ the current window-configuration."
   (wg-switch-to-workgroup (wg-make-and-add-workgroup name blank))
 
   ;; save the session file in real time
-  (wg-save-session t)
+  (wg-save-session)
 
   ;; I prefer simpler UI
   (message "Workgroup \"%s\" was created and saved." name))
@@ -2649,11 +2646,10 @@ This makes the session visit that file, and marks it as not modified."
            (wg-session-file-name wg-current-session))
       wg-session-file))
 
-(defun wg-save-session (&optional force)
+(defun wg-save-session ()
   "Save the current Workgroups session if it's been modified.
 When FORCE - save session regardless of whether it's been modified."
-  (interactive "P")
-  (ignore force)
+  (interactive)
   (wg-save-session-as (wg-get-session-file)))
 
 (defun wg-reset-internal (session)
