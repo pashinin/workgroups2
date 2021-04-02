@@ -522,16 +522,6 @@ Otherwise return nil.  KEYS can be any keyword args accepted by `pushnew'."
   `(< (length ,seq-place)
       (length (cl-pushnew ,item ,seq-place ,@keys))))
 
-(eval-and-compile
-  ;; `wg-range' has been used in macro.
-  (defun wg-range (start end)
-    "Return a list of integers from START up to but not including END."
-    (let (accum (i start))
-      (while (< i end)
-        (push i accum)
-        (setq i (1+ i)))
-      (nreverse accum))))
-
 (defun wg-insert-before (elt list index)
   "Insert ELT into LIST before INDEX."
   (cond
@@ -541,10 +531,6 @@ Otherwise return nil.  KEYS can be any keyword args accepted by `pushnew'."
     (push elt (cdr (nthcdr (1- index) list)))
     list)))
 
-(defun wg-cyclic-nth (list n)
-  "Return the Nth element of LIST, modded by the length of list."
-  (nth (mod n (length list)) list))
-
 (defun wg-cyclic-offset-elt (elt list n)
   "Cyclically offset ELT's position in LIST by N."
   (let* ((pos (cl-position elt list)))
@@ -553,21 +539,10 @@ Otherwise return nil.  KEYS can be any keyword args accepted by `pushnew'."
                         (cl-remove elt list)
                         (mod (+ n pos) (length list))))))
 
-(defun wg-cyclic-nth-from-elt (elt list n &rest keys)
-  "Return the elt in LIST N places cyclically from ELT.
-If ELT is not present is LIST, return nil.
-KEYS is passed to `position'."
-  (let* ((pos (apply 'cl-position elt list keys)))
-    (when pos (wg-cyclic-nth list (+ pos n)) )))
-
 (defun wg-string-list-union (&optional list1 list2)
   "Return the `union' of LIST1 and LIST2, using `string=' as the test.
 This only exists to get rid of duplicate lambdas in a few reductions."
   (cl-union list1 list2 :test 'string=))
-
-
-
-;;; alists
 
 (defun wg-aget (alist key &optional default)
   "Return the value of KEY in ALIST. Uses `assq'.
@@ -582,11 +557,6 @@ If PARAM is not found, return DEFAULT which defaults to nil."
                   (setq found (cons key value))))))
     (if found new (cons (cons key value) new))))
 
-(defun wg-aremove (alist key)
-  "`remove' KEY's key-value-pair from ALIST."
-  (remove (assoc key alist) alist))
-
-
 ;;; symbols and strings
 (defun wg-get-buffer (buffer-or-name)
   "Return BUFFER-OR-NAME's buffer, or error."
@@ -596,10 +566,6 @@ If PARAM is not found, return DEFAULT which defaults to nil."
 (defun wg-buffer-name (buffer-or-name)
   "Return BUFFER-OR-NAME's `buffer-name', or error."
   (buffer-name (wg-get-buffer buffer-or-name)))
-
-(defun wg-current-buffer-p (buffer-or-name)
-  "Return t if BUFFER-OR-NAME is the current buffer, nil otherwise."
-  (eq (wg-get-buffer buffer-or-name) (current-buffer)))
 
 (defmacro wg-defstruct (name-form &rest slot-defs)
   "`defstruct' wrapper that namespace-prefixes all generated functions.
@@ -1317,7 +1283,7 @@ Frame defaults to `selected-frame'.  See `wg-buffer-auto-association'."
                              (not (or (buffer-file-name b)
                                       (eq (buffer-local-value 'major-mode b) 'dired-mode)))) ))
         (wg-auto-associate-buffer-helper
-         wg buffer (wg-local-value 'wg-buffer-auto-association wg))))))
+         wg buffer (wg-workgroup-local-value 'wg-buffer-auto-association wg))))))
 
 (defadvice switch-to-buffer (after wg-auto-associate-buffer)
   "Automatically associate the buffer with the current workgroup."
@@ -1527,18 +1493,17 @@ Return value."
              :minibuffer-scroll  (eq window minibuffer-scroll-window)
              :dedicated          (window-dedicated-p window)
              :buf-uid            (wg-buffer-uid-or-add (window-buffer window))))
-      (unless (version< emacs-version "24")
-        ;; To solve: https://github.com/pashinin/workgroups2/issues/51
-        ;; shouldn't ignore here
-        (ignore-errors
-          (wg-set-win-parameter
-           win 'next-buffers (wg-pickel (remove nil (cl-subseq (window-next-buffers window) 0 4))))
-          (wg-set-win-parameter
-           win 'prev-buffers (wg-pickel (remove nil (cl-subseq (window-prev-buffers window) 0 4)))))
-        (dolist (param '(window-side window-slot))
-          (let ((value (window-parameter window param)))
-            (when value
-              (wg-set-win-parameter win param value))))))
+      ;; To solve: https://github.com/pashinin/workgroups2/issues/51
+      ;; shouldn't ignore here
+      (ignore-errors
+        (wg-set-win-parameter
+         win 'next-buffers (wg-pickel (remove nil (cl-subseq (window-next-buffers window) 0 4))))
+        (wg-set-win-parameter
+         win 'prev-buffers (wg-pickel (remove nil (cl-subseq (window-prev-buffers window) 0 4)))))
+      (dolist (param '(window-side window-slot))
+        (let ((value (window-parameter window param)))
+          (when value
+            (wg-set-win-parameter win param value)))))
     win))
 
 (defun wg-w-edges (w)
@@ -1559,17 +1524,6 @@ Return value."
     (wg-win (setf (wg-win-edges w) edges))
     (wg-wtree (setf (wg-wtree-edges w) edges)))
   w)
-
-(defun wg-equal-wtrees (w1 w2)
-  "Return t when W1 and W2 have equal structure."
-  (cond ((and (wg-win-p w1) (wg-win-p w2))
-         (equal (wg-w-edges w1) (wg-w-edges w2)))
-        ((and (wg-wtree-p w1) (wg-wtree-p w2))
-         (and (eq (wg-wtree-dir w1) (wg-wtree-dir w2))
-              (equal (wg-wtree-edges w1) (wg-wtree-edges w2))
-              (cl-every #'wg-equal-wtrees
-                        (wg-wtree-wlist w1)
-                        (wg-wtree-wlist w2))))))
 
 (defun wg-normalize-wtree (wtree)
   "Clean up and return a new wtree from WTREE.
@@ -1614,11 +1568,9 @@ All WTREE's subwins are scaled as well."
       (error "WTREE is nil in `wg-wtree-buf-uids'!"))
   (wg-flatten-wtree wtree 'wg-win-buf-uid))
 
-
 (defun wg-wtree-unique-buf-uids (wtree)
   "Return a list of the unique buf uids of all wins in WTREE."
   (cl-remove-duplicates (wg-wtree-buf-uids wtree) :test 'string=))
-
 
 (defun wg-reset-window-tree ()
   "Delete all but one window in `selected-frame', and reset
@@ -1668,7 +1620,6 @@ a wtree."
         (error "Workgroups can't operate on minibuffer-only frames"))
       (inner w))))
 
-
 (defun wg-flatten-wtree (wtree &optional key)
   "Return a new list by flattening WTREE.
 KEY non returns returns a list of WTREE's wins.
@@ -1677,36 +1628,6 @@ KEY non-nil returns a list of the results of calling KEY on each win."
       ((inner (w) (if (wg-win-p w) (list (if key (funcall key w) w))
                     (cl-mapcan #'inner (wg-wtree-wlist w)))))
     (inner wtree)))
-
-(defun wg-reverse-wlist (w &optional dir)
-  "Reverse W's wlist and those of all its sub-wtrees in direction DIR.
-If DIR is nil, reverse WTREE horizontally.
-If DIR is 'both, reverse WTREE both horizontally and vertically.
-Otherwise, reverse WTREE vertically."
-  (cl-labels
-      ((inner (w) (if (wg-win-p w) w
-                    (wg-with-slots w ((d1 wg-wtree-dir))
-                      (wg-make-wtree
-                       :dir d1
-                       :edges (wg-wtree-edges w)
-                       :wlist (let ((wl2 (mapcar #'inner (wg-wtree-wlist w))))
-                                (if (or (eq dir 'both) (eq dir d1))
-                                    (nreverse wl2)
-                                  wl2)))))))
-    (wg-normalize-wtree (inner w))))
-
-(defun wg-wtree-move-window (wtree offset)
-  "Offset `selected-window' OFFSET places in WTREE."
-  (cl-labels
-      ((inner (w) (if (wg-win-p w) w
-                    (wg-with-slots w ((wlist wg-wtree-wlist))
-                      (wg-make-wtree
-                       :dir (wg-wtree-dir w)
-                       :edges (wg-wtree-edges w)
-                       :wlist (if (cl-find t wlist :key 'wg-win-selected)
-                                  (wg-cyclic-offset-elt (cl-find t wlist :key 'wg-win-selected) wlist offset)
-                                (mapcar #'inner wlist)))))))
-    (wg-normalize-wtree (inner wtree))))
 
 (defun wg-frame-to-wconfig (&optional frame)
   "Return the serialization (a wg-wconfig) of Emacs frame FRAME.
@@ -1890,13 +1811,6 @@ If you want, restore them manually and try again."
          (wconfig (wg-read-saved-wconfig workgroup)))
     (wg-workgroup-kill-saved-wconfig workgroup wconfig)
     (message "Deleted: %s" (wg-wconfig-name wconfig))))
-
-
-(defun wg-reverse-wconfig (wconfig &optional dir)
-  "Reverse WCONFIG's wtree's wlist in direction DIR."
-  (wg-asetf (wg-wconfig-wtree wconfig) (wg-reverse-wlist it dir))
-  wconfig)
-
 
 ;; specialbufs
 (defcustom wg-special-buffer-serdes-functions
@@ -2666,13 +2580,6 @@ Return VALUE."
       (wg-flag-workgroup-modified workgroup)
       value)))
 
-(defun wg-remove-workgroup-parameter (parameter &optional workgroup)
-  "Remove PARAMETER from WORKGROUP's parameters."
-  (let* ((workgroup (wg-get-workgroup workgroup t)))
-    (when workgroup
-      (wg-flag-workgroup-modified workgroup)
-      (wg-asetf (wg-workgroup-parameters workgroup) (wg-aremove it parameter)))))
-
 (defun wg-workgroup-local-value (variable &optional workgroup)
   "Return the value of VARIABLE in WORKGROUP.
 WORKGROUP nil defaults to the current workgroup.  If there is no
@@ -2684,8 +2591,6 @@ binding in WORKGROUP, resolve VARIABLE with `wg-session-local-value'."
              (value (wg-workgroup-parameter workgroup variable undefined)))
         (if (not (eq value undefined)) value
           (wg-session-local-value variable))))))
-(defalias 'wg-local-value 'wg-workgroup-local-value)
-
 
 (defun wg-workgroup-saved-wconfig-names (workgroup)
   "Return a new list of the names of all WORKGROUP's saved wconfigs."
@@ -2762,10 +2667,6 @@ Or scream unless NOERROR."
         (unless noerror
           (error "There are no workgroups with a %S of %S"
                  accessor value)))))
-
-(defun wg-cyclic-nth-from-workgroup (workgroup &optional n)
-  "Return the workgroup N places from WORKGROUP in `wg-workgroup-list'."
-  (wg-cyclic-nth-from-elt workgroup (wg-workgroup-list-or-error) (or n 1)))
 
 (defun wg-workgroup-names (&optional noerror)
   "Return a list of workgroup names or scream unless NOERROR."
@@ -3013,17 +2914,6 @@ Skip undo when NOUNDO."
   (when noundo (wg-unflag-undoify-window-configuration-change))
   (wg-update-current-workgroup-working-wconfig)
   (wg-restore-wconfig wconfig))
-
-(defun wg-workgroup-offset-position-in-undo-list (workgroup increment)
-  "Increment WORKGROUP's undo-pointer by INCREMENT.
-Also restore the wconfig at the incremented undo-pointer if
-WORKGROUP is current."
-  (wg-with-undo workgroup (state undo-pointer undo-list)
-    (let ((new-pointer (+ undo-pointer increment)))
-      (when (wg-within new-pointer 0 (length undo-list))
-        (when (wg-current-workgroup-p workgroup)
-          (wg-restore-wconfig-undoably (nth new-pointer undo-list) t))
-        (setf (wg-workgroup-state-undo-pointer state) new-pointer)))))
 
 (defun wg-undoify-window-configuration-change ()
   "Conditionally `wg-add-wconfig-to-undo-list'.
