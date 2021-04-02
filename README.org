@@ -35,9 +35,8 @@ By default prefix is: "C-c z" (To change it - see settings below)
 
 #+begin_example
 <prefix> <key>
-<prefix> c    - create workgroup
-<prefix> k    - kill workgroup
-<prefix> v    - switch to workgroup
+<prefix> C-c    - create workgroup
+<prefix> C-v    - open workgroup
 <prefix> C-s  - save session
 <prefix> C-f  - load session
 #+end_example
@@ -45,19 +44,8 @@ By default prefix is: "C-c z" (To change it - see settings below)
 If you want to set up this minor mode further:
 #+begin_src elisp
 (require 'workgroups2)
-;; Your settings here
-
-;;(setq wg-session-load-on-start t)    ; default: (not (daemonp))
-
 ;; Change prefix key (before activating WG)
 (setq wg-prefix-key (kbd "C-c z"))
-
-;; Set your own keyboard shortcuts to reload/save/switch WGs:
-;; "s" == "Super" or "Win"-key, "S" == Shift, "C" == Control
-(global-set-key (kbd "<pause>")     'wg-reload-session)
-(global-set-key (kbd "C-S-<pause>") 'wg-save-session)
-(global-set-key (kbd "s-z")         'wg-switch-to-workgroup)
-(global-set-key (kbd "s-/")         'wg-switch-to-previous-workgroup)
 
 (workgroups-mode 1)   ; put this one at the bottom of .emacs
 #+end_src
@@ -78,7 +66,6 @@ Hooks' names can tell when they are executed
 
 #+begin_src elisp
 workgroups-mode-hook                    ; when `workgroups-mode' is turned on
-workgroups-mode-exit-hook               ; `workgroups-mode' is turned off
 wg-after-switch-to-workgroup-hook
 #+end_src
 

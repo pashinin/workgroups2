@@ -27,9 +27,6 @@
   (should (string= (wg-get-session-file) "/tmp/wg-test")))
 
 (ert-deftest 030-wg-utils ()
-  (message "object1=%s" (wg-current-session))
-  (message "object3=%s" (wg-all-buf-uids))
-  (message "(wg-all-buf-uids)=%s" (wg-all-buf-uids))
   (workgroups-mode 1)
   (should (= (length (wg-all-buf-uids)) 1))
   (should (wg-frame-to-wconfig))
