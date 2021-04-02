@@ -139,16 +139,6 @@ Don't do it with Emacs --daemon option."
 ;; So why not allow more of of them?  A workgroup could stash an unlimited
 ;; number of wconfigs.
 ;;
-;; TODO:
-;;
-;;   * Write new commands for restoring stashed wconfigs
-;;
-;;   * Add this message on improper restoration of `base-wconfig':
-;;
-;;       "Unable to restore 'buf1', 'buf2'... Hit C-whatever to retry after
-;;        manually recreating these buffers."
-;;
-;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
