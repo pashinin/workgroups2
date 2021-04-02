@@ -386,13 +386,6 @@ COND, THEN, and ELSE are otherwise as documented for `if'."
   `(let ((it ,cond))
      (if it ,then ,@else)))
 
-(defmacro wg-awhen (cond &rest body)
-  "Like `when', but the result of evaluating COND is bound to `it'.
-The variable `it' is available within BODY.
-COND and BODY are otherwise as documented for `when'."
-  (declare (indent 1) (debug t))
-  `(wg-aif ,cond (progn ,@body)))
-
 (eval-and-compile
   ;; `wg-docar' has been used in macro.
   (defmacro wg-docar (spec &rest body)
@@ -1122,10 +1115,11 @@ If not - try to go to the parent dir and do the same."
 
 (defun wg-pickel-serialize-links (binds)
   "Return a list of serializations of the links between objects in BINDS."
-  (let (result)
+  (let (result fn)
     (wg-dohash (obj _id binds result)
-      (wg-awhen (wg-pickel-link-serializer obj)
-        (setq result (nconc (funcall it obj binds) result))))))
+               (when (setq fn (wg-pickel-link-serializer obj) )
+                 (setq result (nconc (funcall fn obj binds) result))))))
+
 (defun wg-pickel-deserialize-links (serial-links binds)
   "Return BINDS after relinking all its objects according to SERIAL-LINKS."
   (wg-destructuring-dolist ((key arg1 arg2 arg3 . rest) serial-links binds)
@@ -1671,7 +1665,8 @@ a wtree."
         (wg-window-tree-selected-window nil))
     (wg-reset-window-tree)
     (wg-restore-window-tree-helper wtree)
-    (wg-awhen wg-window-tree-selected-window (select-window it))))
+    (and wg-window-tree-selected-window
+         (select-window wg-window-tree-selected-window))))
 
 (defun wg-window-tree-to-wtree (&optional window-tree)
   "Return the serialization (a wg-wtree) of Emacs window tree WINDOW-TREE."
@@ -1983,11 +1978,11 @@ how to write your own."
                         (condition-case err
                             (apply (car item) (cdr item))
                           (error (message "%s" err)))
-                        (wg-awhen (get-buffer "*Help*")
-                          (set-buffer it)
+                        (when (get-buffer "*Help*")
+                          (set-buffer (get-buffer "*Help*"))
                           (wg-when-boundp (help-xref-stack help-xref-forward-stack)
-                            (setq help-xref-stack stack
-                                  help-xref-forward-stack forward-stack))))))))
+                                          (setq help-xref-stack stack
+                                                help-xref-forward-stack forward-stack))))))))
 
 ;; ielm
 (wg-support 'inferior-emacs-lisp-mode 'ielm
@@ -2039,10 +2034,11 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
                    (wg-get-org-agenda-view-commands)))
     (deserialize . (lambda (buffer vars)
                      (org-agenda-list)
-                     (wg-awhen (get-buffer org-agenda-buffer-name)
-                       (with-current-buffer it
-                         (wg-run-agenda-cmd vars))
-                       it)))))
+                     (let* ((buf (get-buffer org-agenda-buffer-name)))
+                       (when
+                        (with-current-buffer buf
+                          (wg-run-agenda-cmd vars))
+                        buf))))))
 
 ;; eshell
 (wg-support 'eshell-mode 'esh-mode
@@ -2069,27 +2065,27 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
 
 ;; `inferior-python-mode'
 (wg-support 'inferior-python-mode 'python
-  `((save . (python-shell-interpreter python-shell-interpreter-args))
-    (deserialize . ,(lambda (_buffer vars)
-                      (wg-dbind (pythoncmd pythonargs) vars
-                        (run-python (concat pythoncmd " " pythonargs))
-                        (wg-awhen (get-buffer (process-buffer
-                                               (python-shell-get-process)))
-                          (with-current-buffer it (goto-char (point-max)))
-                          it))))))
+            `((save . (python-shell-interpreter python-shell-interpreter-args))
+              (deserialize . ,(lambda (_buffer vars)
+                                (wg-dbind (pythoncmd pythonargs) vars
+                                          (run-python (concat pythoncmd " " pythonargs))
+                                          (let ((buf (get-buffer (process-buffer
+                                                                  (python-shell-get-process)))))
+                                            (when buf
+                                              (with-current-buffer buf (goto-char (point-max)))
+                                              buf)))))))
 
 
 ;; Sage shell ;;
 (wg-support 'inferior-sage-mode 'sage-mode
-  `((deserialize . ,(lambda (_buffer _vars)
-                      (save-window-excursion
-                        (if (boundp' sage-command)
-                            (run-sage t sage-command t)))
-                      (if (boundp 'sage-buffer)
-                          (wg-awhen sage-buffer
-                            (set-buffer it)
-                            (switch-to-buffer sage-buffer)
-                            (goto-char (point-max))))))))
+            `((deserialize . ,(lambda (_buffer _vars)
+                                (save-window-excursion
+                                  (if (boundp' sage-command)
+                                      (run-sage t sage-command t)))
+                                (when (and (boundp 'sage-buffer) sage-buffer)
+                                  (set-buffer sage-buffer)
+                                  (switch-to-buffer sage-buffer)
+                                  (goto-char (point-max)))))))
 
 ;; `inferior-ess-mode'     M-x R
 (defvar ess-history-file)
@@ -2323,10 +2319,12 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
 (defun wg-deserialize-buffer-local-variables (buf)
   "Restore BUF's buffer local variables in `current-buffer'."
   (cl-loop for ((var . val) . rest) on (wg-buf-local-vars buf)
-           do (wg-awhen (assq var wg-buffer-local-variables-alist)
-                (wg-dbind (var _ser des) it
-                  (if des (funcall des val)
-                    (set var val))))))
+           do
+           (let ((it (assq var wg-buffer-local-variables-alist)))
+             (when (assq var wg-buffer-local-variables-alist)
+               (wg-dbind (var _ser des) it
+                         (if des (funcall des val)
+                           (set var val)))))))
 
 (defmacro wg-workgroup-list ()
   "Setf'able `wg-current-session' modified slot accessor."
@@ -2643,14 +2641,12 @@ WORKGROUP should be a workgroup or nil."
                        (when workgroup (wg-workgroup-uid workgroup))))
 
 (defun wg-current-workgroup-p (workgroup &optional frame)
-  "Return t when WORKGROUP is the current workgroup, nil otherwise."
-  (wg-awhen (wg-current-workgroup t frame)
-    (eq workgroup it)))
+  "Return t when WORKGROUP is the current workgroup of FRAME, nil otherwise."
+  (eq workgroup (wg-current-workgroup t frame)))
 
-(defun wg-previous-workgroup-p (workgroup &optional frame)
-  "Return t when WORKGROUP is the previous workgroup, nil otherwise."
-  (wg-awhen (wg-previous-workgroup t frame)
-    (eq workgroup it)))
+(defun wg-previous-workgroup-p (workgroup frame)
+  "Return t when WORKGROUP is the previous workgroup of FRAME, nil otherwise."
+  (eq workgroup (wg-previous-workgroup t frame)))
 
 (defun wg-get-workgroup (obj &optional noerror)
   "Return a workgroup from OBJ.
@@ -2794,8 +2790,14 @@ Or scream unless NOERROR."
 (defun wg-read-workgroup-name (&optional require-match)
   "Read a workgroup name from `wg-workgroup-names'.
 REQUIRE-MATCH to match."
-  (completing-read "Workgroup: " (wg-workgroup-names) nil require-match nil nil
-                   (wg-awhen (wg-current-workgroup t) (wg-workgroup-name it))))
+  (completing-read "Workgroup: "
+                   (wg-workgroup-names)
+                   nil
+                   require-match
+                   nil
+                   nil
+                   (and (wg-current-workgroup t)
+                        (wg-workgroup-name (wg-current-workgroup t)))))
 
 (defun wg-new-default-workgroup-name ()
   "Return a new, unique, default workgroup name."
@@ -2892,10 +2894,10 @@ that, use `wg-clone-workgroup'."
 
             ;; After switch
             ;; Save "last-workgroup" to the session params
-            (wg-awhen (wg-current-workgroup t)
-                      (wg-set-session-parameter 'last-workgroup (wg-workgroup-name it)))
-            (wg-awhen (wg-previous-workgroup t)
-                      (wg-set-session-parameter 'prev-workgroup (wg-workgroup-name it)))
+            (and (wg-current-workgroup t)
+                 (wg-set-session-parameter 'last-workgroup (wg-workgroup-name (wg-current-workgroup t))))
+            (and (wg-previous-workgroup t)
+                 (wg-set-session-parameter 'prev-workgroup (wg-workgroup-name (wg-previous-workgroup t))))
 
             ;; If a workgroup had ECB - turn it on
             (if (and (boundp 'ecb-minor-mode)
@@ -2999,7 +3001,8 @@ current command."
   "Add WCONFIG to WORKGROUP's undo list, truncating its future if necessary."
   (wg-with-undo workgroup (state undo-pointer undo-list)
     (let ((undo-list (cons nil (nthcdr undo-pointer undo-list))))
-      (wg-awhen (nthcdr wg-wconfig-undo-list-max undo-list) (setcdr it nil))
+      (when (nthcdr wg-wconfig-undo-list-max undo-list)
+        (setcdr (nthcdr wg-wconfig-undo-list-max undo-list) nil))
       (setf (wg-workgroup-state-undo-list state) undo-list))
     (setf (wg-workgroup-state-undo-pointer state) 0))
   (wg-set-workgroup-working-wconfig workgroup wconfig))
@@ -3017,8 +3020,8 @@ return WORKGROUP's current undo state."
 
 (defun wg-update-current-workgroup-working-wconfig ()
   "Update `selected-frame's current workgroup's working-wconfig with `wg-current-wconfig'."
-  (wg-awhen (wg-current-workgroup t)
-    (wg-set-workgroup-working-wconfig it (wg-current-wconfig))))
+  (and (wg-current-workgroup t)
+       (wg-set-workgroup-working-wconfig (wg-current-workgroup t) (wg-current-wconfig))))
 
 (defun wg-restore-wconfig-undoably (wconfig &optional noundo)
   "Restore WCONFIG in `selected-frame', saving undo information.
@@ -3108,16 +3111,19 @@ Also delete all references to it by `wg-workgroup-state-table',
   (wg-flag-session-modified)
   workgroup)
 
-(defun wg-add-workgroup (workgroup &optional index)
-  "Add WORKGROUP to `wg-workgroup-list' at INDEX or the end.
+(defun wg-add-workgroup (workgroup)
+  "Add WORKGROUP to `wg-workgroup-list' at the end.
 If a workgroup with the same name exists, overwrite it."
-  (wg-awhen (wg-find-workgroup-by :name (wg-workgroup-name workgroup) t)
-    (unless index (setq index (cl-position it (wg-workgroup-list-or-error))))
-    (wg-delete-workgroup it))
-  (wg-asetf (wg-workgroup-list)
-            (wg-insert-before workgroup it (or index (length it))))
-  (wg-flag-session-modified)
-  workgroup)
+  (let ((group (wg-find-workgroup-by :name (wg-workgroup-name workgroup) t))
+        index)
+    (when group
+      (setq index (cl-position group (wg-workgroup-list-or-error)))
+      (wg-delete-workgroup it))
+
+    (wg-asetf (wg-workgroup-list)
+              (wg-insert-before workgroup it (or index (length it))))
+    (wg-flag-session-modified)
+    workgroup))
 
 (defun wg-check-and-add-workgroup (workgroup)
   "Add WORKGROUP to `wg-workgroup-list'.
@@ -3179,10 +3185,11 @@ that name and return it.  Otherwise error."
            (if (member (wg-session-parameter 'last-workgroup) (wg-workgroup-names))
                (wg-switch-to-workgroup (wg-session-parameter 'last-workgroup))
              (wg-switch-to-workgroup (car (wg-workgroup-list))))
-           (wg-awhen (wg-session-parameter 'prev-workgroup)
-                     (when (and (member it (wg-workgroup-names))
-                                (wg-get-workgroup it t))
-                       (wg-set-previous-workgroup (wg-get-workgroup it t)))))
+           (let ((prev (wg-session-parameter 'prev-workgroup)))
+             (when prev
+               (when (and (member prev (wg-workgroup-names))
+                          (wg-get-workgroup prev t))
+                 (wg-set-previous-workgroup (wg-get-workgroup prev t))))))
          (wg-mark-everything-unmodified))
         (t
          (wg-query-and-save-if-modified)
@@ -3206,9 +3213,10 @@ that name and return it.  Otherwise error."
 
   ;; Update every workgroup's base wconfig with `wg-workgroup-update-base-wconfig'
   (dolist (workgroup (wg-workgroup-list))
-    (wg-awhen (wg-workgroup-selected-frame-wconfig workgroup)
-      (setf (wg-workgroup-base-wconfig workgroup) it
-            (wg-workgroup-selected-frame-wconfig workgroup) nil)))
+    (let ((selected (wg-workgroup-selected-frame-wconfig workgroup)))
+      (when selected
+        (setf (wg-workgroup-base-wconfig workgroup) selected
+              (wg-workgroup-selected-frame-wconfig workgroup) nil))))
 
   ;; Garbage collection
 
@@ -3382,16 +3390,12 @@ And the parameters of all its workgroups."
 In which it most recently appeared.")
 (make-variable-buffer-local 'wg-buffer-workgroup)
 
-(defun wg-workgroup-associated-buf-uids (&optional workgroup)
-  "Return a new list containing all of WORKGROUP's associated buf uids."
-  (wg-awhen (or workgroup (wg-current-workgroup t))
-    (append (wg-workgroup-strong-buf-uids it)
-            (wg-workgroup-weak-buf-uids it))))
-
-(defun wg-workgroup-associated-bufs (workgroup)
-  "Return a new list containing all of WORKGROUP's associated bufs."
-  (delete nil (mapcar 'wg-find-buf-by-uid
-                      (wg-workgroup-associated-buf-uids workgroup))))
+(defun wg-workgroup-associated-buf-uids ()
+  "Return a new list containing all of 's associated buf uids."
+  (let ((group (wg-current-workgroup t)))
+    (when group
+      (append (wg-workgroup-strong-buf-uids group)
+              (wg-workgroup-weak-buf-uids group)))))
 
 (defun wg-workgroup-strongly-associate-bufobj (workgroup bufobj)
   "Strongly associate BUFOBJ with WORKGROUP."
@@ -3434,9 +3438,9 @@ WEAK non-nil means weakly associate it.  Otherwise strongly associate it."
 
 (defun wg-auto-dissociate-buffer-hook ()
   "`kill-buffer-hook' that automatically dissociates buffers from workgroups."
-  (when wg-dissociate-buffer-on-kill-buffer
-    (wg-awhen (wg-current-workgroup t)
-      (wg-workgroup-dissociate-bufobj it (current-buffer)))))
+  (and wg-dissociate-buffer-on-kill-buffer
+       (wg-current-workgroup t)
+       (wg-workgroup-dissociate-bufobj (wg-current-workgroup t) (current-buffer))))
 
 (defun wg-workgroup-bufobj-association-type (workgroup bufobj)
   "Return BUFOBJ's association-type in WORKGROUP, or nil if unassociated."
