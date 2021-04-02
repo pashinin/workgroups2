@@ -15,30 +15,6 @@
                   (point-max)
                   (if ok "/tmp/wg-tests-ok.log" "/tmp/wg-tests.log"))))
 
-(defun ert--run-test-internal (test-execution-info)
-  "Low-level function to run a test according to TEST-EXECUTION-INFO.
-
-My version without `save-window-excursion'."
-  (setf (ert--test-execution-info-next-debugger test-execution-info) debugger
-        (ert--test-execution-info-ert-debug-on-error test-execution-info)
-        ert-debug-on-error)
-  (catch 'ert--pass
-    ;;(with-temp-buffer
-    ;;(save-window-excursion
-    (let ((debugger (lambda (&rest args)
-                      (ert--run-test-debugger test-execution-info args)))
-          (debug-on-error t)
-          (debug-on-quit t)
-          (debug-ignored-errors nil)
-          (ert--infos '()))
-      (funcall (ert-test-body (ert--test-execution-info-test
-                               test-execution-info))))
-    ;;))
-    (ert-pass))
-  (setf (ert--test-execution-info-result test-execution-info)
-        (make-ert-test-passed))
-  nil)
-
 (defun my-ert-run-tests ()
   "My variant of `ert-run-tests-batch-and-exit'.
 To hack this:
