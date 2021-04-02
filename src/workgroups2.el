@@ -275,11 +275,7 @@ When a buffer can't be restored, when creating a blank wg."
   :type 'string
   :group 'workgroups)
 
-
-;;
-;; Crazy stuff...
-;;
-
+;; {{ crazy stuff to delete soon
 (defconst wg-buffer-list-original (symbol-function 'buffer-list))
 (defalias 'wg-buffer-list-emacs wg-buffer-list-original)
 
@@ -298,21 +294,7 @@ Remove file and dired buffers that are not associated with workgroup."
 
 (defconst wg-buffer-list-function (symbol-function 'buffer-list))
 (fset 'buffer-list wg-buffer-list-original)
-
-;; locate-dominating-file
-(defcustom wg-mess-with-buffer-list nil
-  "Redefine `buffer-list' to show buffers for each workgroup.
-
-Crazy stuff that allows to reduce amount of code, gives new
-features but is fucking unstable, so disabled by default"
-  :type 'boolean
-  :group 'workgroups
-  :set (lambda (sym val)
-         (custom-set-default sym val)
-         (if (and workgroups-mode val)
-             (fset 'buffer-list wg-buffer-list-function)
-           (fset 'buffer-list wg-buffer-list-original))))
-(fset 'buffer-list wg-buffer-list-original)
+;; }}
 
 (eval-and-compile
   ;; `wg-docar' has been used in macro.
@@ -1955,13 +1937,10 @@ If BUF's file doesn't exist, call `wg-restore-default-buffer'"
   "Restore BUF, return it and maybe SWITCH to it."
   (when buf
     (fset 'buffer-list wg-buffer-list-original)
-    (prog1
-        (or (wg-restore-existing-buffer buf switch)
-            (wg-restore-special-buffer buf switch)  ;; non existent dired problem
-            (wg-restore-file-buffer buf switch)
-            (progn (wg-restore-default-buffer switch) nil))
-      (if wg-mess-with-buffer-list
-          (fset 'buffer-list wg-buffer-list-function)))))
+    (or (wg-restore-existing-buffer buf switch)
+        (wg-restore-special-buffer buf switch)  ;; non existent dired problem
+        (wg-restore-file-buffer buf switch)
+        (progn (wg-restore-default-buffer switch) nil))))
 
 ;;; buffer object utils
 
@@ -2406,9 +2385,6 @@ the current window-configuration."
             (and (wg-previous-workgroup t)
                  (wg-set-session-parameter 'prev-workgroup (wg-workgroup-name (wg-previous-workgroup t))))
 
-            ;; Finally
-            (if wg-mess-with-buffer-list
-                (fset 'buffer-list wg-buffer-list-function))
             (run-hooks 'wg-after-switch-to-workgroup-hook))
         (when current (pop wg-deactivation-list))))))
 
