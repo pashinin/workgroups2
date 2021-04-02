@@ -2761,11 +2761,6 @@ And the parameters of all its workgroups."
               (cl-mapcar 'wg-unpickel-workgroup-parameters it))
     copy))
 
-(defvar wg-buffer-workgroup nil
-  "Associating each buffer with the workgroup.
-In which it most recently appeared.")
-(make-variable-buffer-local 'wg-buffer-workgroup)
-
 (defun wg-workgroup-associated-buf-uids ()
   "Return a new list containing all of 's associated buf uids."
   (let ((group (wg-current-workgroup t)))
