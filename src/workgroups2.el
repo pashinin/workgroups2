@@ -1013,32 +1013,21 @@ Adds entries to `minor-mode-list', `minor-mode-alist' and
 (defvar wg-prefixed-map
   (wg-fill-keymap
    (make-sparse-keymap)
-
-   ;; workgroups
    (kbd "C-c")        'wg-create-workgroup
-   (kbd "C-v")        'wg-open-workgroup
-
-   ;; session
-   (kbd "C-f")        'wg-open-session)
+   (kbd "C-v")        'wg-open-workgroup)
   "The keymap that sits on `wg-prefix-key'.")
 
 (defun wg-make-workgroups-mode-map ()
   "Return Workgroups' minor-mode-map.
-This map includes `wg-prefixed-map' on `wg-prefix-key', as well
-as Workgroups' command remappings."
+This map includes `wg-prefixed-map' on `wg-prefix-key'"
   (let ((map (make-sparse-keymap)))
     (define-key map wg-prefix-key
       wg-prefixed-map)
     (setq workgroups-mode-map map)))
 
-
 (defun wg-min-size (dir)
   "Return the minimum window size in split direction DIR."
   (if dir wg-window-min-height wg-window-min-width))
-
-(defun wg-actual-min-size (dir)
-  "Return the actual minimum window size in split direction DIR."
-  (if dir wg-actual-min-height wg-actual-min-width))
 
 (defmacro wg-with-edges (w spec &rest body)
   "Bind W's edge list to SPEC and eval BODY."
@@ -1061,25 +1050,6 @@ as Workgroups' command remappings."
   "Set W's edges in DIR with bounds LS HS LB and HB."
   (wg-set-edges w (if dir (list ls lb hs hb) (list lb ls hb hs))))
 
-(defun wg-first-win (w)
-  "Return the first actual window in W."
-  (if (wg-win-p w) w
-    (wg-first-win (car (wg-wtree-wlist w)))))
-
-(defun wg-last-win (w)
-  "Return the last actual window in W."
-  (if (wg-win-p w) w
-    (wg-last-win (car (last (wg-wtree-wlist w))))))
-
-(defun wg-minify-win (w)
-  "Set W's edges to the smallest allowable."
-  (let* ((edges (wg-w-edges w))
-         (left (car edges))
-         (top (cadr edges)))
-    (wg-set-edges w (list left top
-                          (+ left wg-actual-min-width)
-                          (+ top  wg-actual-min-height)))))
-
 (defun wg-w-size (w &optional height)
   "Return the width or height of W, calculated from its edge list."
   (wg-with-edges w (l1 t1 r1 b1)
@@ -1101,6 +1071,12 @@ as Workgroups' command remappings."
       ((wscale (width)  (truncate (* width  width-scale)))
        (hscale (height) (truncate (* height height-scale))))
     (wg-adjust-w-size w #'wscale #'hscale)))
+
+(defun wg-win-parameter (win parameter &optional default)
+  "Return WIN's value for PARAMETER.
+If PARAMETER is not found, return DEFAULT which defaults to nil.
+SESSION nil defaults to the current session."
+  (wg-aget (wg-win-parameters win) parameter default))
 
 (defun wg-restore-window (win)
   "Restore WIN in `selected-window'."
@@ -1144,12 +1120,6 @@ as Workgroups' command remappings."
 EWIN should be an Emacs window object."
   (let ((p (window-point ewin)))
     (if (and wg-restore-point-max (= p (point-max))) :max p)))
-
-(defun wg-win-parameter (win parameter &optional default)
-  "Return WIN's value for PARAMETER.
-If PARAMETER is not found, return DEFAULT which defaults to nil.
-SESSION nil defaults to the current session."
-  (wg-aget (wg-win-parameters win) parameter default))
 
 (defun wg-set-win-parameter (win parameter value)
   "Set WIN's value of PARAMETER to VALUE.
