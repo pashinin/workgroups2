@@ -378,14 +378,6 @@ features but is fucking unstable, so disabled by default"
            (fset 'buffer-list wg-buffer-list-original))))
 (fset 'buffer-list wg-buffer-list-original)
 
-(defmacro wg-aif (cond then &rest else)
-  "Like `if', but the result of evaluating COND is bound to `it'.
-The variable `it' is available within THEN and ELSE.
-COND, THEN, and ELSE are otherwise as documented for `if'."
-  (declare (indent 2) (debug t))
-  `(let ((it ,cond))
-     (if it ,then ,@else)))
-
 (eval-and-compile
   ;; `wg-docar' has been used in macro.
   (defmacro wg-docar (spec &rest body)
@@ -580,7 +572,7 @@ This only exists to get rid of duplicate lambdas in a few reductions."
 (defun wg-aget (alist key &optional default)
   "Return the value of KEY in ALIST. Uses `assq'.
 If PARAM is not found, return DEFAULT which defaults to nil."
-  (wg-aif (assq key alist) (cdr it) default))
+  (or (cdr (assq key alist)) default))
 
 (defun wg-aput (alist key value)
   "Return a new alist from ALIST with KEY's value set to VALUE."
@@ -1720,8 +1712,8 @@ Otherwise, reverse WTREE vertically."
                       (wg-make-wtree
                        :dir (wg-wtree-dir w)
                        :edges (wg-wtree-edges w)
-                       :wlist (wg-aif (cl-find t wlist :key 'wg-win-selected)
-                                  (wg-cyclic-offset-elt it wlist offset)
+                       :wlist (if (cl-find t wlist :key 'wg-win-selected)
+                                  (wg-cyclic-offset-elt (cl-find t wlist :key 'wg-win-selected) wlist offset)
                                 (mapcar #'inner wlist)))))))
     (wg-normalize-wtree (inner wtree))))
 
@@ -1962,9 +1954,9 @@ how to write your own."
     (deserialize . ,(lambda (buffer vars)
                       ;;(with-current-buffer
                       ;;    (get-buffer-create (wg-buf-name buffer))
-                      (wg-aif vars
+                      (if vars
                           (if (fboundp 'Info-find-node)
-                              (apply #'Info-find-node it))
+                              (apply #'Info-find-node var))
                         (info)
                         (get-buffer (wg-buf-name buffer)))))))
 
@@ -2457,8 +2449,8 @@ If BUF's file doesn't exist, call `wg-restore-default-buffer'"
 
 (defun wg-find-buffer-in-buf-list (buffer-or-name buf-list)
   "Find BUFFER-OR-NAME in BUF-LIST."
-  (wg-aif (wg-buffer-uid buffer-or-name)
-      (wg-find-bufobj-by-uid it buf-list)
+  (if (wg-buffer-uid buffer-or-name)
+      (wg-find-bufobj-by-uid (wg-buffer-uid buffer-or-name) buf-list)
     (wg-find-bufobj buffer-or-name buf-list)))
 
 (defun wg-find-buf-in-buffer-list (buf buffer-list)
@@ -2507,12 +2499,12 @@ If there isn't already a buf corresponding to BUFFER in
 in either case."
   (when buffer
     (with-current-buffer buffer
-      (setq wg-buffer-uid
-            (wg-aif (wg-find-buffer-in-buf-list buffer (wg-buf-list))
-                (wg-buf-uid it)
-              (let ((buf (wg-buffer-to-buf buffer)))
-                (push buf (wg-buf-list))
-                (wg-buf-uid buf)))))))
+      (let* ((found (wg-find-buffer-in-buf-list buffer (wg-buf-list))))
+        (setq wg-buffer-uid
+              (if found (wg-buf-uid found)
+                (let ((buf (wg-buffer-to-buf buffer)))
+                  (push buf (wg-buf-list))
+                  (wg-buf-uid buf))))))))
 
 (defun wg-buffer-uid-or-add (buffer)
   "Return BUFFER's uid.
@@ -2618,15 +2610,16 @@ Print PROMPT"
   "Return current workgroup in frame.
 Error unless NOERROR, in FRAME if specified."
   (or wg-current-workgroup
-      (wg-aif (frame-parameter frame 'wg-current-workgroup-uid)
-          (wg-find-workgroup-by :uid it noerror)
+      (if (frame-parameter frame 'wg-current-workgroup-uid)
+          (wg-find-workgroup-by :uid (frame-parameter frame 'wg-current-workgroup-uid) noerror)
         (unless noerror (error "No current workgroup in this frame")))))
 
 (defun wg-previous-workgroup (&optional noerror frame)
   "Return the previous workgroup in FRAME, or error unless NOERROR."
-  (wg-aif (frame-parameter frame 'wg-previous-workgroup-uid)
-      (wg-find-workgroup-by :uid it noerror)
-    (unless noerror (error "No previous workgroup in this frame"))))
+  (let ((param (frame-parameter frame 'wg-previous-workgroup-uid)))
+    (if param
+        (wg-find-workgroup-by :uid param noerror)
+      (unless noerror (error "No previous workgroup in this frame")))))
 
 (defun wg-set-current-workgroup (workgroup &optional frame)
   "Set the current workgroup to WORKGROUP in FRAME.
@@ -2764,8 +2757,8 @@ WCONFIG-OR-NAME is resolved with `wg-workgroup-get-saved-wconfig'."
 (defun wg-workgroup-list-or-error (&optional noerror)
   "Return the value of `wg-current-session's :workgroup-list slot.
 Or scream unless NOERROR."
-  (wg-aif (wg-current-session noerror)
-      (or (wg-session-workgroup-list it)
+  (if (wg-current-session noerror)
+      (or (wg-session-workgroup-list (wg-current-session noerror))
           (unless noerror (error "No workgroups are defined")))
     (unless noerror (error "Current session is nil.  No workgroups are defined"))))
 
