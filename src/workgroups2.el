@@ -792,13 +792,6 @@ Saves some variables to restore a BUFFER later."
            t)
      ))
 
-(defconst wg-font-lock-keywords
-  '(("(\\(wg-support\\|wg-support\\)[ \t]*"
-     (1 font-lock-keyword-face)
-     ;;(2 font-lock-keyword-face)
-     )))
-(font-lock-add-keywords 'emacs-lisp-mode wg-font-lock-keywords)
-
 (defvar wg-current-session nil "Current session object.")
 (defun wg-current-session (&optional noerror)
   "Return `wg-current-session' or error unless NOERROR."
@@ -961,8 +954,6 @@ If not - try to go to the parent dir and do the same."
                        (inner val)))))))
       (inner obj)
       binds)))
-
-
 
 ;;; Objects
 (defun wg-pickel-symbol-serializer (symbol)
