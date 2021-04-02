@@ -1314,10 +1314,7 @@ Adds entries to `minor-mode-list', `minor-mode-alist' and
    ;; wconfig save/restore
    (kbd "C-d C-s")    'wg-save-wconfig
    (kbd "C-d C-'")    'wg-restore-saved-wconfig
-   (kbd "C-d C-k")    'wg-kill-saved-wconfig
-
-   ;; misc
-   (kbd "?")          'wg-help)
+   (kbd "C-d C-k")    'wg-kill-saved-wconfig)
   "The keymap that sits on `wg-prefix-key'.")
 
 (defun wg-make-workgroups-mode-map ()
@@ -3356,15 +3353,6 @@ ARG is anything else, turn on `workgroups-mode'."
     (run-hooks 'workgroups-mode-exit-hook)))
   (wg-create-first-wg)
   workgroups-mode)
-
-;;;###autoload
-(defun wg-help ()
-  "Just call `apropos-command' on \"^wg-\".
-There used to be a bunch of help-buffer construction stuff here,
-including a `wg-help' variable that basically duplicated every
-command's docstring;  But why, when there's `apropos-command'?"
-  (interactive)
-  (apropos-command "^wg-"))
 
 (defun wg-all-group-names ()
   "Get all group names."

@@ -82,22 +82,6 @@ workgroups-mode-exit-hook               ; `workgroups-mode' is turned off
 wg-after-switch-to-workgroup-hook
 #+end_src
 
-** Help
-
-For you:
-
-1. =<prefix> ?= or =(wg-help)= - help buffer listing all the commands
-   and their bindings.
-2. =M-x customize-group RET workgroups RET= - all customization options
-
-For me:
-
-1. *Reporting a bug* - give me full =(backtrace)= of what happened and how you did it.
-2. *Requesting a major-mode support* - write how you *install*, *configure* and *run* yours.
-3. Make pull-requests
-4. Ask questions (if you don't know how to hack it). Personally I found the code *very* complex at first
-
-
 ## License
 workgroups2 is free software: you can redistribute it and/or modify it under the terms of the [[https://raw.githubusercontent.com/redguardtoo/workgroups2/master/LICENSE][GNU General Public License]] as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
