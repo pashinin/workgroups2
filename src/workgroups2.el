@@ -412,16 +412,8 @@ Abbreviation of `destructuring-bind'."
   (wg-dbind (key val table &optional result) spec
     `(progn (maphash (lambda (,key ,val) ,@body) ,table) ,result)))
 
-(defmacro wg-doconcat (spec &rest body)
-  "do-style wrapper for `mapconcat'.
-
-\(fn (VAR SEQ [SEPARATOR]) BODY...)"
-  (declare (indent 1))
-  (wg-dbind (elt seq &optional sep) spec
-    `(mapconcat (lambda (,elt) ,@body) ,seq (or ,sep ""))))
-
 (eval-and-compile
-  ;; wwg-partition has been used in macro.
+  ;; wg-partition has been used in macro.
   (defun wg-partition (items)
     "Take ITEMS, return a list of N length sublists, offset by STEP.
 Iterative to prevent stack overflow."
@@ -556,16 +548,6 @@ If PARAM is not found, return DEFAULT which defaults to nil."
                 (if (not (eq key (car kvp))) kvp
                   (setq found (cons key value))))))
     (if found new (cons (cons key value) new))))
-
-;;; symbols and strings
-(defun wg-get-buffer (buffer-or-name)
-  "Return BUFFER-OR-NAME's buffer, or error."
-  (or (get-buffer buffer-or-name)
-      (error "%S does not identify a buffer" buffer-or-name)))
-
-(defun wg-buffer-name (buffer-or-name)
-  "Return BUFFER-OR-NAME's `buffer-name', or error."
-  (buffer-name (wg-get-buffer buffer-or-name)))
 
 (defmacro wg-defstruct (name-form &rest slot-defs)
   "`defstruct' wrapper that namespace-prefixes all generated functions.
@@ -1059,8 +1041,6 @@ If not - try to go to the parent dir and do the same."
                  (wg-dbind (key . data) obj
                    (apply (wg-pickel-object-deserializer key) data)))
                binds))))
-
-
 
 (defun wg-pickel-serialize-links (binds)
   "Return a list of serializations of the links between objects in BINDS."
@@ -2312,28 +2292,28 @@ If BUF's file doesn't exist, call `wg-restore-default-buffer'"
 
 (defun wg-buffer-uid (buffer-or-name)
   "Return BUFFER-OR-NAME's buffer-local value of `wg-buffer-uid'."
-  (buffer-local-value 'wg-buffer-uid (wg-get-buffer buffer-or-name)))
+  (buffer-local-value 'wg-buffer-uid (get-buffer buffer-or-name)))
 
 (defun wg-bufobj-uid (bufobj)
   "Return BUFOBJ's uid."
   (cl-etypecase bufobj
     (buffer (wg-buffer-uid bufobj))
     (wg-buf (wg-buf-uid bufobj))
-    (string (wg-bufobj-uid (wg-get-buffer bufobj)))))
+    (string (wg-bufobj-uid (get-buffer bufobj)))))
 
 (defun wg-bufobj-name (bufobj)
   "Return BUFOBJ's buffer name."
   (cl-etypecase bufobj
     (buffer (buffer-name bufobj))
     (wg-buf (wg-buf-name bufobj))
-    (string (wg-buffer-name bufobj))))
+    (string (buffer-name (get-buffer bufobj)))))
 
 (defun wg-bufobj-file-name (bufobj)
   "Return BUFOBJ's filename."
   (cl-etypecase bufobj
     (buffer (buffer-file-name bufobj))
     (wg-buf (wg-buf-file-name bufobj))
-    (string (wg-bufobj-file-name (wg-get-buffer bufobj)))))
+    (string (wg-bufobj-file-name (get-buffer bufobj)))))
 
 ;; `wg-equal-bufobjs' and `wg-find-bufobj' may need to be made a lot smarter
 (defun wg-equal-bufobjs (bufobj1 bufobj2)
@@ -2376,7 +2356,6 @@ If BUF's file doesn't exist, call `wg-restore-default-buffer'"
 (defun wg-buffer-special-data (buffer)
   "Return BUFFER's auxiliary serialization, or nil."
   (cl-some (lambda (fn) (funcall fn buffer)) wg-special-buffer-serdes-functions))
-
 
 (defun wg-serialize-buffer-local-variables ()
   "Return an alist of buffer-local variable symbols and their values.
@@ -2423,7 +2402,7 @@ If BUFOBJ is a buffer or a buffer name, see `wg-buffer-uid-or-add'."
   (cl-etypecase bufobj
     (wg-buf (wg-buf-uid bufobj)) ;; possibly also add to `wg-buf-list'
     (buffer (wg-buffer-uid-or-add bufobj))
-    (string (wg-bufobj-uid-or-add (wg-get-buffer bufobj)))))
+    (string (wg-bufobj-uid-or-add (get-buffer bufobj)))))
 
 (defun wg-reset-buffer (buffer)
   "Return BUFFER.
