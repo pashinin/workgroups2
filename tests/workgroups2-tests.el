@@ -40,10 +40,10 @@
   (switch-to-buffer "*Messages*")
   ;; Check 2 buffers
   (unless (string-equal "initial_terminal" (terminal-name (selected-frame)))
-    (should (wg-session-modified (wg-current-session)))))
+    (should (wg-session-modified (wg-get-current-session)))))
 
 (ert-deftest 055-structs ()
-  (let* ((s (wg-current-session))
+  (let* ((s (wg-get-current-session))
          (wgs (wg-session-workgroup-list s))
          (wg1 (car wgs))
          (bufs (wg-session-buf-list s)))
@@ -68,7 +68,7 @@
   (should (= (length (frame-list)) 1))
   (let (message-log-max)
     (wg-save-session))
-  (should-not (wg-session-modified (wg-current-session)))
+  (should-not (wg-session-modified (wg-get-current-session)))
   (unless (string-equal "initial_terminal" (terminal-name (selected-frame)))
     (unless (file-exists-p "/tmp/wg-test")
       (error "WG session file wasn't created"))))

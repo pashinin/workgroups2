@@ -645,7 +645,7 @@ Saves some variables to restore a BUFFER later."
      ))
 
 (defvar wg-current-session nil "Current session object.")
-(defun wg-current-session (&optional noerror)
+(defun wg-get-current-session (&optional noerror)
   "Return `wg-current-session' or error unless NOERROR."
   (or wg-current-session
       (if workgroups-mode
@@ -1829,11 +1829,11 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
 
 (defmacro wg-workgroup-list ()
   "Setf'able `wg-current-session' modified slot accessor."
-  `(wg-session-workgroup-list (wg-current-session)))
+  `(wg-session-workgroup-list (wg-get-current-session)))
 
 (defmacro wg-buf-list ()
   "Setf'able `wg-current-session' buf-list slot accessor."
-  `(wg-session-buf-list (wg-current-session)))
+  `(wg-session-buf-list (wg-get-current-session)))
 
 (defun wg-restore-default-buffer (&optional switch)
   "Return `wg-default-buffer' and maybe SWITCH to it."
@@ -2245,8 +2245,8 @@ WCONFIG-OR-NAME is resolved with `wg-workgroup-get-saved-wconfig'."
 (defun wg-workgroup-list-or-error (&optional noerror)
   "Return the value of `wg-current-session's :workgroup-list slot.
 Or scream unless NOERROR."
-  (if (wg-current-session noerror)
-      (or (wg-session-workgroup-list (wg-current-session noerror))
+  (if (wg-get-current-session noerror)
+      (or (wg-session-workgroup-list (wg-get-current-session noerror))
           (unless noerror (error "No workgroups are defined")))
     (unless noerror (error "Current session is nil.  No workgroups are defined"))))
 
@@ -2264,13 +2264,12 @@ Or scream unless NOERROR."
   "Return a list of workgroup names or scream unless NOERROR."
   (mapcar 'wg-workgroup-name (wg-workgroup-list-or-error noerror)))
 
-(defun wg-read-workgroup-name (&optional require-match)
-  "Read a workgroup name from `wg-workgroup-names'.
-REQUIRE-MATCH to match."
+(defun wg-read-workgroup-name ()
+  "Read a workgroup name from `wg-workgroup-names'."
   (completing-read "Workgroup: "
                    (wg-workgroup-names)
                    nil
-                   require-match
+                   nil
                    nil
                    nil
                    (and (wg-current-workgroup t)
@@ -2593,8 +2592,8 @@ This makes the session visit that file, and marks it as not modified."
   (unless (file-writable-p filename)
     (error "File %s can't be written to" filename))
   (wg-perform-session-maintenance)
-  (setf (wg-session-file-name (wg-current-session)) filename)
-  (setf (wg-session-version (wg-current-session)) wg-version)
+  (setf (wg-session-file-name (wg-get-current-session)) filename)
+  (setf (wg-session-version (wg-get-current-session)) wg-version)
 
   ;; Save opened frames as a session parameter "frame-list".
   ;; Exclude `selected-frame' and daemon one (if any).
@@ -2633,7 +2632,7 @@ object, etc.  SESSION nil defaults to a new, blank session."
 (defun wg-all-buf-uids ()
   "Return the union of all buf-uids."
   (cl-union (cl-reduce 'wg-string-list-union
-                       (wg-session-workgroup-list (wg-current-session))
+                       (wg-session-workgroup-list (wg-get-current-session))
                        :key 'wg-workgroup-all-buf-uids)
             (delq nil (mapcar 'wg-buffer-uid (wg-buffer-list-emacs)))
             :test 'string=))
@@ -2656,7 +2655,7 @@ object, etc.  SESSION nil defaults to a new, blank session."
   "Return session's value for PARAMETER.
 If PARAMETER is not found, return DEFAULT which defaults to nil.
 SESSION nil defaults to the current session."
-  (wg-aget (wg-session-parameters (or session (wg-current-session)))
+  (wg-aget (wg-session-parameters (or session (wg-get-current-session)))
            parameter default))
 
 (defun wg-set-session-parameter (parameter value)
@@ -2686,7 +2685,7 @@ resolved by Emacs."
 (defun wg-pickel-all-session-parameters (&optional session)
   "Return a copy of SESSION after pickeling its parameters.
 And the parameters of all its workgroups."
-  (let ((copy (wg-copy-session (or session (wg-current-session)))))
+  (let ((copy (wg-copy-session (or session (wg-get-current-session)))))
     (when (wg-session-parameters copy)
       (wg-asetf (wg-session-parameters copy) (wg-pickel it)))
     (wg-asetf (wg-session-workgroup-list copy)
