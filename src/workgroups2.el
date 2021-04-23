@@ -230,9 +230,6 @@ corresponding to a wg-buf, it tags it with the wg-buf's uid to
 unambiguously pair the two.")
 (make-variable-buffer-local 'wg-buffer-uid)
 
-(defvar wg-already-updated-working-wconfig nil
-  "Flag set by `wg-update-working-wconfig-hook'.")
-
 (defvar wg-undoify-window-configuration-change t
   "Should windows undo info be updated or not.
 When you change window configuration.")
@@ -245,27 +242,8 @@ When you change window configuration.")
 (defvar wg-window-min-height 1
   "Bound to `window-min-height' when restoring wtrees.")
 
-(defvar wg-window-min-pad 2
-  "Added to `wg-window-min-foo' to produce the actual minimum window size.")
-
-(defvar wg-actual-min-width (+ wg-window-min-width wg-window-min-pad)
-  "Actual minimum window width when creating windows.")
-
-(defvar wg-actual-min-height (+ wg-window-min-height wg-window-min-pad)
-  "Actual minimum window height when creating windows.")
-
-(defvar wg-min-edges `(0 0 ,wg-actual-min-width ,wg-actual-min-height)
-  "Smallest allowable edge list of windows created by Workgroups.")
-
-(defvar wg-null-edges '(0 0 0 0) "Null edge list.")
-
 (defvar wg-window-tree-selected-window nil
   "Used during wconfig restoration to hold the selected window.")
-
-(defvar wg-buffer-workgroup nil
-  "A workgroup in which this buffer most recently appeared.
-Buffer-local.")
-(make-variable-buffer-local 'wg-buffer-workgroup)
 
 (defcustom wg-default-buffer "*scratch*"
   "Show this in case everything else fails.
@@ -393,16 +371,14 @@ Cribbed from `org-id-b36-to-int-one-digit'."
         ((and (>= i ?A) (<= i ?Z)) (+ (- i ?A) 10))
         (t (error "Invalid b36 character"))))
 
-(defun wg-int-to-b36 (i &optional length)
+(defun wg-int-to-b36 (i)
   "Return a base 36 string from I."
   (let ((base 36) b36)
     (cl-labels ((add-digit () (push (wg-int-to-b36-one-digit (mod i base)) b36)
                            (setq i (/ i base))))
       (add-digit)
       (while (> i 0) (add-digit))
-      (setq b36 (cl-map 'string 'identity b36))
-      (if (not length) b36
-        (concat (make-string (max 0 (- length (length b36))) ?0) b36)))))
+      (cl-map 'string 'identity b36))))
 
 (defun wg-b36-to-int (str)
   "Convert STR, a base-36 string, into the corresponding integer.
@@ -413,19 +389,6 @@ Cribbed from `org-id-b36-to-int'."
                             (wg-b36-to-int-one-digit i))))
           str)
     result))
-
-(defmacro wg-removef-p (item seq-place &rest keys)
-  "If ITEM is a `member
-*' of SEQ-PLACE, remove it from SEQ-PLACE and return t.
-Otherwise return nil.  KEYS can be any keywords accepted by `remove*'."
-  `(> (length ,seq-place)
-      (length (setf ,seq-place (cl-remove ,item ,seq-place ,@keys)))))
-
-(defmacro wg-pushnew-p (item seq-place &rest keys)
-  "If ITEM is not a `member' of SEQ-PLACE, push it to SEQ-PLACE and return t.
-Otherwise return nil.  KEYS can be any keyword args accepted by `pushnew'."
-  `(< (length ,seq-place)
-      (length (cl-pushnew ,item ,seq-place ,@keys))))
 
 (defun wg-insert-before (elt list index)
   "Insert ELT into LIST before INDEX."
@@ -577,13 +540,12 @@ This needs to be a macro to allow specification of a setf'able place."
 (defun wg-time-to-b36 ()
   "Convert `current-time' into a b36 string."
   (apply 'concat (wg-docar (time (current-time))
-                   (wg-int-to-b36 time 4))))
+                   (wg-int-to-b36 time))))
 
 (defun wg-b36-to-time (b36)
   "Parse the time in B36 string from UID."
   (cl-loop for i from 0 to 8 by 4
            collect (wg-b36-to-int (cl-subseq b36 i (+ i 4)))))
-(defalias 'wg-uid-to-time 'wg-b36-to-time)
 
 (defun wg-generate-uid ()
   "Return a new uid."
@@ -2415,14 +2377,6 @@ return WORKGROUP's current undo state."
   "Update `selected-frame's current workgroup's working-wconfig with `wg-current-wconfig'."
   (and (wg-current-workgroup t)
        (wg-set-workgroup-working-wconfig (wg-current-workgroup t) (wg-current-wconfig))))
-
-(defun wg-update-working-wconfig-hook ()
-  "Used in before advice on all functions that trigger `window-configuration-change-hook'.
-To save up to date undo info before the change."
-  (when (and (not wg-already-updated-working-wconfig)
-             (wg-minibuffer-inactive-p))
-    (wg-update-current-workgroup-working-wconfig)
-    (setq wg-already-updated-working-wconfig t)))
 
 (defun wg-workgroup-gc-buf-uids (workgroup)
   "Remove buf uids from WORKGROUP that have no referent in `wg-buf-list'."
