@@ -57,7 +57,8 @@
 ;; <prefix> C-v    - open existing workgroup
 ;;
 ;; Change workgroups session file,
-;; (setq wg-session-file "~/.emacs.d/.emacs_workgroups"
+;;
+;;   (setq wg-session-file "~/.emacs.d/.emacs_workgroups")
 ;;
 ;;; Code:
 
@@ -183,37 +184,6 @@ it to `major-mode'."
 
 (defcustom wg-restore-scroll-bars t
   "Non-nil means restore scroll-bar settings on workgroup restore."
-  :type 'boolean
-  :group 'workgroups)
-
-(defcustom wg-restore-fringes t
-  "Non-nil means restore fringe settings on workgroup restore."
-  :type 'boolean
-  :group 'workgroups)
-
-(defcustom wg-restore-margins t
-  "Non-nil means restore margin settings on workgroup restore."
-  :type 'boolean
-  :group 'workgroups)
-
-(defcustom wg-restore-point t
-  "Non-nil means restore `point' on workgroup restore.
-This is included mainly so point restoration can be suspended
-during `wg-morph' -- you probably want this non-nil."
-  :type 'boolean
-  :group 'workgroups)
-
-(defcustom wg-restore-point-max t
-  "Controls point restoration when point is at `point-max'.
-If `point' is at `point-max' when a wconfig is created, put
-`point' back at `point-max' when the wconfig is restored, even if
-`point-max' has increased in the meantime.  This is useful in,
-say, irc buffers where `point-max' is constantly increasing."
-  :type 'boolean
-  :group 'workgroups)
-
-(defcustom wg-restore-mark t
-  "Non-nil means restore mark data on workgroup restore."
   :type 'boolean
   :group 'workgroups)
 
@@ -348,19 +318,12 @@ into a var, like so: (a (b c) . rest)
                (setq ,list-sym ,rest)))
            ,result)))))
 
-;;; numbers
-(defun wg-within (num lo hi &optional hi-inclusive)
-  "Return t when NUM is within bounds LO and HI.
-HI-INCLUSIVE non-nil means the HI bound is inclusive."
-  (and (>= num lo) (if hi-inclusive (<= num hi) (< num hi))))
-
 (defun wg-int-to-b36-one-digit (i)
   "Return a character in 0..9 or A..Z from I, and integer 0<=I<32.
 Cribbed from `org-id-int-to-b36-one-digit'."
-  (cond ((not (wg-within i 0 36))
-         (error "%s out of range" i))
-        ((< i 10) (+ ?0 i))
-        ((< i 36) (+ ?A i -10))))
+  (cond
+   ((< i 10) (+ ?0 i))
+   ((< i 36) (+ ?A i -10))))
 
 (defun wg-b36-to-int-one-digit (i)
   "Turn a character 0..9, A..Z, a..z into a number 0..61.
@@ -509,7 +472,6 @@ options."
   (gc))
 ;; }}
 
-
 (defmacro wg-with-slots (obj slot-bindings &rest body)
   "Bind OBJ's slot values to symbols in BINDS, then eval BODY.
 The car of each element of SLOT-BINDINGS is the bound symbol, and
@@ -520,12 +482,6 @@ the cadr as the accessor function."
             ,@(wg-docar (slot slot-bindings)
                 `(,(car slot) (,(cadr slot) ,objsym))))
        ,@body)))
-
-(defun wg-add-or-remove-hooks (remove &rest pairs)
-  "Add FUNCTION to or remove it from HOOK, depending on REMOVE."
-  (dolist (pair (wg-partition pairs))
-    (funcall (if remove 'remove-hook 'add-hook)
-             (car pair) (cadr pair))))
 
 (defmacro wg-set-parameter (place parameter value)
   "Set PARAMETER to VALUE at PLACE.
@@ -1060,9 +1016,9 @@ SESSION nil defaults to the current session."
             (set-window-hscroll window win-hscroll)
             (set-window-point
              window
-             (cond ((not wg-restore-point) win-start)
-                   ((eq win-point :max) (point-max))
-                   (t win-point)))
+             (cond
+              ((eq win-point :max) (point-max))
+              (t win-point)))
             (when (>= win-start (point-max)) (recenter))))
 
         (when wg-restore-window-dedicated-p
@@ -1079,10 +1035,9 @@ SESSION nil defaults to the current session."
 
 
 (defun wg-window-point (ewin)
-  "Return `point' or :max.  See `wg-restore-point-max'.
-EWIN should be an Emacs window object."
+  "Return `point' or :max.  EWIN should be an Emacs window object."
   (let ((p (window-point ewin)))
-    (if (and wg-restore-point-max (= p (point-max))) :max p)))
+    (if (= p (point-max)) :max p)))
 
 (defun wg-set-win-parameter (win parameter value)
   "Set WIN's value of PARAMETER to VALUE.
@@ -1829,9 +1784,11 @@ If BUF's file doesn't exist, call `wg-restore-default-buffer'"
                    (with-current-buffer b
                      (rename-buffer (wg-buf-name buf) t)
                      (wg-set-buffer-uid-or-error (wg-buf-uid buf))
-                     (when wg-restore-mark
-                       (set-mark (wg-buf-mark buf))
-                       (deactivate-mark))
+
+                     ;; restore mark
+                     (set-mark (wg-buf-mark buf))
+                     (deactivate-mark)
+
                      (wg-deserialize-buffer-local-variables buf)
                      )
                    (if switch (switch-to-buffer b))
@@ -2251,17 +2208,13 @@ Or scream unless NOERROR."
           (setq result new-name))))
     result))
 
-(defun wg-read-saved-wconfig-name (workgroup &optional prompt require-match)
-  "Read the name of a saved wconfig, completing on the names of
-WORKGROUP's saved wconfigs."
-  (completing-read (or prompt "Saved wconfig name: ")
-                   (wg-workgroup-saved-wconfig-names workgroup)
-                   nil require-match))
-
 (defun wg-read-saved-wconfig (workgroup)
   "Read the name of and return one of WORKGROUP's saved wconfigs."
   (wg-workgroup-get-saved-wconfig
-   (wg-read-saved-wconfig-name workgroup nil t)
+   (completing-read "Saved wconfig name: "
+                    (wg-workgroup-saved-wconfig-names workgroup)
+                    nil
+                    t)
    workgroup))
 
 (defun wg-query-and-save-if-modified ()
