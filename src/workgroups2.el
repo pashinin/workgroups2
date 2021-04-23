@@ -119,7 +119,7 @@ Don't do it with Emacs --daemon option."
   :group 'workgroups)
 
 (defcustom wg-after-switch-to-workgroup-hook nil
-  "Hook run by `wg-switch-to-workgroup'."
+  "Hook run by `wg-switch-to-workgroup-internal'."
   :type 'hook
   :group 'workgroups)
 
@@ -276,6 +276,7 @@ When a buffer can't be restored, when creating a blank wg."
 ;; {{ crazy stuff to delete soon
 (defconst wg-buffer-list-original (symbol-function 'buffer-list))
 (defalias 'wg-buffer-list-emacs wg-buffer-list-original)
+(defalias 'wg-switch-to-workgroup #'wg-open-workgroup)
 
 (defun buffer-list (&optional frame)
   "Redefinition of `buffer-list'.
@@ -2260,9 +2261,13 @@ Or scream unless NOERROR."
           (error "There are no workgroups with a %S of %S"
                  accessor value)))))
 
-(defun wg-workgroup-names (&optional noerror)
-  "Return a list of workgroup names or scream unless NOERROR."
-  (mapcar 'wg-workgroup-name (wg-workgroup-list-or-error noerror)))
+(defun wg-workgroup-names ()
+  "Get all workgroup names."
+  (mapcar (lambda (group)
+            ;; re-shape group for `completing-read'
+            (cons (wg-workgroup-name group) group))
+          (wg-session-workgroup-list
+           (read (wg-read-text wg-session-file)))))
 
 (defun wg-read-workgroup-name ()
   "Read a workgroup name from `wg-workgroup-names'."
@@ -2277,7 +2282,7 @@ Or scream unless NOERROR."
 
 (defun wg-new-default-workgroup-name ()
   "Return a new, unique, default workgroup name."
-  (let ((names (wg-workgroup-names t)) (index -1) result)
+  (let ((names (wg-workgroup-names)) (index -1) result)
     (while (not result)
       (let ((new-name (format "wg%s" (cl-incf index))))
         (unless (member new-name names)
@@ -2303,37 +2308,10 @@ WORKGROUP's saved wconfigs."
       (when (y-or-n-p "Save modified workgroups? ")
         (wg-save-session))))
 
-(defun wg-create-workgroup (name &optional blank)
-  "Create and add a workgroup named NAME.
-Optional argument BLANK non-nil (set interactively with a prefix
-arg) means use a blank, one window window-config.  Otherwise use
-the current window-configuration."
-  (interactive (list (wg-read-new-workgroup-name) current-prefix-arg))
-
-  (unless (file-exists-p (wg-get-session-file))
-    (wg-reset-internal (wg-make-session))
-    (wg-save-session))
-
-  (unless wg-current-session
-    ;; code extracted from `wg-open-session'.
-    ;; open session but do NOT load any workgroup.
-    (let* ((session (read (wg-read-text wg-session-file))))
-      (setf (wg-session-file-name session) wg-session-file)
-      (wg-reset-internal (wg-unpickel-session-parameters session))))
-
-  (wg-switch-to-workgroup (wg-make-and-add-workgroup name blank))
-
-  ;; save the session file in real time
-  (wg-save-session)
-
-  ;; I prefer simpler UI
-  (message "Workgroup \"%s\" was created and saved." name))
-
-(defun wg-switch-to-workgroup (workgroup)
-  "Switch to WORKGROUP."
-  (interactive (list (wg-read-workgroup-name)))
+(defun wg-switch-to-workgroup-internal (workgroup-name)
+  "Switch to workgroup with WORKGROUP-NAME."
   (fset 'buffer-list wg-buffer-list-original)
-  (let ((workgroup (wg-get-workgroup-create workgroup))
+  (let ((workgroup (wg-get-workgroup-create workgroup-name))
         (current (wg-current-workgroup t)))
     (unless (and (eq workgroup current))
       (when current (push current wg-deactivation-list))
@@ -2354,6 +2332,31 @@ the current window-configuration."
             (run-hooks 'wg-after-switch-to-workgroup-hook))
         (when current (pop wg-deactivation-list))))))
 
+(defun wg-create-workgroup (name &optional blank)
+  "Create and add a workgroup named NAME.
+Optional argument BLANK non-nil (set interactively with a prefix
+arg) means use a blank, one window window-config.  Otherwise use
+the current window-configuration."
+  (interactive (list (wg-read-new-workgroup-name) current-prefix-arg))
+
+  (unless (file-exists-p (wg-get-session-file))
+    (wg-reset-internal (wg-make-session))
+    (wg-save-session))
+
+  (unless wg-current-session
+    ;; code extracted from `wg-open-session'.
+    ;; open session but do NOT load any workgroup.
+    (let* ((session (read (wg-read-text wg-session-file))))
+      (setf (wg-session-file-name session) wg-session-file)
+      (wg-reset-internal (wg-unpickel-session-parameters session))))
+
+  (wg-switch-to-workgroup-internal (wg-make-and-add-workgroup name blank))
+
+  ;; save the session file in real time
+  (wg-save-session)
+
+  ;; I prefer simpler UI
+  (message "Workgroup \"%s\" was created and saved." name))
 
 (defun wg-workgroup-state-table (&optional frame)
   "Return FRAME's workgroup table, creating it first if necessary."
@@ -2540,8 +2543,8 @@ that name and return it.  Otherwise error."
 
          (when (wg-workgroup-list)
            (if (member (wg-session-parameter 'last-workgroup) (wg-workgroup-names))
-               (wg-switch-to-workgroup (wg-session-parameter 'last-workgroup))
-             (wg-switch-to-workgroup (car (wg-workgroup-list))))
+               (wg-switch-to-workgroup-internal (wg-session-parameter 'last-workgroup))
+             (wg-switch-to-workgroup-internal (car (wg-workgroup-list))))
            (let ((prev (wg-session-parameter 'prev-workgroup)))
              (when prev
                (when (and (member prev (wg-workgroup-names))
@@ -2740,14 +2743,6 @@ ARG is anything else, turn on `workgroups-mode'."
   (wg-create-first-wg)
   workgroups-mode)
 
-(defun wg-all-group-names ()
-  "Get all group names."
-  (mapcar (lambda (group)
-            ;; re-shape group for `completing-read'
-            (cons (wg-workgroup-name group) group))
-          (wg-session-workgroup-list
-           (read (wg-read-text wg-session-file)))))
-
 ;;;###autoload
 (defun wg-open-workgroup ()
   "Open specific workgroup."
@@ -2758,7 +2753,7 @@ ARG is anything else, turn on `workgroups-mode'."
                (setq selected-group
                      (completing-read "Select work group: " group-names)))
       (wg-open-session wg-session-file)
-      (wg-switch-to-workgroup selected-group))))
+      (wg-switch-to-workgroup-internal selected-group))))
 
 (provide 'workgroups2)
 ;;; workgroups2.el ends here
