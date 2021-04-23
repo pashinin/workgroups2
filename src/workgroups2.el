@@ -644,10 +644,6 @@ If not - try to go to the parent dir and do the same."
     (h . wg-pickel-hash-table-link-deserializer))
   "Alist mapping type keys to link deserialization functions.")
 
-
-
-;;; errors and predicates
-
 (put 'wg-pickel-unpickelable-type-error
      'error-conditions
      '(error wg-pickel-errors wg-pickel-unpickelable-type-error))
@@ -777,13 +773,12 @@ If not - try to go to the parent dir and do the same."
         (gethash cons binds)
         (gethash (car cons) binds)
         (gethash (cdr cons) binds)))
+
 (defun wg-pickel-cons-link-deserializer (cons-id car-id cdr-id binds)
   "Relink a cons cell with its car and cdr in BINDS."
   (let ((cons (gethash cons-id binds)))
     (setcar cons (gethash car-id binds))
     (setcdr cons (gethash cdr-id binds))))
-
-
 
 ;; vector - http://www.gnu.org/software/emacs/manual/html_node/elisp/Vector-Functions.html
 ;; (wg-unpickel (wg-pickel (make-vector 9 'Z)))
@@ -2247,11 +2242,8 @@ Or scream unless NOERROR."
             (run-hooks 'wg-after-switch-to-workgroup-hook))
         (when current (pop wg-deactivation-list))))))
 
-(defun wg-create-workgroup (name &optional blank)
-  "Create and add a workgroup named NAME.
-Optional argument BLANK non-nil (set interactively with a prefix
-arg) means use a blank, one window window-config.  Otherwise use
-the current window-configuration."
+(defun wg-create-workgroup (name)
+  "Create and add a workgroup named NAME."
   (interactive (list (wg-read-new-workgroup-name) current-prefix-arg))
 
   (unless (file-exists-p (wg-get-session-file))
@@ -2265,7 +2257,7 @@ the current window-configuration."
       (setf (wg-session-file-name session) wg-session-file)
       (wg-reset-internal (wg-unpickel-session-parameters session))))
 
-  (wg-switch-to-workgroup-internal (wg-make-and-add-workgroup name blank))
+  (wg-switch-to-workgroup-internal (wg-make-and-add-workgroup name))
 
   ;; save the session file in real time
   (wg-save-session)
@@ -2405,15 +2397,13 @@ Ask to overwrite if a workgroup with the same name exists."
         (error "Cancelled"))))
   (wg-add-workgroup workgroup))
 
-(defun wg-make-and-add-workgroup (name &optional blank)
+(defun wg-make-and-add-workgroup (name)
   "Create a workgroup named NAME with current `window-tree'.
-If BLANK - then just scratch buffer.
 Add it with `wg-check-and-add-workgroup'."
   (wg-check-and-add-workgroup
    (wg-make-workgroup
     :name name
-    :base-wconfig (if blank (wg-make-blank-wconfig)
-                    (wg-current-wconfig)))))
+    :base-wconfig (wg-current-wconfig))))
 
 (defun wg-get-workgroup-create (workgroup)
   "Return the workgroup specified by WORKGROUP, creating a new one if needed.
