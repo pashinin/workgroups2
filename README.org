@@ -59,7 +59,6 @@ faces to change.
 Hooks' names can tell when they are executed
 
 #+begin_src elisp
-workgroups-mode-hook                    ; when `workgroups-mode' is turned on
 wg-after-switch-to-workgroup-hook
 #+end_src
 

@@ -103,11 +103,6 @@ Don't do it with Emacs --daemon option."
   :group 'workgroups
   :type 'boolean)
 
-(defcustom workgroups-mode-hook nil
-  "Hook run when `workgroups-mode' is turned on."
-  :type 'hook
-  :group 'workgroups)
-
 (defcustom wg-after-switch-to-workgroup-hook nil
   "Hook run by `wg-switch-to-workgroup-internal'."
   :type 'hook
@@ -2577,8 +2572,7 @@ ARG is anything else, turn on `workgroups-mode'."
                (file-exists-p wg-session-file))
       (condition-case err
           (wg-open-session wg-session-file)
-        (error (message "Error finding `wg-session-file': %s" err))))
-    (run-hooks 'workgroups-mode-hook))
+        (error (message "Error finding `wg-session-file': %s" err)))))
    (t
     (wg-save-session)))
   (wg-create-first-wg)
