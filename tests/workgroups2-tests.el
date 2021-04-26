@@ -3,12 +3,33 @@
 ;;; Code:
 
 (require 'cl-lib)
+(require 'ert)
 (require 'workgroups2)
 
+(defmacro wg-test-special (mode pkg &rest body)
+  "Test restoring MODE from PKG.
+Create needed buffer by executing BODY.
+Then tests will follow to save it and restore."
+  (declare (indent 2))
+  `(let ((wg-log-level 0)
+         message-log-max)
+     ;; prepare
+     (delete-other-windows)
+     (switch-to-buffer wg-default-buffer)
+
+     ;; create a buffer
+     (require ,pkg)
+     ,@body
+     (should (eq major-mode ,mode))
+     (wg-save-session)
+
+     ;; save and restore
+     (workgroups-mode 0)
+     (switch-to-buffer wg-default-buffer)
+     (workgroups-mode 1)
+     (should (eq major-mode ,mode))))
+
 (ert-deftest 000-initial ()
-  ;;(make-frame)
-  (if (file-exists-p "/tmp/wg-tests.log")
-      (delete-file "/tmp/wg-tests.log"))
   (if (file-exists-p "/tmp/wg-test")
       (delete-file "/tmp/wg-test"))
   ;;(should-not (string-equal "initial_terminal" (terminal-name (selected-frame))))
@@ -117,14 +138,9 @@
   (wg-test-special 'inferior-python-mode
                    'python
                    (run-python python-shell-interpreter)
-                   (switch-to-buffer (process-buffer (python-shell-get-or-create-process))))
+                   (switch-to-buffer (process-buffer (python-shell-get-or-create-process)))))
 
-  ;; TODO: handle errors
-  )
-
-;; Bugs
-
-;; https://github.com/pashinin/workgroups2/issues/48 TODO
+(ert-run-tests-batch-and-exit)
 
 (provide 'workgroups2-tests)
 ;;; workgroups2-tests.el ends here
