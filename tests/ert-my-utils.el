@@ -8,32 +8,18 @@
 (require 'cl-lib)
 (require 'ert)
 
-(defun wg-tests-log (&optional ok)
-  "Try to log with status OK."
-  (with-current-buffer "*Messages*"
-    (write-region (point-min)
-                  (point-max)
-                  (if ok "/tmp/wg-tests-ok.log" "/tmp/wg-tests.log"))))
-
 (defun my-ert-run-tests ()
   "My variant of `ert-run-tests-batch-and-exit'.
 To hack this:
 http://stackoverflow.com/questions/25490989/how-should-i-run-emacs-ert-tests-when-i-need-gui-tests"
   (unwind-protect
       (let ((stats (ert-run-tests-batch)))
-        (if (zerop (ert-stats-completed-unexpected stats))
-            (wg-tests-log t)
-          (wg-tests-log))
-        (kill-emacs (if (zerop (ert-stats-completed-unexpected stats)) 0 0))
-        )
+        (kill-emacs (if (zerop (ert-stats-completed-unexpected stats)) 0 0)))
     (unwind-protect
         (progn
           (message "Error running tests")
-          (backtrace)
-          ;;(wg-tests-log)
-          )
-      (kill-emacs 0)
-      )))
+          (backtrace))
+      (kill-emacs 0))))
 
 (defmacro wg-test-special (mode pkg &rest body)
   "Test restoring MODE from PKG.
@@ -56,8 +42,7 @@ Then tests will follow to save it and restore."
      (workgroups-mode 0)
      (switch-to-buffer wg-default-buffer)
      (workgroups-mode 1)
-     (should (eq major-mode ,mode))
-     ))
+     (should (eq major-mode ,mode))))
 
 (provide 'ert-my-utils)
 ;;; ert-my-utils.el ends here
