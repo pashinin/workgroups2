@@ -84,13 +84,6 @@ off and then on again to take effect."
 
 (defvar workgroups-mode-map nil "Workgroups Mode's keymap.")
 
-(defvar wg-incorrectly-restored-bufs nil
-  "FIXME: docstring this.")
-;; TODO: check it on switching WG
-
-(defvar wg-record-incorrectly-restored-bufs nil
-  "FIXME: docstring this.")
-
 (defcustom wg-session-load-on-start (not (daemonp))
   "Load a session file on Workgroups start.
 Don't do it with Emacs --daemon option."
@@ -227,8 +220,7 @@ When a buffer can't be restored, when creating a blank wg."
 (defalias 'wg-switch-to-workgroup #'wg-open-workgroup)
 
 (defun buffer-list (&optional frame)
-  "Redefinition of `buffer-list'.
-Pass FRAME to it.
+  "Redefinition of `buffer-list'.  Pass FRAME to it.
 Remove file and dired buffers that are not associated with workgroup."
   (let ((res (wg-buffer-list-emacs frame))
         (wg-buf-uids (wg-workgroup-associated-buf-uids)))
@@ -277,27 +269,22 @@ Abbreviation of `destructuring-bind'."
   (wg-dbind (key val table &optional result) spec
     `(progn (maphash (lambda (,key ,val) ,@body) ,table) ,result)))
 
-(eval-and-compile
-  ;; wg-partition has been used in macro.
-  (defun wg-partition (items)
-    "Take ITEMS, return a list of N length sublists, offset by STEP.
-Iterative to prevent stack overflow."
-    (let* (acc first-2-items)
-      (while items
-        (setq first-2-items (if (> (length items) 1) (list (nth 0 items) (nth 1 items))
-                              (list (nth 1 items))))
-        (push first-2-items acc)
-        (setq items (nthcdr 2 items)))
-      (nreverse acc))))
-
-(defmacro wg-asetf (&rest places-and-values)
+(defmacro wg-asetf (&rest items)
   "Anaphoric `setf'."
   `(progn ,@(mapcar (lambda (pv)
                       `(let ((it ,(car pv)))
                          ;; Fix compile warn
                          (ignore it)
                          (setf ,@pv)))
-                    (wg-partition places-and-values))))
+                    ;; Take ITEMS, return a list of N length sublists, offset by STEP.
+                    ;; Iterative to prevent stack overflow.
+                    (let* (acc first-2-items)
+                      (while items
+                        (setq first-2-items (if (> (length items) 1) (list (nth 0 items) (nth 1 items))
+                                              (list (nth 1 items))))
+                        (push first-2-items acc)
+                        (setq items (nthcdr 2 items)))
+                      (nreverse acc)))))
 
 (defmacro wg-destructuring-dolist (spec &rest body)
   "Loop over a list.
@@ -1303,9 +1290,7 @@ Return a scaled copy of WCONFIG."
   "Restore a workgroup configuration WCONFIG in a FRAME.
 Runs each time you're switching workgroups."
   (unless frame (setq frame (selected-frame)))
-  (let ((wg-record-incorrectly-restored-bufs t)
-        (wg-incorrectly-restored-bufs nil)
-        (params (wg-wconfig-parameters wconfig)))
+  (let ((params (wg-wconfig-parameters wconfig)))
     (wg-barf-on-active-minibuffer)
     (when wg-restore-scroll-bars
       (wg-wconfig-restore-scroll-bars wconfig))
@@ -1322,17 +1307,10 @@ Runs each time you're switching workgroups."
       (wg-wconfig-restore-frame-position wconfig frame))
 
     ;; Restore buffers
-    (wg-restore-window-tree (wg-scale-wconfig-to-frame wconfig))
+    (wg-restore-window-tree (wg-scale-wconfig-to-frame wconfig))))
 
-    (when wg-incorrectly-restored-bufs
-      (message "Unable to restore these buffers: %S\
-If you want, restore them manually and try again."
-               (mapcar 'wg-buf-name wg-incorrectly-restored-bufs)))))
-
-;; specialbufs
 (defcustom wg-special-buffer-serdes-functions
-  '(wg-serialize-comint-buffer
-    )
+  '(wg-serialize-comint-buffer)
   "Functions providing serialization/deserialization for complex buffers.
 
 Use `wg-support' macro and this variable will be filled
