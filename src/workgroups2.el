@@ -51,8 +51,6 @@
 ;;
 ;; By default prefix is: "C-c z"
 ;;
-;; <prefix> <key>
-;;
 ;; <prefix> C-c    - create new workgroup
 ;; <prefix> C-v    - open existing workgroup
 ;;
@@ -367,8 +365,7 @@ If PARAM is not found, return DEFAULT which defaults to nil."
 
 (defmacro wg-defstruct (name-form &rest slot-defs)
   "`defstruct' wrapper that namespace-prefixes all generated functions.
-Note: this doesn't yet work with :conc-name, and possibly other
-options."
+Note: this doesn't yet work with :conc-name, and possibly other options."
   (declare (indent 1))
   (let* ((prefix "wg")
          (name (symbol-name name-form)) ; string type
@@ -909,10 +906,6 @@ Adds entries to `minor-mode-list', `minor-mode-alist' and
               (delete (assoc 'workgroups-mode minor-mode-map-alist)
                       minor-mode-map-alist))))
 
-(defun wg-min-size (dir)
-  "Return the minimum window size in split direction DIR."
-  (if dir wg-window-min-height wg-window-min-width))
-
 (defmacro wg-with-edges (w spec &rest body)
   "Bind W's edge list to SPEC and eval BODY."
   (declare (indent 2))
@@ -938,23 +931,6 @@ Adds entries to `minor-mode-list', `minor-mode-alist' and
   "Return the width or height of W, calculated from its edge list."
   (wg-with-edges w (l1 t1 r1 b1)
     (if height (- b1 t1) (- r1 l1))))
-
-(defun wg-adjust-w-size (w width-fn height-fn &optional new-left new-top)
-  "Adjust W's width and height with WIDTH-FN and HEIGHT-FN."
-  (wg-with-edges w (left top right bottom)
-    (let ((left (or new-left left)) (top (or new-top top)))
-      (wg-set-edges (wg-copy-w w)
-                    (list left
-                          top
-                          (+ left (funcall width-fn  (- right  left)))
-                          (+ top  (funcall height-fn (- bottom top))))))))
-
-(defun wg-scale-w-size (w width-scale height-scale)
-  "Scale W's size by WIDTH-SCALE and HEIGHT-SCALE."
-  (cl-labels
-      ((wscale (width)  (truncate (* width  width-scale)))
-       (hscale (height) (truncate (* height height-scale))))
-    (wg-adjust-w-size w #'wscale #'hscale)))
 
 (defun wg-win-parameter (win parameter &optional default)
   "Return WIN's value for PARAMETER.
@@ -1069,7 +1045,7 @@ new wlist, return it instead of a new wtree."
     (wg-with-slots wtree ((dir wg-wtree-dir)
                           (wlist wg-wtree-wlist))
       (wg-with-bounds wtree dir (ls1 hs1 lb1 hb1)
-        (let* ((min-size (wg-min-size dir))
+        (let* ((min-size (if dir wg-window-min-height wg-window-min-width))
                (max (- hb1 1 min-size))
                (lastw (car (last wlist))))
           (cl-labels
@@ -1091,7 +1067,12 @@ new wlist, return it instead of a new wtree."
 (defun wg-scale-wtree (wtree wscale hscale)
   "Return a copy of WTREE with its dimensions scaled by WSCALE and HSCALE.
 All WTREE's subwins are scaled as well."
-  (let ((scaled (wg-scale-w-size wtree wscale hscale)))
+  (let ((scaled (wg-with-edges wtree (left top right bottom)
+                               (wg-set-edges (wg-copy-w wtree)
+                                             (list left
+                                                   top
+                                                   (+ left (truncate (* (- right  left) wscale)))
+                                                   (+ top  (truncate (* (- bottom top) hscale))))))))
     (if (wg-win-p wtree) scaled
       (wg-asetf (wg-wtree-wlist scaled)
                 (wg-docar (sw it) (wg-scale-wtree sw wscale hscale)))
