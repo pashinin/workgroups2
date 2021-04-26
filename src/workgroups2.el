@@ -82,8 +82,6 @@ off and then on again to take effect."
   :type 'string
   :group 'workgroups)
 
-(defvar workgroups-mode-map nil "Workgroups Mode's keymap.")
-
 (defcustom wg-session-load-on-start (not (daemonp))
   "Load a session file on Workgroups start.
 Don't do it with Emacs --daemon option."
@@ -894,37 +892,22 @@ Before selecting a new frame."
 Used to avoid associating the old workgroup's buffers with the
 new workgroup during a switch.")
 
+(defvar workgroups-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "C-c") 'wg-create-workgroup)
+    (define-key map (kbd "C-v") 'wg-open-workgroup)
+    map)
+    "Mode map for `workgroups-mode'.")
+
 (defun wg-add-workgroups-mode-minor-mode-entries ()
   "Add Workgroups' minor-mode entries.
 Adds entries to `minor-mode-list', `minor-mode-alist' and
 `minor-mode-map-alist'."
   (cl-pushnew 'workgroups-mode minor-mode-list)
   (setq minor-mode-map-alist
-        (cons (cons 'workgroups-mode (wg-make-workgroups-mode-map))
+        (cons (cons 'workgroups-mode workgroups-mode-map)
               (delete (assoc 'workgroups-mode minor-mode-map-alist)
                       minor-mode-map-alist))))
-
-(defun wg-fill-keymap (keymap &rest binds)
-  "Return KEYMAP after defining in it all keybindings in BINDS."
-  (while binds
-    (define-key keymap (car binds) (cadr binds))
-    (setq binds (cddr binds)))
-  keymap)
-
-(defvar wg-prefixed-map
-  (wg-fill-keymap
-   (make-sparse-keymap)
-   (kbd "C-c")        'wg-create-workgroup
-   (kbd "C-v")        'wg-open-workgroup)
-  "The keymap that sits on `wg-prefix-key'.")
-
-(defun wg-make-workgroups-mode-map ()
-  "Return Workgroups' minor-mode-map.
-This map includes `wg-prefixed-map' on `wg-prefix-key'"
-  (let ((map (make-sparse-keymap)))
-    (define-key map wg-prefix-key
-      wg-prefixed-map)
-    (setq workgroups-mode-map map)))
 
 (defun wg-min-size (dir)
   "Return the minimum window size in split direction DIR."
