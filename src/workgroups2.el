@@ -1378,7 +1378,7 @@ how to write your own."
                       ;;    (get-buffer-create (wg-buf-name buffer))
                       (if vars
                           (if (fboundp 'Info-find-node)
-                              (apply #'Info-find-node var))
+                              (apply #'Info-find-node vars))
                         (info)
                         (get-buffer (wg-buf-name buffer)))))))
 
@@ -2177,11 +2177,13 @@ Or scream unless NOERROR."
 
 (defun wg-workgroup-names ()
   "Get all workgroup names."
-  (mapcar (lambda (group)
-            ;; re-shape group for `completing-read'
-            (cons (wg-workgroup-name group) group))
-          (wg-session-workgroup-list
-           (read (wg-read-text wg-session-file)))))
+  (when (and wg-session-file
+             (file-exists-p wg-session-file))
+    (mapcar (lambda (group)
+              ;; re-shape group for `completing-read'
+              (cons (wg-workgroup-name group) group))
+            (wg-session-workgroup-list
+             (read (wg-read-text wg-session-file))))))
 
 (defun wg-read-workgroup-name ()
   "Read a workgroup name from `wg-workgroup-names'."
@@ -2244,7 +2246,7 @@ Or scream unless NOERROR."
 
 (defun wg-create-workgroup (name)
   "Create and add a workgroup named NAME."
-  (interactive (list (wg-read-new-workgroup-name) current-prefix-arg))
+  (interactive (list (wg-read-new-workgroup-name)))
 
   (unless (file-exists-p (wg-get-session-file))
     (wg-reset-internal (wg-make-session))
@@ -2644,7 +2646,7 @@ ARG is anything else, turn on `workgroups-mode'."
 (defun wg-open-workgroup ()
   "Open specific workgroup."
   (interactive)
-  (let* ((group-names (wg-all-group-names))
+  (let* ((group-names (wg-workgroup-names))
          selected-group)
     (when (and group-names
                (setq selected-group
