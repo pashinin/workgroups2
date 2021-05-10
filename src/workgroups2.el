@@ -47,7 +47,7 @@
 ;; You can change it before activating workgroups.
 ;; Change prefix key (before activating WG)
 ;;
-;; (setq wg-prefix-key (kbd "C-c z"))
+;; (setq wg-prefix-key "C-c z")
 ;;
 ;; By default prefix is: "C-c z"
 ;;
@@ -73,7 +73,7 @@
   :type 'file
   :group 'workgroups)
 
-(defcustom wg-prefix-key (kbd "C-c z")
+(defcustom wg-prefix-key "C-c z"
   "Workgroups' prefix key.
 Setting this variable requires that `workgroups-mode' be turned
 off and then on again to take effect."
@@ -886,8 +886,8 @@ new workgroup during a switch.")
 
 (defvar workgroups-mode-map
   (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "C-c") 'wg-create-workgroup)
-    (define-key map (kbd "C-v") 'wg-open-workgroup)
+    (define-key map (kbd (format "%s %s" wg-prefix-key "C-c")) 'wg-create-workgroup)
+    (define-key map (kbd (format "%s %s" wg-prefix-key "C-v")) 'wg-open-workgroup)
     map)
     "Mode map for `workgroups-mode'.")
 

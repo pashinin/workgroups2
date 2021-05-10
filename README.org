@@ -43,7 +43,7 @@ If you want to set up this minor mode further:
 #+begin_src elisp
 (require 'workgroups2)
 ;; Change prefix key (before activating WG)
-(setq wg-prefix-key (kbd "C-c z"))
+(setq wg-prefix-key "C-c z")
 
 (workgroups-mode 1)   ; put this one at the bottom of .emacs
 #+end_src
