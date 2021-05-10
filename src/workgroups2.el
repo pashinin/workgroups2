@@ -246,12 +246,6 @@ Abbreviation of `destructuring-bind'."
   (declare (indent 2))
   `(cl-destructuring-bind ,args ,expr ,@body))
 
-(defmacro wg-when-boundp (symbols &rest body)
-  "When all SYMBOLS are bound, `eval' BODY."
-  (declare (indent 1))
-  `(when (and ,@(mapcar (lambda (sym) `(boundp ',sym)) symbols))
-     ,@body))
-
 (defmacro wg-dohash (spec &rest body)
   "do-style wrapper for `maphash'.
 
@@ -1331,9 +1325,8 @@ how to write your own."
                           (error (message "%s" err)))
                         (when (get-buffer "*Help*")
                           (set-buffer (get-buffer "*Help*"))
-                          (wg-when-boundp (help-xref-stack help-xref-forward-stack)
-                                          (setq help-xref-stack stack
-                                                help-xref-forward-stack forward-stack))))))))
+                          (setq help-xref-stack stack
+                                help-xref-forward-stack forward-stack)))))))
 
 ;; ielm
 (wg-support 'inferior-emacs-lisp-mode 'ielm
