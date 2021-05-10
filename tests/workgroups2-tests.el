@@ -43,7 +43,7 @@ Then tests will follow to save it and restore."
   (setq wg-session-file "/tmp/wg-test")
   ;;(setq wg-session-load-on-start nil)
   (wg-reset-internal (wg-make-session))
-  (wg-open-session wg-session-file)
+  (wg-open-session)
   (wg-create-first-wg)
   (should (string= (wg-get-session-file) "/tmp/wg-test")))
 

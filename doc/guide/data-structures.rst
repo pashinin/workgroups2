@@ -188,13 +188,6 @@ objects. They allow you to save your custom data.
 
 For example to set (key, value) pair for current workgroup:
 
-.. code-block:: cl
-
-     ;; Write (key, value)
-     (wg-set-workgroup-parameter
-      'ecb                                            ; name
-      (and (boundp 'ecb-minor-mode) ecb-minor-mode))  ; value
-
 Usually these functions are called like:
 
 .. code-block:: cl
@@ -204,4 +197,4 @@ Usually these functions are called like:
      wg-remove-<object>-parameter   ; to remove parameter
 
 For session: wg-session-parameter, wg-set-session-parameter
-For workgroup: wg-workgroup-parameter, wg-set-workgroup-parameter
+For workgroup: wg-workgroup-parameter
