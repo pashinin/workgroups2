@@ -2483,16 +2483,20 @@ ARG is anything else, turn on `workgroups-mode'."
   workgroups-mode)
 
 ;;;###autoload
-(defun wg-open-workgroup ()
-  "Open specific workgroup."
+(defun wg-open-workgroup (&optional group-name)
+  "Open specific workgroup by GROUP-NAME."
   (interactive)
-  (let* ((group-names (wg-workgroup-names))
-         selected-group)
-    (when (and group-names
-               (setq selected-group
-                     (completing-read "Select work group: " group-names)))
-      (wg-open-session)
-      (wg-switch-to-workgroup-internal selected-group))))
+  (let ((group-names (wg-workgroup-names)))
+    (cond
+     (group-names
+      (unless group-name
+        (setq group-name
+              (completing-read "Select work group: " group-names)))
+      (when group-name
+        (wg-open-session)
+        (wg-switch-to-workgroup-internal group-name)))
+     (t
+      (message "No workgroup is created yet.")))))
 
 (provide 'workgroups2)
 ;;; workgroups2.el ends here
