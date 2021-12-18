@@ -2,7 +2,6 @@
 ;;; Commentary:
 ;;; Code:
 
-(require 'cl-lib)
 (require 'ert)
 (require 'workgroups2)
 

@@ -48,20 +48,29 @@ If you want to set up this minor mode further:
 (workgroups-mode 1)   ; put this one at the bottom of .emacs
 #+end_src
 ** Tips (OPTIONAL)
-You can use =M-x customize-group workgroups= to see all variables and
-faces to change.
-
+*** Change workgroups session file
+Use below code
 #+begin_src elisp
-;; Change workgroups session file
 (setq wg-session-file "~/.emacs.d/.emacs_workgroups")
 #+end_src
-
-Hooks' names can tell when they are executed
-
+*** Support some special buffer
+Here is minimum sample code to support =ivy-occur-grep-mode=,
 #+begin_src elisp
-wg-after-switch-to-workgroup-hook
+(with-eval-after-load 'workgroups2
+  ;; provide major mode, package to require, and functions
+  (wg-support 'ivy-occur-grep-mode 'ivy
+              `((serialize . ,(lambda (_buffer)
+                                (list default-directory
+                                      (base64-encode-string (buffer-string) t))))
+                (deserialize . ,(lambda (buffer _vars)
+                                  (switch-to-buffer (wg-buf-name buffer))
+                                  (setq default-directory (nth 0 _vars))
+                                  (insert (base64-decode-string (nth 1 _vars)))
+                                  ;; easier than `ivy-occur-grep-mode' to set up
+                                  (grep-mode)
+                                  ;; need return current buffer at the end of function
+                                  (current-buffer))))))
 #+end_src
-
 ** License
 workgroups2 is free software: you can redistribute it and/or modify it under the terms of the [[https://raw.githubusercontent.com/redguardtoo/workgroups2/master/LICENSE][GNU General Public License]] as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
