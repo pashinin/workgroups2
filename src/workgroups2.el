@@ -253,123 +253,6 @@ Remove file and dired buffers that are not associated with workgroup."
     (declare (indent 1))
     `(mapcar (lambda (,(car spec)) ,@body) ,(cadr spec))))
 
-(defmacro wg-with-gensyms (syms &rest body)
-  "Bind all symbols in SYMS to `gensym's, and eval BODY."
-  (declare (indent 1))
-  `(let (,@(mapcar (lambda (sym) `(,sym (cl-gensym))) syms)) ,@body))
-
-(defmacro wg-dbind (args expr &rest body)
-  "Bind the variables in ARGS to the result of EXPR and execute BODY.
-Abbreviation of `destructuring-bind'."
-  (declare (indent 2))
-  `(cl-destructuring-bind ,args ,expr ,@body))
-
-(defmacro wg-dohash (spec &rest body)
-  "do-style wrapper for `maphash'.
-
-\(fn (KEY VALUE TABLE [RESULT]) BODY...)"
-  (declare (indent 1))
-  (wg-dbind (key val table &optional result) spec
-    `(progn (maphash (lambda (,key ,val) ,@body) ,table) ,result)))
-
-(defmacro wg-asetf (&rest items)
-  "Anaphoric `setf'."
-  `(progn ,@(mapcar (lambda (pv)
-                      `(let ((it ,(car pv)))
-                         ;; Fix compile warn
-                         (ignore it)
-                         (setf ,@pv)))
-                    ;; Take ITEMS, return a list of N length sublists, offset by STEP.
-                    ;; Iterative to prevent stack overflow.
-                    (let* (acc first-2-items)
-                      (while items
-                        (setq first-2-items (if (> (length items) 1) (list (nth 0 items) (nth 1 items))
-                                              (list (nth 1 items))))
-                        (push first-2-items acc)
-                        (setq items (nthcdr 2 items)))
-                      (nreverse acc)))))
-
-(defmacro wg-destructuring-dolist (spec &rest body)
-  "Loop over a list.
-Evaluate BODY, destructuring LIST into SPEC, then evaluate RESULT
-to get a return value, defaulting to nil.  The only hitch is that
-spec must end in dotted style, collecting the rest of the list
-into a var, like so: (a (b c) . rest)
-
-\(fn (SPEC LIST [RESULT]) BODY...)"
-  (declare (indent 1))
-  (wg-dbind (loopspec list &optional result) spec
-    (let ((rest (cdr (last loopspec))))
-      (wg-with-gensyms (list-sym)
-        `(let ((,list-sym ,list))
-           (while ,list-sym
-             (wg-dbind ,loopspec ,list-sym
-               ,@body
-               (setq ,list-sym ,rest)))
-           ,result)))))
-
-(defun wg-int-to-b36-one-digit (i)
-  "Return a character in 0..9 or A..Z from I, and integer 0<=I<32.
-Cribbed from `org-id-int-to-b36-one-digit'."
-  (cond
-   ((< i 10) (+ ?0 i))
-   ((< i 36) (+ ?A i -10))))
-
-(defun wg-b36-to-int-one-digit (i)
-  "Turn a character 0..9, A..Z, a..z into a number 0..61.
-The input I may be a character, or a single-letter string.
-Cribbed from `org-id-b36-to-int-one-digit'."
-  (and (stringp i) (setq i (string-to-char i)))
-  (cond ((and (>= i ?0) (<= i ?9)) (- i ?0))
-        ((and (>= i ?A) (<= i ?Z)) (+ (- i ?A) 10))
-        (t (error "Invalid b36 character"))))
-
-(defun wg-int-to-b36 (i)
-  "Return a base 36 string from I."
-  (let ((base 36) b36)
-    (cl-labels ((add-digit () (push (wg-int-to-b36-one-digit (mod i base)) b36)
-                           (setq i (/ i base))))
-      (add-digit)
-      (while (> i 0) (add-digit))
-      (cl-map 'string 'identity b36))))
-
-(defun wg-b36-to-int (str)
-  "Convert STR, a base-36 string, into the corresponding integer.
-Cribbed from `org-id-b36-to-int'."
-  (let ((result 0))
-    (mapc (lambda (i)
-            (setq result (+ (* result 36)
-                            (wg-b36-to-int-one-digit i))))
-          str)
-    result))
-
-(defun wg-insert-before (elt list index)
-  "Insert ELT into LIST before INDEX."
-  (cond
-   ((zerop index)
-    (cons elt list))
-   (t
-    (push elt (cdr (nthcdr (1- index) list)))
-    list)))
-
-(defun wg-string-list-union (&optional list1 list2)
-  "Return the `union' of LIST1 and LIST2, using `string=' as the test.
-This only exists to get rid of duplicate lambdas in a few reductions."
-  (cl-union list1 list2 :test 'string=))
-
-(defun wg-aget (alist key &optional default)
-  "Return the value of KEY in ALIST. Uses `assq'.
-If PARAM is not found, return DEFAULT which defaults to nil."
-  (or (cdr (assq key alist)) default))
-
-(defun wg-aput (alist key value)
-  "Return a new alist from ALIST with KEY's value set to VALUE."
-  (let* ((found nil)
-         (new (wg-docar (kvp alist)
-                (if (not (eq key (car kvp))) kvp
-                  (setq found (cons key value))))))
-    (if found new (cons (cons key value) new))))
-
 (defmacro wg-defstruct (name-form &rest slot-defs)
   "`defstruct' wrapper that namespace-prefixes all generated functions.
 Note: this doesn't yet work with :conc-name, and possibly other options."
@@ -628,10 +511,7 @@ If not - try to go to the parent dir and do the same."
   (or (wg-aget wg-pickel-link-deserializers key)
       (error "Invalid link deserializer key: %S" key)))
 
-
-
 ;;; bindings
-
 (defun wg-pickel-make-bindings-table (obj)
   "Return a table binding unique subobjects of OBJ to ids."
   (let ((binds (make-hash-table :test 'eq))
@@ -812,10 +692,6 @@ If not - try to go to the parent dir and do the same."
           (wg-pickel-serialize-objects binds)
           (wg-pickel-serialize-links binds)
           (gethash obj binds))))
-
-(defun wg-pickel-to-string (obj)
-  "Serialize OBJ to a string and return the string."
-  (format "%S" (wg-pickel obj)))
 
 (defun wg-unpickel (pickel)
   "Return the deserialization of PICKEL."
@@ -1648,9 +1524,11 @@ Or scream unless NOERROR."
             ;; After switch
             ;; Save "last-workgroup" to the session params
             (and (wg-current-workgroup t)
-                 (wg-set-session-parameter 'last-workgroup (wg-workgroup-name (wg-current-workgroup t))))
+                 (wg-set-session-parameter 'last-workgroup
+                                           (wg-workgroup-name (wg-current-workgroup t))))
             (and (wg-previous-workgroup t)
-                 (wg-set-session-parameter 'prev-workgroup (wg-workgroup-name (wg-previous-workgroup t))))
+                 (wg-set-session-parameter 'prev-workgroup
+                                           (wg-workgroup-name (wg-previous-workgroup t))))
 
             (run-hooks 'wg-after-switch-to-workgroup-hook))
         (when current (pop wg-deactivation-list))))))
@@ -1972,16 +1850,6 @@ SESSION nil means use the current session.  Return value."
     (wg-set-parameter (wg-session-parameters wg-current-session) parameter value)
     (wg-flag-session-modified)
     value))
-
-(defun wg-session-local-value (variable &optional session)
-  "Return the value of VARIABLE in SESSION.
-SESSION nil defaults to the current session.  If VARIABLE does
-not have a session-local binding in SESSION, the value is
-resolved by Emacs."
-  (let* ((undefined (cl-gensym))
-         (value (wg-session-parameter variable undefined session)))
-    (if (not (eq value undefined)) value
-      (symbol-value variable))))
 
 (defun wg-reset-frame (frame)
   "Reset Workgroups' `frame-parameters' in FRAME to nil."
