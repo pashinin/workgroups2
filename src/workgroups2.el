@@ -1296,12 +1296,9 @@ how to write your own."
                         (let ((d (wg-get-first-existing-dir)))
                           (if (file-directory-p d) (dired d))))))))
 
-;; `Info-mode'     C-h i
 (wg-support 'Info-mode 'info
   `((save . (Info-current-file Info-current-node))
     (deserialize . ,(lambda (buffer vars)
-                      ;;(with-current-buffer
-                      ;;    (get-buffer-create (wg-buf-name buffer))
                       (if vars
                           (if (fboundp 'Info-find-node)
                               (apply #'Info-find-node vars))
