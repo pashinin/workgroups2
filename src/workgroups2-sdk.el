@@ -51,6 +51,15 @@ function must return the restored Emacs buffer object.
 See the definitions of the functions in this list for examples of
 how to write your own.")
 
+(eval-and-compile
+  ;; `wg-docar' has been used in macro.
+  (defmacro wg-docar (spec &rest body)
+    "do-style wrapper for `mapcar'.
+
+\(fn (VAR LIST) BODY...)"
+    (declare (indent 1))
+    `(mapcar (lambda (,(car spec)) ,@body) ,(cadr spec))))
+
 (defmacro wg-with-gensyms (syms &rest body)
   "Bind all symbols in SYMS to `gensym's, and eval BODY."
   (declare (indent 1))

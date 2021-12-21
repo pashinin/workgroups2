@@ -244,15 +244,6 @@ Remove file and dired buffers that are not associated with workgroup."
 (fset 'buffer-list wg-buffer-list-original)
 ;; }}
 
-(eval-and-compile
-  ;; `wg-docar' has been used in macro.
-  (defmacro wg-docar (spec &rest body)
-    "do-style wrapper for `mapcar'.
-
-\(fn (VAR LIST) BODY...)"
-    (declare (indent 1))
-    `(mapcar (lambda (,(car spec)) ,@body) ,(cadr spec))))
-
 (defmacro wg-defstruct (name-form &rest slot-defs)
   "`defstruct' wrapper that namespace-prefixes all generated functions.
 Note: this doesn't yet work with :conc-name, and possibly other options."
