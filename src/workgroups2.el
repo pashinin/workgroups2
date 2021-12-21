@@ -126,23 +126,6 @@ Don't do it with Emacs --daemon option."
   :type 'hook
   :group 'workgroups)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; FIXME:
-;;
-;; Only set `wg-workgroup-base-wconfig' on `wg-save-session-as' or
-;; `delete-frame' and only with the most recently changed working-wconfig.
-;; Then, since it's not overwritten on every call to
-;; `wg-workgroup-working-wconfig', its restoration can be retried after manually
-;; recreating buffers that couldn't be restored.  So it takes over the
-;; 'incorrect restoration' portion of the base wconfig's duty.  All that leaves
-;; to base wconfigs is that they're a saved wconfig the user felt was important.
-;; So why not allow more of of them?  A workgroup could stash an unlimited
-;; number of wconfigs.
-;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
 ;; TODO: possibly add `buffer-file-coding-system', `text-scale-mode-amount'
 (defcustom wg-buffer-local-variables-alist
   `((major-mode nil wg-deserialize-buffer-major-mode)
@@ -1764,29 +1747,6 @@ that name and return it.  Otherwise error."
   (mapc 'wg-workgroup-gc-buf-uids (wg-workgroup-list))  ; Remove buf uids that have no referent in `wg-buf-list'
   (mapc 'wg-update-buffer-in-buf-list (wg-buffer-list-emacs)))
 
-(defun wg-save-session-as (filename)
-  "Write the current session into file FILENAME.
-This makes the session visit that file, and marks it as not modified."
-  (unless (file-writable-p filename)
-    (error "File %s can't be written to" filename))
-  (wg-perform-session-maintenance)
-  (setf (wg-session-file-name (wg-get-current-session)) filename)
-  (setf (wg-session-version (wg-get-current-session)) wg-version)
-
-  ;; Save opened frames as a session parameter "frame-list".
-  ;; Exclude `selected-frame' and daemon one (if any).
-  ;; http://stackoverflow.com/questions/21151992/why-emacs-as-daemon-gives-1-more-frame-than-is-opened
-  (if wg-control-frames
-      (let ((fl (frame-list)))
-        (mapc (lambda (frame)
-                (if (string-equal "initial_terminal" (terminal-name frame))
-                    (delete frame fl)))
-              fl)
-        (setq fl (delete (selected-frame) fl))
-        (wg-set-session-parameter 'frame-list (mapcar 'wg-frame-to-wconfig fl))))
-  (wg-write-sexp-to-file (wg-pickel-all-session-parameters) filename)
-  (wg-mark-everything-unmodified))
-
 (defun wg-get-session-file ()
   "Return the filename in which to save the session."
   (or (and wg-current-session
@@ -1796,7 +1756,26 @@ This makes the session visit that file, and marks it as not modified."
 (defun wg-save-session ()
   "Save the current Workgroups session if it's been modified.
 When FORCE - save session regardless of whether it's been modified."
-  (wg-save-session-as (wg-get-session-file)))
+  (let* ((filename (wg-get-session-file)))
+    (unless (file-writable-p filename)
+      (error "File %s can't be written to" filename))
+    (wg-perform-session-maintenance)
+    (setf (wg-session-file-name (wg-get-current-session)) filename)
+    (setf (wg-session-version (wg-get-current-session)) wg-version)
+
+    ;; Save opened frames as a session parameter "frame-list".
+    ;; Exclude `selected-frame' and daemon one (if any).
+    ;; http://stackoverflow.com/questions/21151992/why-emacs-as-daemon-gives-1-more-frame-than-is-opened
+    (if wg-control-frames
+        (let ((fl (frame-list)))
+          (mapc (lambda (frame)
+                  (if (string-equal "initial_terminal" (terminal-name frame))
+                      (delete frame fl)))
+                fl)
+          (setq fl (delete (selected-frame) fl))
+          (wg-set-session-parameter 'frame-list (mapcar 'wg-frame-to-wconfig fl))))
+    (wg-write-sexp-to-file (wg-pickel-all-session-parameters) filename)
+    (wg-mark-everything-unmodified)))
 
 (defun wg-reset-internal (session)
   "Reset Workgroups, setting `wg-current-session' to SESSION.
