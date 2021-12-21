@@ -1441,13 +1441,37 @@ Or scream unless NOERROR."
         (when (y-or-n-p "Save modified workgroups? ")
           (wg-save-session)))))
 
+(defun wg-add-workgroup (workgroup)
+  "Add WORKGROUP to `wg-workgroup-list' at the end.
+If a workgroup with the same name exists, overwrite it."
+  (let ((group (wg-find-workgroup-by :name (wg-workgroup-name workgroup) t))
+        index)
+    (when group
+      (setq index (cl-position group (wg-workgroup-list-or-error)))
+      (wg-delete-workgroup group))
+
+    (wg-asetf (wg-workgroup-list)
+              (wg-insert-before workgroup it (or index (length it))))
+    (wg-flag-session-modified)
+    workgroup))
+
 (defun wg-make-and-add-workgroup (name)
   "Create a workgroup named NAME with current `window-tree'.
-Add it with `wg-check-and-add-workgroup'."
-  (wg-check-and-add-workgroup
-   (wg-make-workgroup
-    :name name
-    :base-wconfig (wg-current-wconfig))))
+Add it to `wg-workgroup-list'."
+  (when (wg-find-workgroup-by :name name t)
+    (unless (or wg-no-confirm-on-destructive-operation
+                (y-or-n-p (format "%S exists.  Overwrite? " name)))
+      (error "Canceled")))
+
+  (let* ((workgroup (wg-make-workgroup
+                     :name name
+                     :base-wconfig (wg-current-wconfig)))
+         (uid (wg-workgroup-uid workgroup)))
+
+    (when (wg-find-workgroup-by :uid uid t)
+      (error "A workgroup with uid %S already exists" uid))
+
+    (wg-add-workgroup workgroup)))
 
 (defun wg-get-workgroup-create (workgroup)
   "Return the workgroup specified by WORKGROUP, creating a new one if needed.
@@ -1612,33 +1636,6 @@ Also delete all references to it by `wg-workgroup-state-table',
   (setf (wg-workgroup-list) (remove workgroup (wg-workgroup-list-or-error)))
   (wg-flag-session-modified)
   workgroup)
-
-(defun wg-add-workgroup (workgroup)
-  "Add WORKGROUP to `wg-workgroup-list' at the end.
-If a workgroup with the same name exists, overwrite it."
-  (let ((group (wg-find-workgroup-by :name (wg-workgroup-name workgroup) t))
-        index)
-    (when group
-      (setq index (cl-position group (wg-workgroup-list-or-error)))
-      (wg-delete-workgroup group))
-
-    (wg-asetf (wg-workgroup-list)
-              (wg-insert-before workgroup it (or index (length it))))
-    (wg-flag-session-modified)
-    workgroup))
-
-(defun wg-check-and-add-workgroup (workgroup)
-  "Add WORKGROUP to `wg-workgroup-list'.
-Ask to overwrite if a workgroup with the same name exists."
-  (let ((name (wg-workgroup-name workgroup))
-        (uid (wg-workgroup-uid workgroup)))
-    (when (wg-find-workgroup-by :uid uid t)
-      (error "A workgroup with uid %S already exists" uid))
-    (when (wg-find-workgroup-by :name name t)
-      (unless (or wg-no-confirm-on-destructive-operation
-                  (y-or-n-p (format "%S exists.  Overwrite? " name)))
-        (error "Cancelled"))))
-  (wg-add-workgroup workgroup))
 
 (defun wg-read-text (path)
   "Read text with PATH, using `utf-8' coding."
