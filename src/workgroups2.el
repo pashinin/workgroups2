@@ -1019,9 +1019,10 @@ Runs each time you're switching workgroups."
       (wg-wconfig-restore-scroll-bars wconfig))
 
     (when (null (wg-get-current-workgroup t))
-      (set-frame-parameter frame 'fullscreen (if (assoc 'fullscreen params)
-                                                 (cdr (assoc 'fullscreen params))
-                                               nil)))
+      (set-frame-parameter frame 'fullscreen
+                           (if (assoc 'fullscreen params)
+                               (cdr (assoc 'fullscreen params))
+                             nil)))
 
     ;; Restore frame position
     (when (and wg-restore-frame-position
@@ -1403,7 +1404,7 @@ Or scream unless NOERROR."
     (unless noerror (error "Current session is nil.  No workgroups are defined"))))
 
 (defun wg-find-workgroup-by (slotkey value &optional noerror)
-  "Return the workgroup on which ACCESSOR returns VALUE or error."
+  "Return the workgroup on which by SLOTKEY and VALUE."
   (let ((accessor (cl-ecase slotkey
                     (:name 'wg-workgroup-name)
                     (:uid  'wg-workgroup-uid))))
@@ -1483,6 +1484,12 @@ that name and return it.  Otherwise error."
 
             (run-hooks 'wg-after-switch-to-workgroup-hook))
         (when current (pop wg-deactivation-list))))))
+
+(defun wg-get-session-file ()
+  "Return the path of file to save the session."
+  (or (and wg-current-session
+           (wg-session-file-name wg-current-session))
+      wg-session-file))
 
 (defun wg-create-workgroup (name)
   "Create and add a workgroup named NAME."
@@ -1704,12 +1711,6 @@ Ask to overwrite if a workgroup with the same name exists."
 
   (mapc 'wg-workgroup-gc-buf-uids (wg-workgroup-list))  ; Remove buf uids that have no referent in `wg-buf-list'
   (mapc 'wg-update-buffer-in-buf-list (wg-buffer-list-emacs)))
-
-(defun wg-get-session-file ()
-  "Return the filename in which to save the session."
-  (or (and wg-current-session
-           (wg-session-file-name wg-current-session))
-      wg-session-file))
 
 (defun wg-save-session ()
   "Save the current Workgroups session if it's been modified.
