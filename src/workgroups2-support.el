@@ -46,8 +46,7 @@ Gets saved variables and runs code to restore a BUFFER."
                         (user-vars (cadr variables)))
                     (if df
                         (funcall df buffer user-vars)
-                      (get-buffer-create wg-default-buffer))
-                    ))))
+                      (get-buffer-create wg-default-buffer))))))
            t)
 
      (eval `(defun ,(intern (format "wg-serialize-%s-buffer" mode-str)) (buffer)
@@ -422,13 +421,10 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
 
 (wg-support 'ivy-occur-grep-mode 'ivy
             `((serialize . ,(lambda (_buffer)
-                              (list default-directory
-                                    (base64-encode-string (buffer-string) t))))
+                              (list (base64-encode-string (buffer-string) t))))
               (deserialize . ,(lambda (buffer _vars)
                                 (switch-to-buffer (wg-buf-name buffer))
-                                (setq default-directory (nth 0 _vars))
-                                (goto-char (point-min))
-                                (insert (base64-decode-string (nth 1 _vars)))
+                                (insert (base64-decode-string (nth 0 _vars)))
                                 (goto-char (point-min))
                                 ;; easier than `ivy-occur-grep-mode' to set up
                                 (grep-mode)

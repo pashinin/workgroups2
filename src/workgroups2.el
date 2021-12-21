@@ -64,12 +64,10 @@
 ;;     ;; provide major mode, package to require, and functions
 ;;     (wg-support 'ivy-occur-grep-mode 'ivy
 ;;                 `((serialize . ,(lambda (_buffer)
-;;                                   (list default-directory
-;;                                         (base64-encode-string (buffer-string) t))))
+;;                                   (list (base64-encode-string (buffer-string) t))))
 ;;                   (deserialize . ,(lambda (buffer _vars)
 ;;                                     (switch-to-buffer (wg-buf-name buffer))
-;;                                     (setq default-directory (nth 0 _vars))
-;;                                     (insert (base64-decode-string (nth 1 _vars)))
+;;                                     (insert (base64-decode-string (nth 0 _vars)))
 ;;                                     ;; easier than `ivy-occur-grep-mode' to set up
 ;;                                     (grep-mode)
 ;;                                     ;; need return current buffer at the end of function
