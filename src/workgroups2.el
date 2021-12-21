@@ -183,10 +183,6 @@ corresponding to a wg-buf, it tags it with the wg-buf's uid to
 unambiguously pair the two.")
 (make-variable-buffer-local 'wg-buffer-uid)
 
-(defvar wg-undoify-window-configuration-change t
-  "Should windows undo info be updated or not.
-When you change window configuration.")
-
 (defvar wg-current-workgroup nil "Bound to the current workgroup.")
 
 (defvar wg-window-min-width 2
@@ -1395,7 +1391,6 @@ If OBJ is nil, return the current workgroup, or error unless NOERROR."
 
 (defun wg-restore-workgroup (workgroup)
   "Restore WORKGROUP in `selected-frame'."
-  (wg-unflag-undoify-window-configuration-change)
   (wg-update-current-workgroup-working-wconfig)
   (wg-restore-wconfig (wg-workgroup-working-wconfig workgroup)))
 
@@ -1540,12 +1535,6 @@ that name and return it.  Otherwise error."
             (,undo-pointer (wg-workgroup-state-undo-pointer ,state))
             (,undo-list (wg-workgroup-state-undo-list ,state)))
        ,@body)))
-
-(defun wg-unflag-undoify-window-configuration-change ()
-  "Set `wg-undoify-window-configuration-change' to nil, exempting
-from undoification any window-configuration changes caused by the
-current command."
-  (setq wg-undoify-window-configuration-change nil))
 
 (defun wg-set-workgroup-working-wconfig (workgroup wconfig)
   "Set the working-wconfig of WORKGROUP to WCONFIG."
@@ -1771,11 +1760,10 @@ object, etc.  SESSION nil defaults to a new, blank session."
 
 (defun wg-mark-everything-unmodified ()
   "Mark the session and all workgroups as unmodified."
-  (let (wg-undoify-window-configuration-change)    ; to skip WG's `post-command-hook' that marks "modified" again
-    (when wg-current-session
-      (setf (wg-session-modified wg-current-session) nil))
-    (dolist (workgroup (wg-workgroup-list))
-      (setf (wg-workgroup-modified workgroup) nil))))
+  (when wg-current-session
+    (setf (wg-session-modified wg-current-session) nil))
+  (dolist (workgroup (wg-workgroup-list))
+    (setf (wg-workgroup-modified workgroup) nil)))
 
 (defun wg-session-parameter (parameter &optional default session)
   "Return session's value for PARAMETER.
