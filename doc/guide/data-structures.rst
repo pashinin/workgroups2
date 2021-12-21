@@ -197,4 +197,3 @@ Usually these functions are called like:
      wg-remove-<object>-parameter   ; to remove parameter
 
 For session: wg-session-parameter, wg-set-session-parameter
-For workgroup: wg-workgroup-parameter

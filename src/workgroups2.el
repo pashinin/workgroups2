@@ -406,10 +406,9 @@ If not - try to go to the parent dir and do the same."
     (vector     . wg-pickel-vector-serializer)
     (hash-table . wg-pickel-hash-table-serializer)
     (buffer     . wg-pickel-buffer-serializer)
-    (marker     . wg-pickel-marker-serializer)
-    ;;(window-configuration   . wg-pickel-window-configuration-serializer)
-    )
+    (marker     . wg-pickel-marker-serializer))
   "Alist mapping types to object serialization functions.")
+
 (defvar wg-pickel-object-deserializers
   '((s . wg-pickel-deserialize-uninterned-symbol)
     (c . wg-pickel-deserialize-cons)
@@ -427,6 +426,7 @@ If not - try to go to the parent dir and do the same."
     (vector     . wg-pickel-vector-link-serializer)
     (hash-table . wg-pickel-hash-table-link-serializer))
   "Alist mapping types to link serialization functions.")
+
 (defvar wg-pickel-link-deserializers
   `((c . wg-pickel-cons-link-deserializer)
     (v . wg-pickel-vector-link-deserializer)
@@ -566,9 +566,6 @@ If not - try to go to the parent dir and do the same."
     (setcar cons (gethash car-id binds))
     (setcdr cons (gethash cdr-id binds))))
 
-;; vector - http://www.gnu.org/software/emacs/manual/html_node/elisp/Vector-Functions.html
-;; (wg-unpickel (wg-pickel (make-vector 9 'Z)))
-;;
 (defun wg-pickel-vector-serializer (vector)
   "Return VECTOR's serialization."
   (list 'v (length vector)))
@@ -616,17 +613,12 @@ If not - try to go to the parent dir and do the same."
                          (gethash value binds)
                          (gethash table binds))
                    result)))))
+
 (defun wg-pickel-hash-table-link-deserializer (key-id value-id table-id binds)
   "Relink a hash-table with its keys and values in BINDS."
   (puthash (gethash key-id binds)
            (gethash value-id binds)
            (gethash table-id binds)))
-
-
-;; TODO
-(defun wg-pickel-window-configuration-serializer (_wc)
-  "Return Window configuration WC's serialization."
-  (list 'wc 1))
 
 (defun wg-pickel-serialize-objects (binds)
   "Return a list of serializations of the objects in BINDS."
@@ -678,7 +670,6 @@ If not - try to go to the parent dir and do the same."
       serial-links
       (wg-pickel-deserialize-objects serial-objects)))))
 
-
 (defadvice select-frame (before wg-update-current-workgroup-working-wconfig)
   "Update `selected-frame's current workgroup's working-wconfig.
 Before selecting a new frame."
@@ -727,9 +718,9 @@ Adds entries to `minor-mode-list', `minor-mode-alist' and
   "Set W's edges in DIR with bounds LS HS LB and HB."
   (wg-set-edges w (if dir (list ls lb hs hb) (list lb ls hb hs))))
 
-(defun wg-w-size (w &optional height)
-  "Return the width or height of W, calculated from its edge list."
-  (wg-with-edges w (l1 t1 r1 b1)
+(defun wg-w-size (width &optional height)
+  "Return the WIDTH or HEIGHT of W, calculated from its edge list."
+  (wg-with-edges width (l1 t1 r1 b1)
     (if height (- b1 t1) (- r1 l1))))
 
 (defun wg-win-parameter (win parameter &optional default)
@@ -888,8 +879,7 @@ All WTREE's subwins are scaled as well."
 
 (defun wg-reset-window-tree ()
   "Delete all but one window in `selected-frame', and reset
-various parameters of that window in preparation for restoring
-a wtree."
+various parameters of that window in preparation for restoring a wtree."
   (delete-other-windows)
   (set-window-dedicated-p nil nil))
 
@@ -937,7 +927,8 @@ a wtree."
 (defun wg-flatten-wtree (wtree &optional key)
   "Return a new list by flattening WTREE.
 KEY non returns returns a list of WTREE's wins.
-KEY non-nil returns a list of the results of calling KEY on each win."
+KEY non-nil returns a l
+ist of the results of calling KEY on each win."
   (cl-labels
       ((inner (w) (if (wg-win-p w) (list (if key (funcall key w) w))
                     (cl-mapcan #'inner (wg-wtree-wlist w)))))
@@ -965,8 +956,6 @@ If `wg-current-wconfig' is non-nil, return it.  Otherwise return
 `wg-frame-to-wconfig'."
   (or (frame-parameter nil 'wg-current-wconfig)
       (wg-frame-to-wconfig)))
-
-;;; base wconfig updating
 
 (defun wg-wconfig-buf-uids (wconfig)
   "Return WCONFIG's wtree's `wg-wtree-buf-uids'."
@@ -1227,7 +1216,6 @@ If BUF's file doesn't exist, call `wg-restore-default-buffer'."
   "Change UID value of a BUFFER's local var `wg-buffer-uid'."
   (if wg-buffer-uid (setq wg-buffer-uid uid)))
 
-
 (defun wg-buffer-special-data (buffer)
   "Return BUFFER's auxiliary serialization, or nil."
   (cl-some (lambda (fn) (funcall fn buffer)) wg-special-buffer-serdes-functions))
@@ -1395,23 +1383,6 @@ If OBJ is nil, return the current workgroup, or error unless NOERROR."
         ((null obj) (wg-current-workgroup noerror))
         (t (error "Can't get workgroup from type:: %S" (type-of obj)))))
 
-
-;;; workgroup parameters
-;;
-;; Quick test:
-;; (wg-workgroup-parameters (wg-current-workgroup))
-;; (wg-workgroup-parameter (wg-current-workgroup) 'test1)
-(defun wg-workgroup-parameter (workgroup parameter &optional default)
-  "Return WORKGROUP's value for PARAMETER.
-If PARAMETER is not found, return DEFAULT which defaults to nil.
-WORKGROUP should be accepted by `wg-get-workgroup'."
-  (wg-aget (wg-workgroup-parameters (wg-get-workgroup workgroup))
-           parameter default))
-
-(defun wg-workgroup-base-wconfig-buf-uids (workgroup)
-  "Return a new list of all unique buf uids in WORKGROUP's working wconfig."
-  (wg-wconfig-buf-uids (wg-workgroup-base-wconfig workgroup)))
-
 (defun wg-workgroup-saved-wconfigs-buf-uids (workgroup)
   "Return a new list of all unique buf uids in WORKGROUP's base wconfig."
   (cl-reduce 'wg-string-list-union
@@ -1421,7 +1392,7 @@ WORKGROUP should be accepted by `wg-get-workgroup'."
 (defun wg-workgroup-all-buf-uids (workgroup)
   "Return a new list of all unique buf uids in WORKGROUP."
   (cl-reduce 'wg-string-list-union
-             (list (wg-workgroup-base-wconfig-buf-uids workgroup)
+             (list (wg-wconfig-buf-uids (wg-workgroup-base-wconfig workgroup))
                    (wg-workgroup-saved-wconfigs-buf-uids workgroup))))
 
 (defun wg-restore-workgroup (workgroup)
@@ -1475,6 +1446,24 @@ Or scream unless NOERROR."
     (or (not wg-modified-p)
         (when (y-or-n-p "Save modified workgroups? ")
           (wg-save-session)))))
+
+(defun wg-make-and-add-workgroup (name)
+  "Create a workgroup named NAME with current `window-tree'.
+Add it with `wg-check-and-add-workgroup'."
+  (wg-check-and-add-workgroup
+   (wg-make-workgroup
+    :name name
+    :base-wconfig (wg-current-wconfig))))
+
+(defun wg-get-workgroup-create (workgroup)
+  "Return the workgroup specified by WORKGROUP, creating a new one if needed.
+If `wg-get-workgroup' on WORKGROUP returns a workgroup, return it.
+Otherwise, if WORKGROUP is a string, create a new workgroup with
+that name and return it.  Otherwise error."
+  (or (wg-get-workgroup workgroup t)
+      (if (stringp workgroup)
+          (wg-make-and-add-workgroup workgroup)
+        (wg-get-workgroup workgroup))))  ; Call this again for its error message
 
 (defun wg-switch-to-workgroup-internal (workgroup-name)
   "Switch to workgroup with WORKGROUP-NAME."
@@ -1656,24 +1645,6 @@ Ask to overwrite if a workgroup with the same name exists."
                   (y-or-n-p (format "%S exists.  Overwrite? " name)))
         (error "Cancelled"))))
   (wg-add-workgroup workgroup))
-
-(defun wg-make-and-add-workgroup (name)
-  "Create a workgroup named NAME with current `window-tree'.
-Add it with `wg-check-and-add-workgroup'."
-  (wg-check-and-add-workgroup
-   (wg-make-workgroup
-    :name name
-    :base-wconfig (wg-current-wconfig))))
-
-(defun wg-get-workgroup-create (workgroup)
-  "Return the workgroup specified by WORKGROUP, creating a new one if needed.
-If `wg-get-workgroup' on WORKGROUP returns a workgroup, return it.
-Otherwise, if WORKGROUP is a string, create a new workgroup with
-that name and return it.  Otherwise error."
-  (or (wg-get-workgroup workgroup t)
-      (if (stringp workgroup)
-          (wg-make-and-add-workgroup workgroup)
-        (wg-get-workgroup workgroup))))  ; Call this again for its error message
 
 (defun wg-read-text (path)
   "Read text with PATH, using `utf-8' coding."
