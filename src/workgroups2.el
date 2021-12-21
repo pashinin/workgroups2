@@ -1122,7 +1122,7 @@ Runs each time you're switching workgroups."
 (defun wg-restore-file-buffer (buf &optional switch)
   "Restore BUF by finding its file and maybe SWITCH to it.
 Return the created buffer.
-If BUF's file doesn't exist, call `wg-restore-default-buffer'"
+If BUF's file doesn't exist, call `wg-restore-default-buffer'."
   (let ((file-name (wg-buf-file-name buf)))
     (when (and file-name
                (or wg-restore-remote-buffers
@@ -1295,11 +1295,6 @@ If BUFOBJ is a buffer or a buffer name, see `wg-buffer-uid-or-add'."
     (wg-buf (wg-buf-uid bufobj)) ;; possibly also add to `wg-buf-list'
     (buffer (wg-buffer-uid-or-add bufobj))
     (string (wg-bufobj-uid-or-add (get-buffer bufobj)))))
-
-(defun wg-reset-buffer (buffer)
-  "Return BUFFER.
-Currently only sets BUFFER's `wg-buffer-uid' to nil."
-  (with-current-buffer buffer (setq wg-buffer-uid nil)))
 
 (defun wg-update-buffer-in-buf-list (&optional buffer)
   "Update BUFFER's corresponding buf in `wg-buf-list'.
@@ -1807,8 +1802,15 @@ When FORCE - save session regardless of whether it's been modified."
   "Reset Workgroups, setting `wg-current-session' to SESSION.
 Resets all frame parameters, buffer-local vars, current session
 object, etc.  SESSION nil defaults to a new, blank session."
-  (mapc 'wg-reset-frame (frame-list))
-  (mapc 'wg-reset-buffer (wg-buffer-list-emacs))
+
+  (dolist (frame (frame-list))
+    (set-frame-parameter frame 'wg-workgroup-state-table nil)
+    (set-frame-parameter frame 'wg-current-workgroup-uid nil)
+    (set-frame-parameter frame 'wg-previous-workgroup-uid nil))
+
+  (dolist (buffer (wg-buffer-list-emacs))
+    (with-current-buffer buffer (setq wg-buffer-uid nil)))
+
   (setq wg-current-session session))
 
 (defun wg-all-buf-uids ()
@@ -1841,12 +1843,6 @@ SESSION nil means use the current session.  Return value."
     (wg-set-parameter (wg-session-parameters wg-current-session) parameter value)
     (wg-flag-session-modified)
     value))
-
-(defun wg-reset-frame (frame)
-  "Reset Workgroups' `frame-parameters' in FRAME to nil."
-  (set-frame-parameter frame 'wg-workgroup-state-table nil)
-  (set-frame-parameter frame 'wg-current-workgroup-uid nil)
-  (set-frame-parameter frame 'wg-previous-workgroup-uid nil))
 
 (defun wg-pickel-all-session-parameters (&optional session)
   "Return a copy of SESSION after pickeling its parameters.
