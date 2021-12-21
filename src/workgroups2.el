@@ -1018,7 +1018,7 @@ Runs each time you're switching workgroups."
     (when wg-restore-scroll-bars
       (wg-wconfig-restore-scroll-bars wconfig))
 
-    (when (null (wg-current-workgroup t))
+    (when (null (wg-get-current-workgroup t))
       (set-frame-parameter frame 'fullscreen (if (assoc 'fullscreen params)
                                                  (cdr (assoc 'fullscreen params))
                                                nil)))
@@ -1026,7 +1026,7 @@ Runs each time you're switching workgroups."
     ;; Restore frame position
     (when (and wg-restore-frame-position
                (not (frame-parameter nil 'fullscreen))
-               (null (wg-current-workgroup t)))
+               (null (wg-get-current-workgroup t)))
       (wg-wconfig-restore-frame-position wconfig frame))
 
     ;; Restore buffers
@@ -1332,7 +1332,7 @@ Print PROMPT"
     (setf (wg-workgroup-modified workgroup) t)
     (wg-flag-session-modified)))
 
-(defun wg-current-workgroup (&optional noerror frame)
+(defun wg-get-current-workgroup (&optional noerror frame)
   "Return current workgroup in frame.
 Error unless NOERROR, in FRAME if specified."
   (or wg-current-workgroup
@@ -1361,7 +1361,7 @@ WORKGROUP should be a workgroup or nil."
 
 (defun wg-current-workgroup-p (workgroup &optional frame)
   "Return t when WORKGROUP is the current workgroup of FRAME, nil otherwise."
-  (eq workgroup (wg-current-workgroup t frame)))
+  (eq workgroup (wg-get-current-workgroup t frame)))
 
 (defun wg-previous-workgroup-p (workgroup frame)
   "Return t when WORKGROUP is the previous workgroup of FRAME, nil otherwise."
@@ -1374,7 +1374,7 @@ If OBJ is a string, return the workgroup named OBJ, or error unless NOERROR.
 If OBJ is nil, return the current workgroup, or error unless NOERROR."
   (cond ((wg-workgroup-p obj) obj)
         ((stringp obj) (wg-find-workgroup-by :name obj noerror))
-        ((null obj) (wg-current-workgroup noerror))
+        ((null obj) (wg-get-current-workgroup noerror))
         (t (error "Can't get workgroup from type:: %S" (type-of obj)))))
 
 (defun wg-workgroup-saved-wconfigs-buf-uids (workgroup)
@@ -1462,7 +1462,7 @@ that name and return it.  Otherwise error."
   "Switch to workgroup with WORKGROUP-NAME."
   (fset 'buffer-list wg-buffer-list-original)
   (let ((workgroup (wg-get-workgroup-create workgroup-name))
-        (current (wg-current-workgroup t)))
+        (current (wg-get-current-workgroup t)))
     (unless (and (eq workgroup current))
       (when current (push current wg-deactivation-list))
       (unwind-protect
@@ -1474,9 +1474,9 @@ that name and return it.  Otherwise error."
 
             ;; After switch
             ;; Save "last-workgroup" to the session params
-            (and (wg-current-workgroup t)
+            (and (wg-get-current-workgroup t)
                  (wg-set-session-parameter 'last-workgroup
-                                           (wg-workgroup-name (wg-current-workgroup t))))
+                                           (wg-workgroup-name (wg-get-current-workgroup t))))
             (and (wg-previous-workgroup t)
                  (wg-set-session-parameter 'prev-workgroup
                                            (wg-workgroup-name (wg-previous-workgroup t))))
@@ -1556,8 +1556,8 @@ return WORKGROUP's current undo state."
 
 (defun wg-update-current-workgroup-working-wconfig ()
   "Update `selected-frame's current workgroup's working-wconfig with `wg-current-wconfig'."
-  (and (wg-current-workgroup t)
-       (wg-set-workgroup-working-wconfig (wg-current-workgroup t) (wg-current-wconfig))))
+  (and (wg-get-current-workgroup t)
+       (wg-set-workgroup-working-wconfig (wg-get-current-workgroup t) (wg-current-wconfig))))
 
 (defun wg-workgroup-gc-buf-uids (workgroup)
   "Remove buf uids from WORKGROUP that have no referent in `wg-buf-list'."
@@ -1802,7 +1802,7 @@ And the parameters of all its workgroups."
 
 (defun wg-workgroup-associated-buf-uids ()
   "Return a new list containing all of 's associated buf uids."
-  (let ((group (wg-current-workgroup t)))
+  (let ((group (wg-get-current-workgroup t)))
     (when group
       (append (wg-workgroup-strong-buf-uids group)
               (wg-workgroup-weak-buf-uids group)))))
