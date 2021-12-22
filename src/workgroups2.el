@@ -136,21 +136,20 @@ Don't do it with Emacs --daemon option."
     (vertical-scroll-bar nil nil))
   "Alist mapping buffer-local variable symbols to serdes functions.
 
-The `car' of each entry should be a buffer-local variable symbol.
+The 1st of each entry should be a buffer-local variable symbol.
 
-The `cadr' of the entry should be either nil or a function of no
+The 2nd of the entry should be either nil or a function of no
 arguments.  If nil, the variable's value is used as-is, and
 should have a readable printed representation.  If a function,
-`funcall'ing it should yield a serialization of the value of the
-variable.
+calling it yields a serialization of the value of the variable.
 
-The `caddr' of the entry should be either nil or a function of
+The 3rd of the entry should be either nil or a function of
 one argument.  If nil, the serialized value from above is
-assigned to the variable as-is.  It a function, `funcall'ing it
+assigned to the variable as-is.  It a function, calling it
 on the serialized value from above should do whatever is
 necessary to properly restore the original value of the variable.
 For example, in the case of `major-mode' it should funcall the
-value (a major-mode function symbol) rather than just assigning
+value (a `major-mode' function symbol) rather than just assigning
 it to `major-mode'."
   :type 'alist
   :group 'workgroups)
