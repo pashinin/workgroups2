@@ -945,6 +945,8 @@ If frame is nil then `selected-frame'."
          (top (wg-wconfig-top wconfig)))
     ;; Check that arguments are integers
     ;; Problem: https://github.com/pashinin/workgroups2/issues/15
+    (when wg-debug
+      (message "wg-wconfig-restore-frame-position called => %s %s %s" wconfig left top))
     (when (and (integerp left)
                (integerp top))
       (set-frame-position frame left top))))
@@ -961,6 +963,10 @@ If frame is nil then `selected-frame'."
 Return a copy WCONFIG's wtree scaled with `wg-scale-wtree' by the
 ratio or NEW-WIDTH to WCONFIG's width, and NEW-HEIGHT to
 WCONFIG's height."
+  (when wg-debug
+    (message "wg-scale-wconfigs-wtree called => %s %s %s %s"
+             new-width new-height
+             (wg-wconfig-width wconfig) (wg-wconfig-height wconfig)))
   (wg-normalize-wtree
    (wg-scale-wtree
     (wg-wconfig-wtree wconfig)
@@ -982,10 +988,11 @@ Return a scaled copy of WCONFIG."
   (when wg-current-session
     (let ((fl (wg-session-parameter 'frame-list nil wg-current-session))
           (frame (selected-frame)))
+      (when wg-debug
+        (message "wg-restore-frames called => %s" fl))
       (mapc (lambda (wconfig)
               (with-selected-frame (make-frame)
-                (wg-restore-wconfig wconfig)
-                ))
+                (wg-restore-wconfig wconfig)))
             fl)
       (select-frame-set-input-focus frame))))
 
@@ -997,10 +1004,15 @@ Runs each time you're switching workgroups."
   (let ((params (wg-wconfig-parameters wconfig)))
     (wg-barf-on-active-minibuffer)
 
+    (when wg-debug
+      (message "wg-restore-wconfig called => %s" params))
+
     ;; restore scroll bars
     (wg-wconfig-restore-scroll-bars wconfig)
 
     (when (null (wg-get-current-workgroup t))
+      (when wg-debug
+        (message "set frame fullscreen parameters"))
       (set-frame-parameter frame 'fullscreen
                            (if (assoc 'fullscreen params)
                                (cdr (assoc 'fullscreen params))
@@ -1009,6 +1021,8 @@ Runs each time you're switching workgroups."
     ;; Restore frame position
     (when (and (not (frame-parameter nil 'fullscreen))
                (null (wg-get-current-workgroup t)))
+      (when wg-debug
+        (message "restore frame position"))
       (wg-wconfig-restore-frame-position wconfig frame))
 
     ;; Restore buffers
