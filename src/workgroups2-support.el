@@ -561,5 +561,16 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
                             (wg-file-buffer-error file (error-message-string err)))))
                        buffer)))))
 
+(wg-support
+ 'speedbar-mode
+ 'speedbar
+  `((deserialize . ,(lambda (_buffer vars)
+                      (ignore vars)
+                      (setq speedbar-buffer (switch-to-buffer (wg-buf-name _buffer)))
+                      (speedbar-reconfigure-keymaps)
+                      (speedbar-update-contents)
+                      (speedbar-set-timer dframe-update-speed)
+                      speedbar-buffer))))
+
 (provide 'workgroups2-support)
 ;;; workgroups2-support.el ends here
