@@ -46,7 +46,7 @@ deserialization function."
       `(defun ,(intern (format "wg-deserialize-%s-buffer" mode-str)) (buffer)
          "DeSerialization function created with `wg-support'.
 Gets saved variables and runs code to restore a BUFFER."
-         (when (require ',,pkg nil 'noerror)
+         (when (require ',,pkg nil (unless wg-debug 'noerror))
            (wg-dbind (this-function variables) (wg-buf-special-data buffer)
              (let ((default-directory (car variables))
                    (df (cdr (assoc 'deserialize ',,params)))
@@ -126,8 +126,8 @@ Saves some variables to restore a BUFFER later."
 (wg-support
  'inferior-emacs-lisp-mode
  'ielm
- `((deserialize . ,(lambda (_buffer _vars)
-                     (ignore _buffer _vars)
+ `((deserialize . ,(lambda (_buffer vars)
+                     (ignore _buffer vars)
                      (ielm)
                      (get-buffer "*ielm*")))))
 
@@ -135,8 +135,8 @@ Saves some variables to restore a BUFFER later."
 (wg-support
  'magit-status-mode
  'magit
- `((deserialize . ,(lambda (_buffer _vars)
-                     (ignore _buffer _vars)
+ `((deserialize . ,(lambda (_buffer vars)
+                     (ignore _buffer vars)
                      (if (file-directory-p default-directory)
                          (magit-status-setup-buffer default-directory)
                        (let ((d (wg-get-first-existing-dir)))
@@ -146,8 +146,8 @@ Saves some variables to restore a BUFFER later."
 (wg-support
  'shell-mode
  'shell
- `((deserialize . ,(lambda (_buffer _vars)
-                     (ignore _vars)
+ `((deserialize . ,(lambda (_buffer vars)
+                     (ignore vars)
                      (shell (wg-buf-name _buffer))))))
 
 ;; org-agenda buffer
@@ -239,8 +239,8 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
 (wg-support
  'inferior-sage-mode
  'sage-mode
- `((deserialize . ,(lambda (_buffer _vars)
-                     (ignore _vars)
+ `((deserialize . ,(lambda (_buffer vars)
+                     (ignore vars)
                      (save-window-excursion
                        (if (boundp' sage-command)
                            (run-sage t sage-command t)))
@@ -271,8 +271,8 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
 (wg-support
  'inferior-octave-mode
  'octave
- `((deserialize . ,(lambda (_buffer _vars)
-                     (ignore _vars)
+ `((deserialize . ,(lambda (_buffer vars)
+                     (ignore vars)
                      (prog1 (run-octave)
                        (rename-buffer (wg-buf-name _buffer) t))))))
 
@@ -280,7 +280,7 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
 (wg-support
  'prolog-inferior-mode
  'prolog
- `((deserialize . ,(lambda (_buffer _vars)
+ `((deserialize . ,(lambda (_buffer vars)
                      (save-window-excursion
                        (run-prolog nil))
                      (wg-switch-to-shell-buffer "*prolog*")))))
@@ -289,8 +289,8 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
 (wg-support
  'ensime-inf-mode
  'ensime
- `((deserialize . ,(lambda (_buffer _vars)
-                     (ignore _buffer _vars)
+ `((deserialize . ,(lambda (_buffer vars)
+                     (ignore _buffer vars)
                      (save-window-excursion
                        (ensime-inf-switch))
                      (when (boundp 'ensime-inf-buffer-name)
@@ -360,8 +360,7 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
           (when (and (boundp 'slime-inferior-lisp-args)
                      slime-inferior-lisp-args)
             (list 'wg-deserialize-slime-buffer
-                  (list default-directory slime-inferior-lisp-args)
-                  ))))))
+                  (list default-directory slime-inferior-lisp-args)))))))
 
 ;; inf-mongo
 ;; https://github.com/tobiassvn/inf-mongo
@@ -513,11 +512,11 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
                    (when wg-debug
                      (message "ivy-occur-grep-mode serialize is called => %s" _buffer))
                    (list (base64-encode-string (buffer-string) t))))
-   (deserialize . ,(lambda (_buffer _vars)
+   (deserialize . ,(lambda (_buffer vars)
                      (when wg-debug
                        (message "ivy-occur-grep-mode deserialize is called => %s" file))
                      (switch-to-buffer (wg-buf-name _buffer))
-                     (insert (base64-decode-string (nth 0 _vars)))
+                     (insert (base64-decode-string (nth 0 vars)))
                      (goto-char (point-min))
                      ;; easier than `ivy-occur-grep-mode' to set up
                      (grep-mode)
@@ -530,7 +529,7 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
                    (when wg-debug
                      (message "pdf-view-mode serialize is called => %s" _buffer))
                    (list (pdf-view-current-page) pdf-view-display-size)))
-   (deserialize . ,(lambda (_buffer _vars)
+   (deserialize . ,(lambda (_buffer vars)
                      (let ((file (wg-buf-file-name _buffer))
                            buffer)
                        (when wg-debug
@@ -543,8 +542,8 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
                                    (rename-buffer (wg-buf-name _buffer) t)
                                    (wg-set-buffer-uid-or-error (wg-buf-uid _buffer)))
                                  (switch-to-buffer buffer)
-                                 (let* ((page (nth 0 _vars))
-                                        (view-display-size (nth 1 _vars)))
+                                 (let* ((page (nth 0 vars))
+                                        (view-display-size (nth 1 vars)))
                                    (when page
                                      (pdf-view-goto-page page))
                                    (when view-display-size
