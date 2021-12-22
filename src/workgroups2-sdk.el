@@ -177,9 +177,5 @@ If PARAM is not found, return DEFAULT which defaults to nil."
                   (setq found (cons key value))))))
     (if found new (cons (cons key value) new))))
 
-(defun wg-get-value (arg)
-  "Get a value of ARG if it exists."
-  (if (boundp `,arg) arg))
-
 (provide 'workgroups2-sdk)
 ;;; workgroups2-sdk.el ends here
