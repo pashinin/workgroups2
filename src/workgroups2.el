@@ -1070,38 +1070,36 @@ Runs each time you're switching workgroups."
   "Restore BUF by finding its file and maybe SWITCH to it.
 Return the created buffer.
 If BUF's file doesn't exist, call `wg-restore-default-buffer'."
-  (let ((file-name (wg-buf-file-name buf)))
+  (let ((file-name (wg-buf-file-name buf))
+        buffer)
     (when (and file-name
                (or wg-restore-remote-buffers
                    (not (file-remote-p file-name))))
-      (cond ((file-exists-p file-name)
-             ;; jit ignore errors
-             ;;(ignore-errors
-             (condition-case err
-                 (let ((b (find-file-noselect file-name nil nil nil)))
-                   (with-current-buffer b
-                     (rename-buffer (wg-buf-name buf) t)
-                     (wg-set-buffer-uid-or-error (wg-buf-uid buf))
+      (cond
+       ((file-exists-p file-name)
+        (condition-case err
+            (progn
+              (setq buffer (find-file-noselect file-name nil nil nil))
+              (with-current-buffer buffer
+                (rename-buffer (wg-buf-name buf) t)
+                (wg-set-buffer-uid-or-error (wg-buf-uid buf))
 
-                     ;; restore mark
-                     (set-mark (wg-buf-mark buf))
-                     (deactivate-mark)
+                ;; restore mark
+                (set-mark (wg-buf-mark buf))
+                (deactivate-mark)
 
-                     (wg-deserialize-buffer-local-variables buf)
-                     )
-                   (if switch (switch-to-buffer b))
-                   b)
-               (error
-                (message "Error while restoring a file %s:\n  %s" file-name (error-message-string err))
-                nil)))
-            (t
-             ;; try directory
-             (if (file-directory-p (file-name-directory file-name))
-                 (dired (file-name-directory file-name))
-               (progn
-                 (message "Attempt to restore nonexistent file: %S" file-name)
-                 nil))
-             )))))
+                (wg-deserialize-buffer-local-variables buf))
+              (if switch (switch-to-buffer buffer)))
+          (error
+           (wg-file-buffer-error file-name (error-message-string err)))))
+
+       ;; try directory
+       ((file-directory-p (file-name-directory file-name))
+        (dired (file-name-directory file-name)))
+
+       (t
+        (message "Attempt to restore nonexistent file: %S" file-name))))
+    buffer))
 
 (defun wg-restore-special-buffer (buf &optional switch)
   "Restore a buffer BUF with DESERIALIZER-FN and maybe SWITCH to it."
@@ -1122,10 +1120,23 @@ If BUF's file doesn't exist, call `wg-restore-default-buffer'."
   "Restore BUF, return it and maybe SWITCH to it."
   (when buf
     (fset 'buffer-list wg-buffer-list-original)
-    (or (wg-restore-existing-buffer buf switch)
-        (wg-restore-special-buffer buf switch)  ;; non existent dired problem
-        (wg-restore-file-buffer buf switch)
-        (progn (wg-restore-default-buffer switch) nil))))
+    (cond
+     ((wg-restore-existing-buffer buf switch)
+      (when wg-debug
+        (message "wg-restore-existing-buffer succeeded.")))
+
+     ((wg-restore-special-buffer buf switch)
+      (when wg-debug
+        (message "wg-restore-special-buffer succeeded.")))
+
+     ((wg-restore-file-buffer buf switch)
+      (when wg-debug
+        (message "wg-restore-file-buffer succeeded.")))
+     (t
+      (wg-restore-default-buffer switch)
+      (when wg-debug
+        (message "wg-restore-default-buffer called.")))))
+    nil)
 
 ;;; buffer object utils
 
@@ -1193,7 +1204,17 @@ If BUF's file doesn't exist, call `wg-restore-default-buffer'."
 
 (defun wg-buffer-special-data (buffer)
   "Return BUFFER's auxiliary serialization, or nil."
-  (cl-some (lambda (fn) (funcall fn buffer)) wg-special-buffer-serdes-functions))
+  (when wg-debug
+    (message "wg-buffer-special-data is called => %s" buffer))
+  (let* ((rlt (cl-some (lambda (fn)
+                         (let ((special-data (funcall fn buffer)))
+                           (when wg-debug
+                             (message "fn=%s special-data=%s" fn special-data))
+                           special-data))
+                       wg-special-buffer-serdes-functions)))
+    (when wg-debug
+      (message "wg-buffer-special-data was called => %s" rlt))
+    rlt))
 
 (defun wg-serialize-buffer-local-variables ()
   "Return an alist of buffer-local variable symbols and their values.
