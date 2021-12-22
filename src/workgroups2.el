@@ -160,21 +160,6 @@ it to `major-mode'."
   :type 'boolean
   :group 'workgroups)
 
-(defcustom wg-restore-frame-position t
-  "Non-nil means restore frame position on workgroup restore."
-  :type 'boolean
-  :group 'workgroups)
-
-(defcustom wg-restore-scroll-bars t
-  "Non-nil means restore scroll-bar settings on workgroup restore."
-  :type 'boolean
-  :group 'workgroups)
-
-(defcustom wg-restore-window-dedicated-p t
-  "Non-nil means restore `window-dedicated-p' on workgroup restore."
-  :type 'boolean
-  :group 'workgroups)
-
 (defvar wg-buffer-uid nil
   "Symbol for the current buffer's wg-buf's uid.
 Every Workgroups buffer object (wg-buf) has a uid.  When
@@ -745,8 +730,8 @@ SESSION nil defaults to the current session."
               (t win-point)))
             (when (>= win-start (point-max)) (recenter))))
 
-        (when wg-restore-window-dedicated-p
-          (set-window-dedicated-p selwin (wg-win-dedicated win)))))
+        ;; restore dedicated window
+        (set-window-dedicated-p selwin (wg-win-dedicated win))))
     (ignore-errors
       (set-window-prev-buffers
        selwin (wg-unpickel (wg-win-parameter win 'prev-buffers)))
@@ -1015,8 +1000,9 @@ Runs each time you're switching workgroups."
   (unless frame (setq frame (selected-frame)))
   (let ((params (wg-wconfig-parameters wconfig)))
     (wg-barf-on-active-minibuffer)
-    (when wg-restore-scroll-bars
-      (wg-wconfig-restore-scroll-bars wconfig))
+
+    ;; restore scroll bars
+    (wg-wconfig-restore-scroll-bars wconfig)
 
     (when (null (wg-get-current-workgroup t))
       (set-frame-parameter frame 'fullscreen
@@ -1025,8 +1011,7 @@ Runs each time you're switching workgroups."
                              nil)))
 
     ;; Restore frame position
-    (when (and wg-restore-frame-position
-               (not (frame-parameter nil 'fullscreen))
+    (when (and (not (frame-parameter nil 'fullscreen))
                (null (wg-get-current-workgroup t)))
       (wg-wconfig-restore-frame-position wconfig frame))
 
