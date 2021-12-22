@@ -36,43 +36,41 @@ deserialization function."
      ;; Fix compile warn.
      (ignore args)
 
-     (eval `(defun ,(intern (format "wg-deserialize-%s-buffer" mode-str)) (buffer)
-              "DeSerialization function created with `wg-support'.
+     (eval
+      `(defun ,(intern (format "wg-deserialize-%s-buffer" mode-str)) (buffer)
+         "DeSerialization function created with `wg-support'.
 Gets saved variables and runs code to restore a BUFFER."
-              (when (require ',,pkg nil 'noerror)
-                (wg-dbind (this-function variables) (wg-buf-special-data buffer)
-                  (let ((default-directory (car variables))
-                        (df (cdr (assoc 'deserialize ',,params)))
-                        (user-vars (cadr variables)))
-                    (if df
-                        (funcall df buffer user-vars)
-                      (get-buffer-create wg-default-buffer))))))
-           t)
+         (when (require ',,pkg nil 'noerror)
+           (wg-dbind (this-function variables) (wg-buf-special-data buffer)
+             (let ((default-directory (car variables))
+                   (df (cdr (assoc 'deserialize ',,params)))
+                   (user-vars (cadr variables)))
+               (if df
+                   (funcall df buffer user-vars)
+                 (get-buffer-create wg-default-buffer))))))
+      t)
 
-     (eval `(defun ,(intern (format "wg-serialize-%s-buffer" mode-str)) (buffer)
-              "Serialization function created with `wg-support'.
+     (eval
+      `(defun ,(intern (format "wg-serialize-%s-buffer" mode-str)) (buffer)
+         "Serialization function created with `wg-support'.
 Saves some variables to restore a BUFFER later."
-              (when (get-buffer buffer)
-                (with-current-buffer buffer
-                  (when (eq major-mode ',,mode)
-                    (let ((sf (cdr (assoc 'serialize ',,params)))
-                          (save (cdr (assoc 'save ',,params))))
-                      (list ',(intern (format "wg-deserialize-%s-buffer" mode-str))
-                            (list default-directory
-                                  (if sf
-                                      (funcall sf buffer)
-                                    (if save (mapcar 'wg-get-value save)))
-                                  )))))))
-           t)
-     ;; Maybe change a docstring for functions
-     ;;(put (intern (format "wg-serialize-%s-buffer" (symbol-name mode)))
-     ;;     'function-documentation
-     ;;     (format "A function created by `wg-support'."))
+         (when (get-buffer buffer)
+           (with-current-buffer buffer
+             (when (eq major-mode ',,mode)
+               (let ((sf (cdr (assoc 'serialize ',,params)))
+                     (save (cdr (assoc 'save ',,params))))
+                 (list ',(intern (format "wg-deserialize-%s-buffer" mode-str))
+                       (list default-directory
+                             (if sf
+                                 (funcall sf buffer)
+                               (if save (mapcar 'wg-get-value save))))))))))
+      t)
 
-     ;; Add function to `wg-special-buffer-serdes-functions' variable
-     (eval `(add-to-list 'wg-special-buffer-serdes-functions
-                         ',(intern (format "wg-serialize-%s-buffer" mode-str)) t)
-           t)))
+     ;; Add function to `wg-special-buffer-serdes-functions'
+     (eval
+      `(add-to-list 'wg-special-buffer-serdes-functions
+                    ',(intern (format "wg-serialize-%s-buffer" mode-str)) t)
+      t)))
 
 ;; Dired
 (wg-support 'dired-mode 'dired

@@ -326,10 +326,6 @@ This needs to be a macro to allow specification of a setf'able place."
   "Return a new uid."
   (concat (wg-time-to-b36) "-" (wg-int-to-b36 string-chars-consed)))
 
-(defun wg-get-value (arg)
-  "Get a value of ARG if it exists."
-  (if (boundp `,arg) arg))
-
 (defvar wg-current-session nil "Current session object.")
 (defun wg-get-current-session (&optional noerror)
   "Return `wg-current-session' or error unless NOERROR."
