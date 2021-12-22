@@ -424,6 +424,15 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
                         (w3m-goto-url url)
                         (current-buffer))))))
 
+(wg-support
+ 'eww-mode
+ 'eww
+  `((serialize . ,(lambda (_buffer)
+                    (list (plist-get eww-data :url))))
+    (deserialize . ,(lambda (_buffer vars)
+                      (wg-dbind (url) vars
+                        (eww url)
+                        (current-buffer))))))
 ;; notmuch
 (wg-support
  'notmuch-hello-mode
