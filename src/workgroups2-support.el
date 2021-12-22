@@ -158,9 +158,9 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
                      (org-agenda-list)
                      (let* ((buf (get-buffer org-agenda-buffer-name)))
                        (when
-                        (with-current-buffer buf
-                          (wg-run-agenda-cmd vars))
-                        buf))))))
+                           (with-current-buffer buf
+                             (wg-run-agenda-cmd vars))
+                         buf))))))
 
 ;; eshell
 (wg-support 'eshell-mode 'esh-mode
@@ -187,27 +187,27 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
 
 ;; `inferior-python-mode'
 (wg-support 'inferior-python-mode 'python
-            `((save . (python-shell-interpreter python-shell-interpreter-args))
-              (deserialize . ,(lambda (_buffer vars)
-                                (wg-dbind (pythoncmd pythonargs) vars
-                                          (run-python (concat pythoncmd " " pythonargs))
-                                          (let ((buf (get-buffer (process-buffer
-                                                                  (python-shell-get-process)))))
-                                            (when buf
-                                              (with-current-buffer buf (goto-char (point-max)))
-                                              buf)))))))
+  `((save . (python-shell-interpreter python-shell-interpreter-args))
+    (deserialize . ,(lambda (_buffer vars)
+                      (wg-dbind (pythoncmd pythonargs) vars
+                        (run-python (concat pythoncmd " " pythonargs))
+                        (let ((buf (get-buffer (process-buffer
+                                                (python-shell-get-process)))))
+                          (when buf
+                            (with-current-buffer buf (goto-char (point-max)))
+                            buf)))))))
 
 
 ;; Sage shell ;;
 (wg-support 'inferior-sage-mode 'sage-mode
-            `((deserialize . ,(lambda (_buffer _vars)
-                                (save-window-excursion
-                                  (if (boundp' sage-command)
-                                      (run-sage t sage-command t)))
-                                (when (and (boundp 'sage-buffer) sage-buffer)
-                                  (set-buffer sage-buffer)
-                                  (switch-to-buffer sage-buffer)
-                                  (goto-char (point-max)))))))
+  `((deserialize . ,(lambda (_buffer _vars)
+                      (save-window-excursion
+                        (if (boundp' sage-command)
+                            (run-sage t sage-command t)))
+                      (when (and (boundp 'sage-buffer) sage-buffer)
+                        (set-buffer sage-buffer)
+                        (switch-to-buffer sage-buffer)
+                        (goto-char (point-max)))))))
 
 ;; `inferior-ess-mode'     M-x R
 (defvar ess-history-file)
@@ -420,15 +420,15 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
                               buffer))))))))
 
 (wg-support 'ivy-occur-grep-mode 'ivy
-            `((serialize . ,(lambda (_buffer)
-                              (list (base64-encode-string (buffer-string) t))))
-              (deserialize . ,(lambda (buffer _vars)
-                                (switch-to-buffer (wg-buf-name buffer))
-                                (insert (base64-decode-string (nth 0 _vars)))
-                                (goto-char (point-min))
-                                ;; easier than `ivy-occur-grep-mode' to set up
-                                (grep-mode)
-                                (current-buffer)))))
+  `((serialize . ,(lambda (_buffer)
+                    (list (base64-encode-string (buffer-string) t))))
+    (deserialize . ,(lambda (buffer _vars)
+                      (switch-to-buffer (wg-buf-name buffer))
+                      (insert (base64-decode-string (nth 0 _vars)))
+                      (goto-char (point-min))
+                      ;; easier than `ivy-occur-grep-mode' to set up
+                      (grep-mode)
+                      (current-buffer)))))
 
 (provide 'workgroups2-support)
 ;;; workgroups2-support.el ends here
