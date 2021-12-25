@@ -6,7 +6,7 @@
 Workgroups is a session manager for Emacs.
 
 - It saves all your opened buffers, their location and sizes on disk to restore later
-- You can create several workspaces
+- You can create several work groups
 
 You can also restore such buffers as: org-agenda, shell, magit-status, help.
 
@@ -21,9 +21,11 @@ Just install "workgroups2" from Melpa and activate it with
 
 ** Usage
 *** Quick Start
-Use =M-x wg-create-workgroup= to save current windows layout.
+Use =M-x wg-create-workgroup= to save save window&buffer layout as a work group.
 
-Use =M-x wg-open-workgroup= to open saved windows layout.
+Use =M-x wg-open-workgroup= to open an existing work group.
+
+Use =M-x wg-kill-workgroup= to delete an existing work group.
 *** Enable minor mode =workgroups-mode= (OPTIONAL)
 Put below line at the bottom of =.emacs=,
 #+begin_src elisp
@@ -36,8 +38,9 @@ By default prefix is: "C-c z" (To change it - see settings below)
 
 #+begin_example
 <prefix> <key>
-<prefix> C-c    - create new workgroup
-<prefix> C-v    - open existing workgroup
+<prefix> C-c    - create a new workgroup
+<prefix> C-v    - open an existing workgroup
+<prefix> C-k    - delete an existing workgroup
 #+end_example
 
 If you want to set up this minor mode further:

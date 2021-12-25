@@ -35,8 +35,9 @@
 ;;
 ;; Quick start,
 ;;
-;; - `wg-create-workgroup' to save current windows layout
-;; - `wg-open-workgroup' to open saved windows layout
+;; - `wg-create-workgroup' to save window&buffer layout as a work group
+;; - `wg-open-workgroup' to open an existing work group
+;; - `wg-kill-workgroup' to delete an existing work group
 ;;
 ;; Optionally, you can use minor-mode `workgroups-mode' by put below
 ;; line into .emacs ,
@@ -53,6 +54,7 @@
 ;;
 ;; <prefix> C-c    - create new workgroup
 ;; <prefix> C-v    - open existing workgroup
+;; <prefix> C-k    - delete existing workgroup
 ;;
 ;; Change workgroups session file,
 ;;
@@ -661,6 +663,7 @@ new workgroup during a switch.")
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd (format "%s %s" wg-prefix-key "C-c")) 'wg-create-workgroup)
     (define-key map (kbd (format "%s %s" wg-prefix-key "C-v")) 'wg-open-workgroup)
+    (define-key map (kbd (format "%s %s" wg-prefix-key "C-k")) 'wg-kill-workgroup)
     map)
     "Mode map for `workgroups-mode'.")
 
@@ -1864,6 +1867,28 @@ ARG is anything else, turn on `workgroups-mode'."
       (when group-name
         (wg-open-session)
         (wg-switch-to-workgroup-internal group-name)))
+     (t
+      (message "No workgroup is created yet.")))))
+
+;;;###autoload
+(defun wg-kill-workgroup ()
+  "Delete existing workgroup."
+  (interactive)
+  (let ((group-names (wg-workgroup-names))
+        group-name
+        group)
+    (cond
+     ((and group-names
+           (setq group-name
+                 (completing-read "Select work group: " group-names))
+           (y-or-n-p (format "Will the work group \"%s\" be deleted?"
+                             group-name)))
+      (wg-open-session)
+      (when (setq group (wg-find-workgroup-by :name group-name t))
+        (wg-delete-workgroup group)
+        (message "Work group %s was deleted." group-name)
+        (wg-save-session)))
+
      (t
       (message "No workgroup is created yet.")))))
 
