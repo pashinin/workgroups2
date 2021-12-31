@@ -7,7 +7,7 @@
 ;; Author: Sergey Pashinin <sergey at pashinin dot com>
 ;; Keywords: session management window-configuration persistence
 ;; Homepage: https://github.com/pashinin/workgroups2
-;; Version: 1.2.1
+;; Version: 1.3-unreleased
 ;; Package-Requires: ((emacs "25.1"))
 ;;
 ;; This program is free software; you can redistribute it and/or modify
@@ -80,7 +80,7 @@
 
 (require 'workgroups2-sdk)
 
-(defconst wg-version "1.2.1" "Current version of Workgroups.")
+(defconst wg-version "1.3-unreleased" "Current version of Workgroups.")
 
 (defgroup workgroups nil
   "Workgroups for Emacs -- Emacs session manager"
