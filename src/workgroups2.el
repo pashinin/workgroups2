@@ -857,8 +857,8 @@ All WTREE's sub-wins are scaled as well."
   (cl-remove-duplicates (wg-wtree-buf-uids wtree) :test 'string=))
 
 (defun wg-reset-window-tree ()
-  "Delete all but one window in `selected-frame', and reset
-various parameters of that window in preparation for restoring a wtree."
+  "Delete all but one window in `selected-frame'.
+Then reset various parameters of that window in preparation for restoring a wtree."
   (delete-other-windows)
   (set-window-dedicated-p nil nil))
 
@@ -1432,6 +1432,15 @@ Or scream unless NOERROR."
           (error "There are no workgroups with a %S of %S"
                  accessor value)))))
 
+(defun wg-get-session-from-file ()
+  "Get session from session file."
+  (let ((session (read (wg-read-text wg-session-file))))
+    (unless (wg-session-p session)
+      (error "%S is not a Workgroups session file" wg-session-file))
+    (when session
+      (setf (wg-session-file-name session) wg-session-file))
+    session))
+
 (defun wg-workgroup-names ()
   "Get all workgroup names."
   (when (and wg-session-file
@@ -1440,7 +1449,7 @@ Or scream unless NOERROR."
               ;; re-shape group for `completing-read'
               (cons (wg-workgroup-name group) group))
             (wg-session-workgroup-list
-             (read (wg-read-text wg-session-file))))))
+             (wg-get-session-from-file)))))
 
 (defun wg-new-default-workgroup-name ()
   "Return a new, unique, default workgroup name."
@@ -1538,6 +1547,7 @@ that name and return it.  Otherwise error."
   "Create and add a workgroup named NAME."
   (interactive (list (wg-read-new-workgroup-name)))
 
+  ;; create session file if it doesn't exist
   (unless (file-exists-p (wg-get-session-file))
     (wg-reset-internal (wg-make-session))
     (wg-save-session))
@@ -1545,14 +1555,12 @@ that name and return it.  Otherwise error."
   (unless wg-current-session
     ;; code extracted from `wg-open-session'.
     ;; open session but do NOT load any workgroup.
-    (let* ((session (read (wg-read-text wg-session-file))))
-      (setf (wg-session-file-name session) wg-session-file)
-      (wg-reset-internal (wg-unpickel-session-parameters session))))
+    (wg-reset-internal (wg-unpickel-session-parameters (wg-get-session-from-file))))
 
   (wg-switch-to-workgroup-internal (wg-make-and-add-workgroup name))
 
   ;; save the session file in real time
-  (wg-save-session)
+  (wg-save-session name)
 
   ;; I prefer simpler UI
   (message "Workgroup \"%s\" was created and saved." name))
@@ -1670,12 +1678,7 @@ Also delete all references to it by `wg-workgroup-state-table',
   "Load a session visiting `wg-session-file', creating one if none already exists."
   (cond
    ((file-exists-p wg-session-file)
-    ;; TODO: handle errors when reading object
-    (let ((session (read (wg-read-text wg-session-file))))
-      (unless (wg-session-p session)
-        (error "%S is not a Workgroups session file" wg-session-file))
-      (setf (wg-session-file-name session) wg-session-file)
-      (wg-reset-internal (wg-unpickel-session-parameters session)))
+    (wg-reset-internal (wg-unpickel-session-parameters (wg-get-session-from-file)))
 
     (if wg-control-frames (wg-restore-frames))
 
@@ -1728,9 +1731,9 @@ Also delete all references to it by `wg-workgroup-state-table',
   (mapc 'wg-workgroup-gc-buf-uids (wg-workgroup-list))  ; Remove buf uids that have no referent in `wg-buf-list'
   (mapc 'wg-update-buffer-in-buf-list (wg-buffer-list-emacs)))
 
-(defun wg-save-session ()
+(defun wg-save-session (&optional workgroup-name)
   "Save the current Workgroups session if it's been modified.
-When FORCE - save session regardless of whether it's been modified."
+When WORKGROUP-NAME is not nil, only save the work group with this name."
   (let* ((filename (wg-get-session-file)))
     (unless (file-writable-p filename)
       (error "File %s can't be written to" filename))
@@ -1749,7 +1752,14 @@ When FORCE - save session regardless of whether it's been modified."
                 fl)
           (setq fl (delete (selected-frame) fl))
           (wg-set-session-parameter 'frame-list (mapcar 'wg-frame-to-wconfig fl))))
-    (wg-write-sexp-to-file (wg-pickel-all-session-parameters) filename)
+
+    (let ((copy (wg-copy-session (wg-get-current-session))))
+      (when (wg-session-parameters copy)
+        (wg-asetf (wg-session-parameters copy) (wg-pickel it)))
+      (wg-asetf (wg-session-workgroup-list copy)
+                (cl-mapcar 'wg-pickel-workgroup-parameters it))
+      (wg-write-sexp-to-file copy filename))
+
     (wg-mark-everything-unmodified)))
 
 (defun wg-reset-internal (session)
@@ -1796,16 +1806,6 @@ SESSION nil means use the current session.  Return value."
     (wg-set-parameter (wg-session-parameters wg-current-session) parameter value)
     (wg-flag-session-modified)
     value))
-
-(defun wg-pickel-all-session-parameters (&optional session)
-  "Return a copy of SESSION after pickeling its parameters.
-And the parameters of all its workgroups."
-  (let ((copy (wg-copy-session (or session (wg-get-current-session)))))
-    (when (wg-session-parameters copy)
-      (wg-asetf (wg-session-parameters copy) (wg-pickel it)))
-    (wg-asetf (wg-session-workgroup-list copy)
-              (cl-mapcar 'wg-pickel-workgroup-parameters it))
-    copy))
 
 (defun wg-unpickel-session-parameters (session)
   "Return a copy of SESSION after unpickeling its parameters.

@@ -79,9 +79,8 @@ Saving session
 Writing objects to file is done in... (function stack):
 
     wg-write-sexp-to-file
-        wg-pickel-all-session-parameters
-            wg-pickel-workgroup-parameters
-                wg-pickel <-- main function
+        wg-pickel-workgroup-parameters
+            wg-pickel <-- main function
 
 So the main function to transform Lisp objects to strings is ``wg-pickel``.
 
