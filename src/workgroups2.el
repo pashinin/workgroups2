@@ -78,6 +78,7 @@
 ;;; Code:
 ;;
 
+(require 'lisp-mode)
 (require 'workgroups2-sdk)
 
 (defconst wg-version "1.3-unreleased" "Current version of Workgroups.")
@@ -1696,10 +1697,13 @@ Also delete all references to it by `wg-workgroup-state-table',
     (message "(New Workgroups session file)"))))
 
 (defun wg-write-sexp-to-file (sexp file)
-  "Write the printable representation of SEXP to FILE."
+  "Write a printable (and human-readable) representation of SEXP to FILE."
   (with-temp-buffer
     (let ((print-level nil)  (print-length nil))
-      (insert (format "%S" sexp)))
+      (insert (format "%S" sexp))
+      (backward-sexp 1)
+      (indent-pp-sexp t)
+      )
     (write-file file)))
 
 ;; FIXME: Duplicate buf names probably shouldn't be allowed.  An unrelated error
