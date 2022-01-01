@@ -1361,32 +1361,15 @@ Error unless NOERROR, in FRAME if specified."
           (wg-find-workgroup-by :uid (frame-parameter frame 'wg-current-workgroup-uid) noerror)
         (unless noerror (error "No current workgroup in this frame")))))
 
-(defun wg-previous-workgroup (&optional noerror frame)
-  "Return the previous workgroup in FRAME, or error unless NOERROR."
-  (let ((param (frame-parameter frame 'wg-previous-workgroup-uid)))
-    (if param
-        (wg-find-workgroup-by :uid param noerror)
-      (unless noerror (error "No previous workgroup in this frame")))))
-
 (defun wg-set-current-workgroup (workgroup &optional frame)
   "Set the current workgroup to WORKGROUP in FRAME.
 WORKGROUP should be a workgroup or nil."
   (set-frame-parameter frame 'wg-current-workgroup-uid
                        (when workgroup (wg-workgroup-uid workgroup))))
 
-(defun wg-set-previous-workgroup (workgroup &optional frame)
-  "Set the previous workgroup to WORKGROUP in FRAME.
-WORKGROUP should be a workgroup or nil."
-  (set-frame-parameter frame 'wg-previous-workgroup-uid
-                       (when workgroup (wg-workgroup-uid workgroup))))
-
 (defun wg-current-workgroup-p (workgroup &optional frame)
   "Return t when WORKGROUP is the current workgroup of FRAME, nil otherwise."
   (eq workgroup (wg-get-current-workgroup t frame)))
-
-(defun wg-previous-workgroup-p (workgroup frame)
-  "Return t when WORKGROUP is the previous workgroup of FRAME, nil otherwise."
-  (eq workgroup (wg-previous-workgroup t frame)))
 
 (defun wg-get-workgroup (obj &optional noerror)
   "Return a workgroup from OBJ.
@@ -1523,18 +1506,7 @@ that name and return it.  Otherwise error."
           (progn
             ;; Switch
             (wg-restore-workgroup workgroup)
-            (wg-set-previous-workgroup current)
             (wg-set-current-workgroup workgroup)
-
-            ;; After switch
-            ;; Save "last-workgroup" to the session params
-            (and (wg-get-current-workgroup t)
-                 (wg-set-session-parameter 'last-workgroup
-                                           (wg-workgroup-name (wg-get-current-workgroup t))))
-            (and (wg-previous-workgroup t)
-                 (wg-set-session-parameter 'prev-workgroup
-                                           (wg-workgroup-name (wg-previous-workgroup t))))
-
             (run-hooks 'wg-after-switch-to-workgroup-hook))
         (when current (pop wg-deactivation-list))))))
 
@@ -1653,14 +1625,11 @@ WORKGROUP."
 
 (defun wg-delete-workgroup (workgroup)
   "Remove WORKGROUP from `wg-workgroup-list'.
-Also delete all references to it by `wg-workgroup-state-table',
-`wg-current-workgroup' and `wg-previous-workgroup'."
+Delete references to it by `wg-workgroup-state-table', `wg-current-workgroup'."
   (dolist (frame (frame-list))
     (remhash (wg-workgroup-uid workgroup) (wg-workgroup-state-table frame))
     (when (wg-current-workgroup-p workgroup frame)
-      (wg-set-current-workgroup nil frame))
-    (when (wg-previous-workgroup-p workgroup frame)
-      (wg-set-previous-workgroup nil frame)))
+      (wg-set-current-workgroup nil frame)))
   (setf (wg-workgroup-list) (remove workgroup (wg-workgroup-list-or-error)))
   (wg-flag-session-modified)
   workgroup)
@@ -1684,14 +1653,7 @@ Also delete all references to it by `wg-workgroup-state-table',
     (if wg-control-frames (wg-restore-frames))
 
     (when (wg-workgroup-list)
-      (if (member (wg-session-parameter 'last-workgroup) (wg-workgroup-names))
-          (wg-switch-to-workgroup-internal (wg-session-parameter 'last-workgroup))
-        (wg-switch-to-workgroup-internal (car (wg-workgroup-list))))
-      (let ((prev (wg-session-parameter 'prev-workgroup)))
-        (when prev
-          (when (and (member prev (wg-workgroup-names))
-                     (wg-get-workgroup prev t))
-            (wg-set-previous-workgroup (wg-get-workgroup prev t))))))
+      (wg-switch-to-workgroup-internal (car (wg-workgroup-list))))
     (wg-mark-everything-unmodified))
 
    (t
@@ -1776,8 +1738,7 @@ object, etc.  SESSION nil defaults to a new, blank session."
 
   (dolist (frame (frame-list))
     (set-frame-parameter frame 'wg-workgroup-state-table nil)
-    (set-frame-parameter frame 'wg-current-workgroup-uid nil)
-    (set-frame-parameter frame 'wg-previous-workgroup-uid nil))
+    (set-frame-parameter frame 'wg-current-workgroup-uid nil))
 
   (dolist (buffer (wg-buffer-list-emacs))
     (with-current-buffer buffer (setq wg-buffer-uid nil)))
