@@ -329,8 +329,10 @@ This needs to be a macro to allow specification of a setf'able place."
   (concat (wg-time-to-b36) "-" (wg-int-to-b36 string-chars-consed)))
 
 (defvar wg-current-session nil "Current session object.")
+(defvar wg-snapshot-session nil "Snapshot of session object.")
+
 (defun wg-get-current-session (&optional noerror)
-  "Return `wg-current-session' or error unless NOERROR."
+  "Return current session or error unless NOERROR."
   (or wg-current-session
       (if workgroups-mode
           (unless noerror (error "No session is defined"))
@@ -989,8 +991,8 @@ Return a scaled copy of WCONFIG."
   "Try to recreate opened frames, take info from session's 'frame-list parameter."
   (interactive)
   (delete-other-frames)
-  (when wg-current-session
-    (let ((fl (wg-session-parameter 'frame-list nil wg-current-session))
+  (when (wg-get-current-session)
+    (let ((fl (wg-session-parameter 'frame-list nil (wg-get-current-session)))
           (frame (selected-frame)))
       (when wg-debug
         (message "wg-restore-frames called => %s" fl))
@@ -1063,11 +1065,11 @@ Runs each time you're switching workgroups."
                            (set var val)))))))
 
 (defmacro wg-workgroup-list ()
-  "Setf'able `wg-current-session' modified slot accessor."
+  "List of work groups."
   `(wg-session-workgroup-list (wg-get-current-session)))
 
 (defmacro wg-buf-list ()
-  "Setf'able `wg-current-session' buf-list slot accessor."
+  "Return buf list."
   `(wg-session-buf-list (wg-get-current-session)))
 
 (defun wg-restore-default-buffer (&optional switch)
@@ -1340,18 +1342,12 @@ Print PROMPT"
   (when (not (wg-minibuffer-inactive-p))
     (error "Exit minibuffer to use workgroups functions!")))
 
-(defun wg-flag-session-modified ()
-  "Set SESSION's modified flag."
-  (when wg-current-session
-    (setf (wg-session-modified wg-current-session) t)))
-
 (defun wg-flag-workgroup-modified (&optional workgroup)
   "Set WORKGROUP's and the current session's modified flags."
   (unless workgroup
     (setq workgroup (wg-get-workgroup nil t)))
   (when workgroup
-    (setf (wg-workgroup-modified workgroup) t)
-    (wg-flag-session-modified)))
+    (setf (wg-workgroup-modified workgroup) t)))
 
 (defun wg-get-current-workgroup (&optional noerror frame)
   "Return current workgroup in frame.
@@ -1399,8 +1395,7 @@ If OBJ is nil, return the current workgroup, or error unless NOERROR."
   (wg-restore-wconfig (wg-workgroup-working-wconfig workgroup)))
 
 (defun wg-workgroup-list-or-error (&optional noerror)
-  "Return the value of `wg-current-session's :workgroup-list slot.
-Or scream unless NOERROR."
+  "Return workgroup list. Or scream unless NOERROR."
   (if (wg-get-current-session noerror)
       (or (wg-session-workgroup-list (wg-get-current-session noerror))
           (unless noerror (error "No workgroups are defined")))
@@ -1446,9 +1441,8 @@ Or scream unless NOERROR."
 
 (defun wg-query-and-save-if-modified ()
   "Query for save when current session or any of its workgroups are modified."
-  (let ((wg-modified-p (and wg-current-session
-                            (or (wg-session-modified wg-current-session)
-                                (cl-some 'wg-workgroup-modified (wg-workgroup-list))))))
+  (let ((wg-modified-p (and (wg-get-current-session)
+                            (or (cl-some 'wg-workgroup-modified (wg-workgroup-list))))))
     (or (not wg-modified-p)
         (when (y-or-n-p "Save modified workgroups? ")
           (wg-save-session)))))
@@ -1464,7 +1458,6 @@ If a workgroup with the same name exists, overwrite it."
 
     (wg-asetf (wg-workgroup-list)
               (wg-insert-before workgroup it (or index (length it))))
-    (wg-flag-session-modified)
     workgroup))
 
 (defun wg-make-and-add-workgroup (name)
@@ -1512,8 +1505,8 @@ that name and return it.  Otherwise error."
 
 (defun wg-get-session-file ()
   "Return the path of file to save the session."
-  (or (and wg-current-session
-           (wg-session-file-name wg-current-session))
+  (or (and (wg-get-current-session)
+           (wg-session-file-name (wg-get-current-session)))
       wg-session-file))
 
 (defun wg-create-workgroup (name)
@@ -1525,7 +1518,7 @@ that name and return it.  Otherwise error."
     (wg-reset-internal (wg-make-session))
     (wg-save-session))
 
-  (unless wg-current-session
+  (unless (wg-get-current-session)
     ;; code extracted from `wg-open-session'.
     ;; open session but do NOT load any workgroup.
     (wg-reset-internal (wg-unpickel-session-parameters (wg-get-session-from-file))))
@@ -1631,7 +1624,6 @@ Delete references to it by `wg-workgroup-state-table', `wg-current-workgroup'."
     (when (wg-current-workgroup-p workgroup frame)
       (wg-set-current-workgroup nil frame)))
   (setf (wg-workgroup-list) (remove workgroup (wg-workgroup-list-or-error)))
-  (wg-flag-session-modified)
   workgroup)
 
 (defun wg-read-text (path)
@@ -1712,7 +1704,6 @@ When WORKGROUP-NAME is not nil, only save the work group with this name."
       (error "File %s can't be written to" filename))
     (wg-perform-session-maintenance)
     (setf (wg-session-file-name (wg-get-current-session)) filename)
-    (setf (wg-session-version (wg-get-current-session)) wg-version)
 
     ;; Save opened frames as a session parameter "frame-list".
     ;; Exclude `selected-frame' and daemon one (if any).
@@ -1736,7 +1727,7 @@ When WORKGROUP-NAME is not nil, only save the work group with this name."
     (wg-mark-everything-unmodified)))
 
 (defun wg-reset-internal (session)
-  "Reset Workgroups, setting `wg-current-session' to SESSION.
+  "Reset Workgroups, setting current session object to SESSION.
 Resets all frame parameters, buffer-local vars, current session
 object, etc.  SESSION nil defaults to a new, blank session."
 
@@ -1759,8 +1750,6 @@ object, etc.  SESSION nil defaults to a new, blank session."
 
 (defun wg-mark-everything-unmodified ()
   "Mark the session and all workgroups as unmodified."
-  (when wg-current-session
-    (setf (wg-session-modified wg-current-session) nil))
   (dolist (workgroup (wg-workgroup-list))
     (setf (wg-workgroup-modified workgroup) nil)))
 
@@ -1774,9 +1763,10 @@ SESSION nil defaults to the current session."
 (defun wg-set-session-parameter (parameter value)
   "Set PARAMETER to VALUE in SESSION.
 SESSION nil means use the current session.  Return value."
-  (when wg-current-session
-    (wg-set-parameter (wg-session-parameters wg-current-session) parameter value)
-    (wg-flag-session-modified)
+  (when wg-debug
+    (message "wg-set-session-parameter => %s %s" parameter values))
+  (when (wg-get-current-session)
+    (wg-set-parameter (wg-session-parameters (wg-get-current-session)) parameter value)
     value))
 
 (defun wg-unpickel-session-parameters (session)
@@ -1812,7 +1802,7 @@ ARG is anything else, turn on `workgroups-mode'."
    (workgroups-mode
     (if (boundp 'desktop-restore-frames)
         (setq desktop-restore-frames nil))
-    (wg-reset-internal (wg-make-session)) ; creates a new `wg-current-session'
+    (wg-reset-internal (wg-make-session))
     (wg-add-workgroups-mode-minor-mode-entries)
 
     ;; Load session
@@ -1869,8 +1859,8 @@ ARG is anything else, turn on `workgroups-mode'."
   "Print current session."
   (interactive)
   (with-temp-buffer
-    (wg-insert-and-indent wg-current-session)
-    (message "wg-current-session:\n%S" (buffer-string))))
+    (wg-insert-and-indent (wg-get-current-session))
+    (message "current session:\n%S" (buffer-string))))
 
 (provide 'workgroups2)
 ;;; workgroups2.el ends here

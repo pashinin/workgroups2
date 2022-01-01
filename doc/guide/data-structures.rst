@@ -41,12 +41,8 @@ Example for current session object:
 .. code-block:: cl
 
      ;; Read
-     (wg-session-file-name (wg-current-session))         ; Get a filename of current session
+     (wg-session-file-name (wg-get-current-session))         ; Get a filename of current session
      (wg-workgroup-parameters (wg-current-workgroup))    ; Get workgroup parameters
-
-     ;; Write (used just before saving session to file)
-     (setf (wg-session-file-name (wg-current-session)) filename)    ; Set session filename
-     (setf (wg-session-version (wg-current-session)) wg-version)    ; Write workgroups version
 
 .. warning::
 
@@ -59,7 +55,7 @@ How to work with these structures?
 ----------------------------------
 
 Ok, we define a session structure, and you can get the
-value of it with (wg-current-session)
+value of it with (wg-get-current-session)
 
 wg-defstruct creates functions like wg-session-..., wg-make-session (to
 manipulate structures). So if you have (wg-defstruct wg session ...) -
