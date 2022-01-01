@@ -1062,7 +1062,8 @@ Runs each time you're switching workgroups."
 
 (defmacro wg-workgroup-list ()
   "List of work groups."
-  `(wg-session-workgroup-list (wg-get-current-session)))
+  `(when (wg-get-current-session)
+     (wg-session-workgroup-list (wg-get-current-session))))
 
 (defmacro wg-buf-list ()
   "Return buf list."
