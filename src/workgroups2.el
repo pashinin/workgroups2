@@ -1,4 +1,4 @@
-;;; workgroups2.el --- New workspaces for Emacs -*- coding: utf-8; lexical-binding: t -*-
+;;; workgroups2.el --- save&load multiple named workspaces (or "workgroups") -*- coding: utf-8; lexical-binding: t -*-
 ;;
 ;; Copyright (C) 2020-2021 Chen Bin
 ;; Copyright (C) 2013-2014 Sergey Pashinin
@@ -27,8 +27,7 @@
 ;;
 ;;; Commentary:
 ;;
-;; Workgroups2 is an Emacs session manager.  It is based on the
-;; experimental branch of the original "workgroups" extension.
+;; This program can save&load multiple named workspaces (or "workgroups").
 ;;
 ;; If you find a bug - please post it here:
 ;; https://github.com/pashinin/workgroups2/issues
@@ -60,7 +59,7 @@
 ;;
 ;;   (setq wg-session-file "~/.emacs.d/.emacs_workgroups")
 ;;
-;; Support some special buffer (say `ivy-occur-grep-mode'),
+;; Support any special buffer (say `ivy-occur-grep-mode'),
 ;;
 ;;   (with-eval-after-load 'workgroups2
 ;;     ;; provide major mode, package to require, and functions

@@ -3,12 +3,11 @@
 [[http://melpa.org/#/workgroups2][file:http://melpa.org/packages/workgroups2-badge.svg]]
 [[http://stable.melpa.org/#/workgroups2][file:http://stable.melpa.org/packages/workgroups2-badge.svg]]
 
-Workgroups is a session manager for Emacs.
+This program can save&load multiple named workspaces (or "workgroups"),
 
-- It saves all your opened buffers, their location and sizes on disk to restore later
-- You can create several work groups
-
-You can also restore such buffers as: org-agenda, shell, magit-status, help.
+- Save all opened buffers, their location and sizes on disk to restore later
+- Restore special buffers as: org-agenda, shell, magit-status, help, pdf-tools
+- Users can set up to support any special buffer (restoring the  page number and notes of pdf file, for example)
 
 Fork it, [[https://github.com/pashinin/workgroups2/wiki/How-to-restore-a-specific-type-of-buffer][add more special buffers support]]. Or even better - fix bugs.
 
