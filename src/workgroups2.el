@@ -333,11 +333,7 @@ This needs to be a macro to allow specification of a setf'able place."
 
 (defun wg-get-current-session (&optional noerror)
   "Return current session or error unless NOERROR."
-  (or wg-current-session
-      (if workgroups-mode
-          (unless noerror (error "No session is defined"))
-        (unless noerror
-          (error "Activate workgroups with (workgroups-mode 1)")))))
+  wg-current-session)
 
 ;; locate-dominating-file
 (defun wg-get-first-existing-dir (&optional dir)
@@ -1529,7 +1525,8 @@ that name and return it.  Otherwise error."
   (wg-save-session name)
 
   ;; I prefer simpler UI
-  (message "Workgroup \"%s\" was created and saved." name))
+  (message "Workgroup \"%s\" was created and saved." name)
+  (wg-reset-internal nil))
 
 (defun wg-workgroup-state-table (&optional frame)
   "Return FRAME's workgroup table, creating it first if necessary."
@@ -1828,7 +1825,8 @@ ARG is anything else, turn on `workgroups-mode'."
               (completing-read "Select work group: " group-names)))
       (when group-name
         (wg-open-session)
-        (wg-switch-to-workgroup-internal group-name)))
+        (wg-switch-to-workgroup-internal group-name)
+        (wg-reset-internal nil)))
      (t
       (message "No workgroup is created yet.")))))
 
