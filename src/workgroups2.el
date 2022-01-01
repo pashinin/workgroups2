@@ -1661,17 +1661,21 @@ Delete references to it by `wg-workgroup-state-table', `wg-current-workgroup'."
     (wg-reset-internal (wg-make-session :file-name wg-session-file))
     (message "(New Workgroups session file)"))))
 
+(defmacro wg-insert-and-indent (string)
+  "Insert and indent STRING."
+  `(let ((print-level nil)
+         (print-length nil)
+         (lisp-indent-function 'lisp-indent-function))
+     (insert (format "%S" ,string))
+     ;; indent
+     (goto-char (point-min))
+     (backward-prefix-chars)
+     (pp-buffer)))
+
 (defun wg-write-sexp-to-file (sexp file)
   "Write a printable (and human-readable) representation of SEXP to FILE."
   (with-temp-buffer
-    (let ((print-level nil)
-          (print-length nil)
-          (lisp-indent-function 'lisp-indent-function))
-      (insert (format "%S" sexp))
-      ;; indent
-      (goto-char (point-min))
-      (backward-prefix-chars)
-      (pp-buffer))
+    (wg-insert-and-indent sexp)
     (write-file file)))
 
 ;; FIXME: Duplicate buf names probably shouldn't be allowed.  An unrelated error
@@ -1859,6 +1863,14 @@ ARG is anything else, turn on `workgroups-mode'."
 
      (t
       (message "No workgroup is created yet.")))))
+
+;;;###autoload
+(defun wg-print-current-session ()
+  "Print current session."
+  (interactive)
+  (with-temp-buffer
+    (wg-insert-and-indent wg-current-session)
+    (message "wg-current-session:\n%S" (buffer-string))))
 
 (provide 'workgroups2)
 ;;; workgroups2.el ends here
