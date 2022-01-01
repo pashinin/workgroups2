@@ -1827,13 +1827,5 @@ ARG is anything else, turn on `workgroups-mode'."
      (t
       (message "No workgroup is created yet.")))))
 
-;;;###autoload
-(defun wg-print-current-session ()
-  "Print current session."
-  (interactive)
-  (with-temp-buffer
-    (wg-insert-and-indent (wg-get-current-session))
-    (message "current session:\n%S" (buffer-string))))
-
 (provide 'workgroups2)
 ;;; workgroups2.el ends here
