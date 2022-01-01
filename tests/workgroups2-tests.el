@@ -10,17 +10,14 @@
       (delete-file "/tmp/wg-test"))
   ;;(should-not (string-equal "initial_terminal" (terminal-name (selected-frame))))
   (should (boundp workgroups-mode))
-  (should-not workgroups-mode)
-  (should wg-session-load-on-start))
+  (should-not workgroups-mode))
 
 (ert-deftest 010-activate ()
   ;;(if (file-exists-p "/tmp/wg-test")
   ;;    (delete-file "/tmp/wg-test"))
   (setq wg-session-file "/tmp/wg-test")
-  ;;(setq wg-session-load-on-start nil)
   (wg-reset-internal (wg-make-session))
   (wg-open-session)
-  (wg-create-first-wg)
   (should (string= (wg-get-session-file) "/tmp/wg-test")))
 
 (ert-deftest 050-modify ()

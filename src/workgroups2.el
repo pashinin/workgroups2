@@ -99,12 +99,6 @@ off and then on again to take effect."
   :type 'string
   :group 'workgroups)
 
-(defcustom wg-session-load-on-start (not (daemonp))
-  "Load a session file on Workgroups start.
-Don't do it with Emacs --daemon option."
-  :type 'boolean
-  :group 'workgroups)
-
 (defcustom workgroups-mode nil
   "Non-nil if Workgroups mode is enabled."
   :set 'custom-set-minor-mode
@@ -1588,14 +1582,6 @@ return WORKGROUP's current undo state."
             (wg-workgroup-weak-buf-uids workgroup)
             (cl-remove-if-not 'wg-find-buf-by-uid it)))
 
-(defun wg-create-first-wg ()
-  "Create a first workgroup if needed."
-  (when (and workgroups-mode
-             wg-session-load-on-start
-             (= (length (wg-workgroup-list)) 0))
-    (wg-create-workgroup wg-first-wg-name)
-    (wg-mark-everything-unmodified)))
-
 (defun wg-pickel-workgroup-parameters (workgroup)
   "Return a copy of WORKGROUP after pickeling its parameters.
 If WORKGROUP's parameters are non-nil, otherwise return
@@ -1796,22 +1782,10 @@ ARG is anything else, turn on `workgroups-mode'."
         (cond ((not arg) (not workgroups-mode))
               ((integerp arg) (if (> arg 0) t nil))
               (t)))
-  (cond
-   (workgroups-mode
+  (when workgroups-mode
     (if (boundp 'desktop-restore-frames)
         (setq desktop-restore-frames nil))
-    (wg-reset-internal (wg-make-session))
-    (wg-add-workgroups-mode-minor-mode-entries)
-
-    ;; Load session
-    (when (and wg-session-load-on-start
-               (file-exists-p wg-session-file))
-      (condition-case err
-          (wg-open-session)
-        (error (message "Error finding `wg-session-file': %s" err)))))
-   (t
-    (wg-save-session)))
-  (wg-create-first-wg)
+    (wg-add-workgroups-mode-minor-mode-entries))
   workgroups-mode)
 
 ;;;###autoload
