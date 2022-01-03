@@ -1,4 +1,4 @@
-* Workgroups for Emacs
+* Workgroups2
 [[https://travis-ci.org/pashinin/workgroups2][https://travis-ci.org/pashinin/workgroups2.svg?branch=master]]
 [[http://melpa.org/#/workgroups2][file:http://melpa.org/packages/workgroups2-badge.svg]]
 [[http://stable.melpa.org/#/workgroups2][file:http://stable.melpa.org/packages/workgroups2-badge.svg]]
@@ -72,6 +72,8 @@ Here is minimum sample code to support =ivy-occur-grep-mode=,
                                   ;; need return current buffer at the end of function
                                   (current-buffer))))))
 #+end_src
+** FAQ
+Simon Michael (AKA) has written a nice [[https://github.com/pashinin/workgroups2/issues/108#issuecomment-1001104900][FAQ]].
 ** License
 workgroups2 is free software: you can redistribute it and/or modify it under the terms of the [[https://raw.githubusercontent.com/redguardtoo/workgroups2/master/LICENSE][GNU General Public License]] as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
