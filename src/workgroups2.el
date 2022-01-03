@@ -1118,7 +1118,9 @@ If BUF's file doesn't exist, call `wg-restore-default-buffer'."
          (buffer (save-window-excursion
                    (condition-case err
                        (let ((fn (car special-data)))
-                         (and fn (funcall fn buf)))
+                         ;; make sure a buffer object is returned
+                         ;; simplify code in workgroups2-support.el
+                         (or (and fn (or (funcall fn buf) (current-buffer)))))
                      (error (message "Error deserializing %S: %S" (wg-buf-name buf) err)
                             nil)))))
     (when (and special-data buffer)

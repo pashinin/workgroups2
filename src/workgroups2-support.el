@@ -97,29 +97,36 @@ Saves some variables to restore a BUFFER later."
                                   (info)
                                   (get-buffer (wg-buf-name _buffer)))))))
 
+(defun wg-support-help-mode-serialize (_buffer)
+  "Serialize `help-mode' data in _BUFFER."
+  (ignore _buffer)
+  (list (mapcar (lambda (e)
+                  (cond
+                   ((and (functionp e) (not (symbolp e)))
+                    ;; convert compiled function into symbol
+                    (wg-symbol-of-compiled-function e))
+                   (t
+                    e)))
+                ;; Only need first two items.
+                ;; Other items could be file buffers which breaks the session file
+                ;; See bug #29
+                (and help-xref-stack-item
+                     (if (> (length help-xref-stack-item) 2) (cl-subseq help-xref-stack-item 0 2)
+                       help-xref-stack-item)))))
+
+(defun wg-support-help-mode-deserialize (_buffer vars)
+  "Deserialize `help-mode' data in _BUFFER with VARS."
+  (ignore _buffer)
+  (wg-dbind (item) vars
+            (condition-case err
+                (funcall (nth 0 item) (nth 1 item))
+              (error (message "error=%s" err)))
+            (switch-to-buffer "*Help*")))
+
 (wg-support 'help-mode
             'help-mode
-            `((serialize . ,(lambda (_buffer)
-                              (ignore _buffer)
-                              ;; Only need first two items.
-                              ;; Other items could be file buffers which breaks the session file
-                              ;; See bug #29
-                              (list (and help-xref-stack-item
-                                         (if (> (length help-xref-stack-item) 2) (cl-subseq help-xref-stack-item 0 2)
-                                           help-xref-stack-item))
-                                    help-xref-stack
-                                    help-xref-forward-stack)))
-              (deserialize . ,(lambda (_buffer vars)
-                                (ignore _buffer)
-                                (wg-dbind (item stack forward-stack) vars
-                                          (condition-case err
-                                              (apply (car item) (cdr item))
-                                            (error (message "%s" err)))
-                                          (when (get-buffer "*Help*")
-                                            (set-buffer (get-buffer "*Help*"))
-                                            (setq help-xref-stack stack
-                                                  help-xref-forward-stack forward-stack)
-                                            (current-buffer)))))))
+            `((serialize . wg-support-help-mode-serialize)
+              (deserialize . wg-support-help-mode-deserialize)))
 
 ;; ielm
 (wg-support 'inferior-emacs-lisp-mode
@@ -182,8 +189,7 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
                                (ignore _buffer)
                                (org-agenda-list)
                                (switch-to-buffer org-agenda-buffer-name)
-                               (wg-run-agenda-cmd vars)
-                               (current-buffer)))))
+                               (wg-run-agenda-cmd vars)))))
 
 ;; eshell
 (wg-support 'eshell-mode
@@ -191,8 +197,7 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
  '((deserialize . (lambda (_buffer vars)
                     (ignore vars)
                     (eshell t)
-                    (rename-buffer (wg-buf-name _buffer) t)
-                    (current-buffer)))))
+                    (rename-buffer (wg-buf-name _buffer) t)))))
 
 ;; term-mode
 ;;
@@ -325,8 +330,7 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
                    (fboundp 'slime-process))
           (save-window-excursion
             (slime-start* arguments))
-          (switch-to-buffer (process-buffer (slime-process)))
-          (current-buffer))))))
+          (switch-to-buffer (process-buffer (slime-process))))))))
 
 ;; `comint-mode'  (general mode for all shells)
 ;;
@@ -425,8 +429,7 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
               (deserialize . ,(lambda (_buffer vars)
                                 (ignore _buffer)
                                 (wg-dbind (url) vars
-                                          (w3m-goto-url url)
-                                          (current-buffer))))))
+                                          (w3m-goto-url url))))))
 
 (wg-support 'eww-mode
             'eww
@@ -436,8 +439,7 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
               (deserialize . ,(lambda (_buffer vars)
                                 (ignore _buffer)
                                 (wg-dbind (url) vars
-                                          (eww url)
-                                          (current-buffer))))))
+                                          (eww url))))))
 
 (wg-support 'notmuch-hello-mode
             'notmuch
@@ -495,8 +497,7 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
                                 (insert (base64-decode-string (nth 0 vars)))
                                 (goto-char (point-min))
                                 ;; easier than `ivy-occur-grep-mode' to set up
-                                (grep-mode)
-                                (current-buffer)))))
+                                (grep-mode)))))
 
 (wg-support 'pdf-view-mode
             'pdf-tools
