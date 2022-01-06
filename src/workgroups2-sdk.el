@@ -23,6 +23,11 @@
 (require 'cl-lib)
 (require 'disass)
 
+(defcustom wg-restore-remote-buffers t
+  "Restore buffers that get \"t\" with `file-remote-p'."
+  :type 'boolean
+  :group 'workgroups)
+
 (defvar wg-debug nil "For debugging.")
 
 (defvar wg-special-buffer-serdes-functions

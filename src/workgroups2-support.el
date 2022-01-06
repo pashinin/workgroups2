@@ -23,12 +23,18 @@
 ;;; Code:
 
 (require 'workgroups2-sdk)
+(require 'dframe)
+
+(defmacro wg-switch-to-buffer (buffer &rest body)
+  "Switch to BUFFER and eval BODY."
+  `(let ((new-buffer (switch-to-buffer ,buffer)))
+     ,@body
+     new-buffer))
 
 (defun wg-switch-to-shell-buffer (buffer)
   "Switch to a shell BUFFER."
-  (switch-to-buffer buffer)
-  (goto-char (point-max))
-  (current-buffer))
+  (wg-switch-to-buffer buffer
+                       (goto-char (point-max))))
 
 (defmacro wg-support (mode pkg params)
   "Macro to create (de)serialization functions for a buffer.
@@ -95,7 +101,7 @@ Saves some variables to restore a BUFFER later."
                                     (if (fboundp 'Info-find-node)
                                         (apply #'Info-find-node vars))
                                   (info)
-                                  (get-buffer (wg-buf-name _buffer)))))))
+                                  (wg-switch-to-buffer (wg-buf-name _buffer)))))))
 
 (defun wg-support-help-mode-serialize (_buffer)
   "Serialize `help-mode' data in _BUFFER."
@@ -121,7 +127,7 @@ Saves some variables to restore a BUFFER later."
             (condition-case err
                 (funcall (nth 0 item) (nth 1 item))
               (error (message "error=%s" err)))
-            (switch-to-buffer "*Help*")))
+            (wg-switch-to-buffer "*Help*")))
 
 (wg-support 'help-mode
             'help-mode
@@ -134,7 +140,7 @@ Saves some variables to restore a BUFFER later."
             `((deserialize . ,(lambda (_buffer vars)
                                 (ignore _buffer vars)
                                 (ielm)
-                                (get-buffer "*ielm*")))))
+                                (wg-switch-to-buffer "*ielm*")))))
 
 ;; Magit status
 (wg-support 'magit-status-mode
@@ -160,7 +166,7 @@ Can be restored using \"(eval commands)\"."
   (interactive)
   (when (boundp 'org-agenda-buffer-name)
     (if (get-buffer org-agenda-buffer-name)
-        (with-current-buffer org-agenda-buffer-name
+        (wg-switch-to-buffer org-agenda-buffer-name
           (let* ((p (or (and (looking-at "\\'") (1- (point))) (point)))
                  (series-redo-cmd (get-text-property p 'org-series-redo-cmd)))
             (if series-redo-cmd
@@ -175,7 +181,7 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
              (fboundp 'org-goto-line))
     (if (get-buffer org-agenda-buffer-name)
         (save-window-excursion
-          (with-current-buffer org-agenda-buffer-name
+          (wg-switch-to-buffer org-agenda-buffer-name
             (let* ((line (org-current-line)))
               (if f (eval f t))
               (org-goto-line line)))))))
@@ -188,8 +194,8 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
               (deserialize . (lambda (_buffer vars)
                                (ignore _buffer)
                                (org-agenda-list)
-                               (switch-to-buffer org-agenda-buffer-name)
-                               (wg-run-agenda-cmd vars)))))
+                               (wg-switch-to-buffer org-agenda-buffer-name
+                                                    (wg-run-agenda-cmd vars))))))
 
 ;; eshell
 (wg-support 'eshell-mode
@@ -197,7 +203,8 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
  '((deserialize . (lambda (_buffer vars)
                     (ignore vars)
                     (eshell t)
-                    (rename-buffer (wg-buf-name _buffer) t)))))
+                    (rename-buffer (wg-buf-name _buffer) t)
+                    (current-buffer)))))
 
 ;; term-mode
 ;;
@@ -318,7 +325,7 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
               (deserialize . ,(lambda (_buffer vars)
                                 (ignore _buffer)
                                 (compilation-start (car vars) (nth 1 vars))
-                                (switch-to-buffer "*grep*")))))
+                                (wg-switch-to-buffer "*grep*")))))
 
 (defun wg-deserialize-slime-buffer (buf)
   "Deserialize `slime' buffer BUF."
@@ -330,7 +337,7 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
                    (fboundp 'slime-process))
           (save-window-excursion
             (slime-start* arguments))
-          (switch-to-buffer (process-buffer (slime-process))))))))
+          (wg-switch-to-buffer (process-buffer (slime-process))))))))
 
 ;; `comint-mode'  (general mode for all shells)
 ;;
@@ -343,13 +350,12 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
 (defun wg-serialize-comint-buffer (buffer)
   "Serialize comint BUFFER."
   (with-current-buffer buffer
-    (if (fboundp 'comint-mode)
-        (when (eq major-mode 'comint-mode)
-          ;; `slime-inferior-lisp-args' var is used when in `slime'
-          (when (and (boundp 'slime-inferior-lisp-args)
-                     slime-inferior-lisp-args)
-            (list 'wg-deserialize-slime-buffer
-                  (list default-directory slime-inferior-lisp-args)))))))
+    (when (eq major-mode 'comint-mode)
+      ;; `slime-inferior-lisp-args' var is used when in `slime'
+      (when (and (boundp 'slime-inferior-lisp-args)
+                 slime-inferior-lisp-args)
+        (list 'wg-deserialize-slime-buffer
+              (list default-directory slime-inferior-lisp-args))))))
 
 ;; inf-mongo
 ;; https://github.com/tobiassvn/inf-mongo
@@ -446,7 +452,7 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
             `((deserialize . ,(lambda (_buffer vars)
                                 (ignore vars)
                                 (notmuch)
-                                (get-buffer (wg-buf-name _buffer))))))
+                                (wg-switch-to-buffer (wg-buf-name _buffer))))))
 
 (defvar dired-sidebar-display-alist)
 (wg-support 'dired-sidebar-mode
@@ -493,11 +499,11 @@ You can get these commands using `wg-get-org-agenda-view-commands'."
               (deserialize . ,(lambda (_buffer vars)
                                 (when wg-debug
                                   (message "ivy-occur-grep-mode deserialize is called => %s" file))
-                                (switch-to-buffer (wg-buf-name _buffer))
-                                (insert (base64-decode-string (nth 0 vars)))
-                                (goto-char (point-min))
-                                ;; easier than `ivy-occur-grep-mode' to set up
-                                (grep-mode)))))
+                                (wg-switch-to-buffer (wg-buf-name _buffer)
+                                                     (insert (base64-decode-string (nth 0 vars)))
+                                                     (goto-char (point-min))
+                                                     ;; easier than `ivy-occur-grep-mode' to set up
+                                                     (grep-mode))))))
 
 (wg-support 'pdf-view-mode
             'pdf-tools
