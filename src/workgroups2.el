@@ -1134,26 +1134,25 @@ If BUF's file doesn't exist, call `wg-restore-default-buffer'."
 
 (defun wg-restore-buffer (buf &optional switch)
   "Restore BUF, return it and maybe SWITCH to it."
-  (let ((rlt t))
+  (let (rlt)
     (when buf
       (when wg-debug
         (message "wg-restore-buffer called => %s" buf))
       (fset 'buffer-list wg-buffer-list-original)
       (cond
-       ((wg-restore-existing-buffer buf switch)
+       ((setq rlt (wg-restore-existing-buffer buf switch))
         (when wg-debug
           (message "wg-restore-existing-buffer succeeded.")))
 
-       ((wg-restore-special-buffer buf switch)
+       ((set rlt (wg-restore-special-buffer buf switch))
         (when wg-debug
           (message "wg-restore-special-buffer succeeded.")))
 
-       ((wg-restore-file-buffer buf switch)
+       ((setq rlt (wg-restore-file-buffer buf switch))
         (when wg-debug
           (message "wg-restore-file-buffer succeeded.")))
        (t
         (wg-restore-default-buffer switch)
-        (setq rlt nil)
         (when wg-debug
           (message "wg-restore-default-buffer called.")))))
     rlt))
