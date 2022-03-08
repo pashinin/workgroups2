@@ -1,5 +1,5 @@
 * Workgroups2
-[[https://travis-ci.org/pashinin/workgroups2][https://travis-ci.org/pashinin/workgroups2.svg?branch=master]]
+[[https://github.com/pashinin/workgroups2/actions/workflows/test.yml][https://github.com/pashinin/workgroups2/actions/workflows/test.yml/badge.svg]]
 [[http://melpa.org/#/workgroups2][file:http://melpa.org/packages/workgroups2-badge.svg]]
 [[http://stable.melpa.org/#/workgroups2][file:http://stable.melpa.org/packages/workgroups2-badge.svg]]
 
