@@ -1251,7 +1251,7 @@ See `wg-buffer-local-variables-alist' for details."
      :name           (buffer-name)
      :file-name      (buffer-file-name)
      :point          (point)
-     :mark           (mark)
+     :mark           (mark t)
      :local-vars     (wg-serialize-buffer-local-variables)
      :special-data   (wg-buffer-special-data buffer))))
 
