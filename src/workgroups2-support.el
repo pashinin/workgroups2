@@ -166,6 +166,11 @@ Saves some variables to restore a BUFFER later."
                                 (ignore vars)
                                 (shell (wg-buf-name _buffer))))))
 
+(wg-support 'vterm-mode
+            'vterm
+            `((deserialize . ,(lambda (_buffer vars)
+                                (ignore vars)
+                                (vterm (wg-buf-name _buffer))))))
 ;; org-agenda buffer
 (defun wg-get-org-agenda-view-commands ()
   "Return commands to restore the state of Agenda buffer.
